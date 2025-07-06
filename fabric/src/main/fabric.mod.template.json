@@ -28,7 +28,7 @@
   "depends": {
     "fabric": "*",
     "minecraft": "@minecraft@",
-    "mtr": ">=4.0.0-prerelease.2 <4.1"
+    "mtr": ">=4.0.0-prerelease.3 <4.1"
   },
   "suggests": {
     "another-mod": "*"
