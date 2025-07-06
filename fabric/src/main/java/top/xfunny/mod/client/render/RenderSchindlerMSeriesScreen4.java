@@ -12,14 +12,10 @@ import org.mtr.mapping.mapper.GraphicsHolder;
 import org.mtr.mapping.mapper.PlayerHelper;
 import org.mtr.mod.block.IBlock;
 import org.mtr.mod.data.IGui;
-import org.mtr.mod.render.QueuedRenderLayer;
 import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.Init;
-import top.xfunny.mod.block.SchindlerMSeriesScreen2Even;
 import top.xfunny.mod.block.SchindlerMSeriesScreen4Even;
-import top.xfunny.mod.block.TonicDSScreen1Even;
 import top.xfunny.mod.block.base.LiftButtonsBase;
-import top.xfunny.mod.block.base.LiftPanelBase;
 import top.xfunny.mod.client.resource.FontList;
 import top.xfunny.mod.client.view.*;
 import top.xfunny.mod.client.view.view_group.FrameLayout;
@@ -83,7 +79,7 @@ public class RenderSchindlerMSeriesScreen4<T extends LiftButtonsBase.BlockEntity
         screenLayout.setGravity(Gravity.CENTER_VERTICAL);
         screenLayout.setMargin(0.9F/16, 0, 0, 0);
 
-        NewButtonView upLanternLeft = new NewButtonView();
+        ButtonView upLanternLeft = new ButtonView();
         upLanternLeft.setBasicsAttributes(world, blockEntity.getPos2());
         upLanternLeft.setTexture(BUTTON_TEXTURE);
         upLanternLeft.setDimension(0.625F / 16);
@@ -93,7 +89,7 @@ public class RenderSchindlerMSeriesScreen4<T extends LiftButtonsBase.BlockEntity
         upLanternLeft.setPressedColor(PRESSED_COLOR);
         upLanternLeft.setMargin(1.25F/16, 0, 0, 0);
 
-        NewButtonView upLanternRight  = new NewButtonView();
+        ButtonView upLanternRight  = new ButtonView();
         upLanternRight.setBasicsAttributes(world, blockEntity.getPos2());
         upLanternRight.setTexture(BUTTON_TEXTURE);
         upLanternRight.setDimension(0.625F / 16);
@@ -103,7 +99,7 @@ public class RenderSchindlerMSeriesScreen4<T extends LiftButtonsBase.BlockEntity
         upLanternRight.setPressedColor(PRESSED_COLOR);
         upLanternRight.setMargin(1.75F / 16, 0, 0, 0);
 
-        NewButtonView downLanternLeft  = new NewButtonView();
+        ButtonView downLanternLeft  = new ButtonView();
         downLanternLeft.setBasicsAttributes(world, blockEntity.getPos2());
         downLanternLeft.setTexture(BUTTON_TEXTURE);
         downLanternLeft.setDimension(0.625F / 16);
@@ -114,7 +110,7 @@ public class RenderSchindlerMSeriesScreen4<T extends LiftButtonsBase.BlockEntity
         downLanternLeft.setFlip(false,true);
         downLanternLeft.setMargin(1.25F/16, 0, 0, 0);
 
-        NewButtonView downLanternRight  = new NewButtonView();
+        ButtonView downLanternRight  = new ButtonView();
         downLanternRight.setBasicsAttributes(world, blockEntity.getPos2());
         downLanternRight.setTexture(BUTTON_TEXTURE);
         downLanternRight.setDimension(0.625F / 16);

@@ -17,18 +17,32 @@ import top.xfunny.mod.client.view.view_group.FrameLayout;
 import top.xfunny.mod.client.view.view_group.LinearLayout;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
-import top.xfunny.mod.keymapping.SchindlerZLine3Keypad1KeyMapping;
+import top.xfunny.mod.keymapping.DefaultButtonsKeyMapping;
 import top.xfunny.mod.util.ArrayListToString;
-import top.xfunny.mod.util.TransformPositionX;
 
 import java.util.ArrayList;
 
 public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZLine3Keypad1.BlockEntity> implements DirectionHelper, IGui, IBlock {
     private static final int HOVER_COLOR = 0xFFFFFFFF;
+    private static final int DEFAULT_COLOR = 0xFFFFFFFF;
     private final boolean isOdd;
     private final float buttonMarginRight = 0.225F / 16;
-    private final float buttonHight = 1 * (101F / 94) / 16;
 
+    private final Identifier NUMBER1_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/schindler_z_line_keypad/number1.png");
+    private final Identifier NUMBER2_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/schindler_z_line_keypad/number2.png");
+    private final Identifier NUMBER3_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/schindler_z_line_keypad/number3.png");
+    private final Identifier NUMBER4_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/schindler_z_line_keypad/number4.png");
+    private final Identifier NUMBER5_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/schindler_z_line_keypad/number5.png");
+    private final Identifier NUMBER6_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/schindler_z_line_keypad/number6.png");
+    private final Identifier NUMBER7_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/schindler_z_line_keypad/number7.png");
+    private final Identifier NUMBER8_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/schindler_z_line_keypad/number8.png");
+    private final Identifier NUMBER9_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/schindler_z_line_keypad/number9.png");
+    private final Identifier NUMBER0_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/schindler_z_line_keypad/number0.png");
+    private final Identifier LOBBY_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/schindler_z_line_keypad/lobby.png");
+    private final Identifier BASEMENT_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/schindler_z_line_keypad/basement.png");
+    private final Identifier ACCESSBILITY_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/schindler_z_line_keypad/accessibility.png");
+    private final Identifier BACKGROUND_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/white.png");
+    private final Identifier ACCESSBILITY_ICON_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/schindler_z_line_keypad/accessibility_icon.png");
 
     public RenderSchindlerZLine3Keypad1(Argument dispatcher, boolean isOdd) {
         super(dispatcher);
@@ -48,7 +62,8 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
             return;
         }
 
-        //Init.LOGGER.info(String.valueOf(light));
+        final DefaultButtonsKeyMapping keyMapping = blockEntity.getKeyMapping();
+
 
         final boolean holdingLinker = PlayerHelper.isHolding(PlayerEntity.cast(clientPlayerEntity), item -> item.data instanceof YteLiftButtonsLinker || item.data instanceof YteGroupLiftButtonsLinker);
         final BlockPos blockPos = blockEntity.getPos2();
@@ -56,23 +71,11 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
         final Direction facing = IBlock.getStatePropertySafe(blockState, FACING);
         final ArrayList<Object> inputNumber = blockEntity.getInputString();
 
-        final HitResult hitResult = MinecraftClient.getInstance().getCrosshairTargetMapped();
-        final Vector3d hitLocation = hitResult.getPos();
-
-        final double hitY = MathHelper.fractionalPart(hitLocation.getYMapped());
-        final double hitX = MathHelper.fractionalPart(hitLocation.getXMapped());
-        final double hitZ = MathHelper.fractionalPart(hitLocation.getZMapped());
-
-        SchindlerZLine3Keypad1KeyMapping mapping = new SchindlerZLine3Keypad1KeyMapping();
-        double transformedX = TransformPositionX.transform(hitX, hitZ, facing);
-
-        String hitButton = mapping.mapping("schindler_z_line_3_keypad_1_key_mapping_input", transformedX, hitY);
-
         final StoredMatrixTransformations storedMatrixTransformations = new StoredMatrixTransformations(blockPos.getX() + 0.5, blockPos.getY(), blockPos.getZ() + 0.5);
         StoredMatrixTransformations storedMatrixTransformations1 = storedMatrixTransformations.copy();
         storedMatrixTransformations1.add(graphicsHolder -> {
             graphicsHolder.rotateYDegrees(-facing.asRotation());
-            graphicsHolder.translate(-0.5, 0, 7F / 16 - SMALL_OFFSET);
+            graphicsHolder.translate(0, 0, 7F / 16 - SMALL_OFFSET);
         });
 
         final LineComponent line = new LineComponent();
@@ -85,7 +88,7 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
         parentLayout.setBasicsAttributes(world, blockPos);
         parentLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
         parentLayout.setParentDimensions(6F / 16, 16F / 16);
-        parentLayout.setPosition(5F / 16, 0);
+        parentLayout.setPosition(-3F / 16, 0);
         parentLayout.setWidth(LayoutSize.MATCH_PARENT);//宽度为match_parent，即占满父容器，最底层父容器大小已通过setParentDimensions设置
         parentLayout.setHeight(LayoutSize.MATCH_PARENT);//高度为match_parent，即占满父容器，最底层父容器大小已通过setParentDimensions设置
 
@@ -125,7 +128,7 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
 
             final ImageView imageView = new ImageView();
             imageView.setBasicsAttributes(world, blockPos);
-            imageView.setTexture(new Identifier(Init.MOD_ID, "textures/block/white.png"));
+            imageView.setTexture(BACKGROUND_TEXTURE);
             imageView.setDimension(3.5F / 16, 2.575F / 3.5F);
             imageView.setLight(light);
             imageView.setQueuedRenderLayer(QueuedRenderLayer.LIGHT_TRANSLUCENT);
@@ -157,7 +160,7 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
 
             final ImageView imageView = new ImageView();
             imageView.setBasicsAttributes(world, blockPos);
-            imageView.setTexture(new Identifier(Init.MOD_ID, "textures/block/white.png"));
+            imageView.setTexture(BACKGROUND_TEXTURE);
             imageView.setDimension(3.5F / 16, 2.575F / 3.5F);
             imageView.setLight(light);
             imageView.setQueuedRenderLayer(QueuedRenderLayer.LIGHT_TRANSLUCENT);
@@ -165,7 +168,7 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
 
             final ImageView imageAccessibility = new ImageView();
             imageAccessibility.setBasicsAttributes(world, blockPos);
-            imageAccessibility.setTexture(new Identifier(Init.MOD_ID, "textures/block/schindler_z_line_keypad/accessibility_icon.png"));
+            imageAccessibility.setTexture(ACCESSBILITY_ICON_TEXTURE);
             imageAccessibility.setDimension(1F / 16);
             imageAccessibility.setLight(light);
             imageAccessibility.setQueuedRenderLayer(QueuedRenderLayer.LIGHT_TRANSLUCENT);
@@ -178,146 +181,130 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
 
         final ButtonView number1 = new ButtonView();
         number1.setId("number1");
-        number1.setBasicsAttributes(world, blockPos, hitButton);
-        number1.setWidth(1F / 16);
-        number1.setHeight(buttonHight);
-        number1.setMargin(0, 0, buttonMarginRight, 0);
+        number1.setBasicsAttributes(world, blockPos, keyMapping);
+        number1.setDimension(1F / 16,94,101);
         number1.setLight(light);
-        number1.setDefaultColor(0xFFFFFFFF);
+        number1.setDefaultColor(DEFAULT_COLOR);
         number1.setHoverColor(HOVER_COLOR);
-        number1.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/schindler_z_line_keypad/number1.png"));
+        number1.setTexture(NUMBER1_TEXTURE);
+        number1.setMargin(0, 0, buttonMarginRight, 0);
 
         final ButtonView number2 = new ButtonView();
         number2.setId("number2");
-        number2.setBasicsAttributes(world, blockPos, hitButton);
-        number2.setWidth(1F / 16);
-        number2.setHeight(buttonHight);
-        number2.setMargin(0, 0, buttonMarginRight, 0);
+        number2.setBasicsAttributes(world, blockPos, keyMapping);
+        number2.setDimension(1F / 16,94,101);
         number2.setLight(light);
-        number2.setDefaultColor(0xFFFFFFFF);
+        number2.setDefaultColor(DEFAULT_COLOR);
         number2.setHoverColor(HOVER_COLOR);
-        number2.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/schindler_z_line_keypad/number2.png"));
+        number2.setTexture(NUMBER2_TEXTURE);
+        number2.setMargin(0, 0, buttonMarginRight, 0);
 
         final ButtonView number3 = new ButtonView();
         number3.setId("number3");
-        number3.setBasicsAttributes(world, blockPos, hitButton);
-        number3.setWidth(1F / 16);
-        number3.setHeight(buttonHight);
-        number3.setMargin(0, 0, 0, 0);
+        number3.setBasicsAttributes(world, blockPos, keyMapping);
+        number3.setDimension(1F / 16,94,101);
         number3.setLight(light);
-        number3.setDefaultColor(0xFFFFFFFF);
+        number3.setDefaultColor(DEFAULT_COLOR);
         number3.setHoverColor(HOVER_COLOR);
-        number3.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/schindler_z_line_keypad/number3.png"));
+        number3.setTexture(NUMBER3_TEXTURE);
 
         final ButtonView number4 = new ButtonView();
         number4.setId("number4");
-        number4.setBasicsAttributes(world, blockPos, hitButton);
-        number4.setWidth(1F / 16);
-        number4.setHeight(buttonHight);
-        number4.setMargin(0, 0, buttonMarginRight, 0);
+        number4.setBasicsAttributes(world, blockPos, keyMapping);
+        number4.setDimension(1F / 16,94,101);
         number4.setLight(light);
-        number4.setDefaultColor(0xFFFFFFFF);
+        number4.setDefaultColor(DEFAULT_COLOR);
         number4.setHoverColor(HOVER_COLOR);
-        number4.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/schindler_z_line_keypad/number4.png"));
+        number4.setTexture(NUMBER4_TEXTURE);
+        number4.setMargin(0, 0, buttonMarginRight, 0);
 
         final ButtonView number5 = new ButtonView();
         number5.setId("number5");
-        number5.setBasicsAttributes(world, blockPos, hitButton);
-        number5.setWidth(1F / 16);
-        number5.setHeight(buttonHight);
-        number5.setMargin(0, 0, buttonMarginRight, 0);
+        number5.setBasicsAttributes(world, blockPos, keyMapping);
+        number5.setDimension(1F / 16,94,101);
         number5.setLight(light);
-        number5.setDefaultColor(0xFFFFFFFF);
+        number5.setDefaultColor(DEFAULT_COLOR);
         number5.setHoverColor(HOVER_COLOR);
-        number5.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/schindler_z_line_keypad/number5.png"));
+        number5.setTexture(NUMBER5_TEXTURE);
+        number5.setMargin(0, 0, buttonMarginRight, 0);
 
         final ButtonView number6 = new ButtonView();
         number6.setId("number6");
-        number6.setBasicsAttributes(world, blockPos, hitButton);
-        number6.setWidth(1F / 16);
-        number6.setHeight(buttonHight);
-        number6.setMargin(0, 0, 0, 0);
+        number6.setBasicsAttributes(world, blockPos, keyMapping);
+        number6.setDimension(1F / 16,94,101);
         number6.setLight(light);
-        number6.setDefaultColor(0xFFFFFFFF);
+        number6.setDefaultColor(DEFAULT_COLOR);
         number6.setHoverColor(HOVER_COLOR);
-        number6.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/schindler_z_line_keypad/number6.png"));
+        number6.setTexture(NUMBER6_TEXTURE);
 
         final ButtonView number7 = new ButtonView();
         number7.setId("number7");
-        number7.setBasicsAttributes(world, blockPos, hitButton);
-        number7.setWidth(1F / 16);
-        number7.setHeight(buttonHight);
-        number7.setMargin(0, 0, buttonMarginRight, 0);
+        number7.setBasicsAttributes(world, blockPos, keyMapping);
+        number7.setDimension(1F / 16,94,101);
         number7.setLight(light);
-        number7.setDefaultColor(0xFFFFFFFF);
+        number7.setDefaultColor(DEFAULT_COLOR);
         number7.setHoverColor(HOVER_COLOR);
-        number7.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/schindler_z_line_keypad/number7.png"));
+        number7.setTexture(NUMBER7_TEXTURE);
+        number7.setMargin(0, 0, buttonMarginRight, 0);
 
         final ButtonView number8 = new ButtonView();
         number8.setId("number8");
-        number8.setBasicsAttributes(world, blockPos, hitButton);
-        number8.setWidth(1F / 16);
-        number8.setHeight(buttonHight);
-        number8.setMargin(0, 0, buttonMarginRight, 0);
+        number8.setBasicsAttributes(world, blockPos, keyMapping);
+        number8.setDimension(1F / 16,94,101);
         number8.setLight(light);
-        number8.setDefaultColor(0xFFFFFFFF);
+        number8.setDefaultColor(DEFAULT_COLOR);
         number8.setHoverColor(HOVER_COLOR);
-        number8.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/schindler_z_line_keypad/number8.png"));
+        number8.setTexture(NUMBER8_TEXTURE);
+        number8.setMargin(0, 0, buttonMarginRight, 0);
 
         final ButtonView number9 = new ButtonView();
         number9.setId("number9");
-        number9.setBasicsAttributes(world, blockPos, hitButton);
-        number9.setWidth(1F / 16);
-        number9.setHeight(buttonHight);
-        number9.setMargin(0, 0, 0, 0);
+        number9.setBasicsAttributes(world, blockPos, keyMapping);
+        number9.setDimension(1F / 16,94,101);
         number9.setLight(light);
-        number9.setDefaultColor(0xFFFFFFFF);
+        number9.setDefaultColor(DEFAULT_COLOR);
         number9.setHoverColor(HOVER_COLOR);
-        number9.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/schindler_z_line_keypad/number9.png"));
-
-        final ButtonView lobby = new ButtonView();
-        lobby.setId("lobby");
-        lobby.setBasicsAttributes(world, blockPos, hitButton);
-        lobby.setWidth(1F / 16);
-        lobby.setHeight(buttonHight);
-        lobby.setMargin(0, 0, buttonMarginRight, 0);
-        lobby.setLight(light);
-        lobby.setDefaultColor(0xFFFFFFFF);
-        lobby.setHoverColor(HOVER_COLOR);
-        lobby.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/schindler_z_line_keypad/lobby.png"));
+        number9.setTexture(NUMBER9_TEXTURE);
 
         final ButtonView number0 = new ButtonView();
         number0.setId("number0");
-        number0.setBasicsAttributes(world, blockPos, hitButton);
-        number0.setWidth(1F / 16);
-        number0.setHeight(buttonHight);
-        number0.setMargin(0, 0, buttonMarginRight, 0);
+        number0.setBasicsAttributes(world, blockPos, keyMapping);
+        number0.setDimension(1F / 16,94,101);
         number0.setLight(light);
-        number0.setDefaultColor(0xFFFFFFFF);
+        number0.setDefaultColor(DEFAULT_COLOR);
         number0.setHoverColor(HOVER_COLOR);
-        number0.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/schindler_z_line_keypad/number0.png"));
+        number0.setTexture(NUMBER0_TEXTURE);
+        number0.setMargin(0, 0, buttonMarginRight, 0);
+
+        final ButtonView lobby = new ButtonView();
+        lobby.setId("lobby");
+        lobby.setBasicsAttributes(world, blockPos, keyMapping);
+        lobby.setDimension(1F / 16,94,101);
+        lobby.setLight(light);
+        lobby.setDefaultColor(DEFAULT_COLOR);
+        lobby.setHoverColor(HOVER_COLOR);
+        lobby.setTexture(LOBBY_TEXTURE);
+        lobby.setMargin(0, 0, buttonMarginRight, 0);
 
         final ButtonView basement = new ButtonView();
         basement.setId("basement");
-        basement.setBasicsAttributes(world, blockPos, hitButton);
-        basement.setWidth(1F / 16);
-        basement.setHeight(buttonHight);
-        basement.setMargin(0, 0, 0, 0);
+        basement.setBasicsAttributes(world, blockPos, keyMapping);
+        basement.setDimension(1F / 16,94,101);
         basement.setLight(light);
-        basement.setDefaultColor(0xFFFFFFFF);
+        basement.setDefaultColor(DEFAULT_COLOR);
         basement.setHoverColor(HOVER_COLOR);
-        basement.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/schindler_z_line_keypad/basement.png"));
+        basement.setTexture(BASEMENT_TEXTURE);
+
 
         final ButtonView accessibility = new ButtonView();
         accessibility.setId("accessibility");
-        accessibility.setBasicsAttributes(world, blockPos, hitButton);
-        accessibility.setWidth(3.5F / 16);
-        accessibility.setHeight(3.5F * (98F / 326) / 16);
-        accessibility.setMargin(1.25F / 16, 0.95F / 16, 0, 0);
+        accessibility.setBasicsAttributes(world, blockPos, keyMapping);
+        accessibility.setDimension(3.5F / 16,326,98);
         accessibility.setLight(light);
-        accessibility.setDefaultColor(0xFFFFFFFF);
+        accessibility.setDefaultColor(DEFAULT_COLOR);
         accessibility.setHoverColor(HOVER_COLOR);
-        accessibility.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/schindler_z_line_keypad/accessibility.png"));
+        accessibility.setTexture(ACCESSBILITY_TEXTURE);
+        accessibility.setMargin(1.25F / 16, 0.95F / 16, 0, 0);
 
         group1.addChild(number1);
         group1.addChild(number2);

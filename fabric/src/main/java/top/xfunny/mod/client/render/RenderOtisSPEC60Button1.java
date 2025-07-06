@@ -31,7 +31,7 @@ import java.util.Comparator;
 public class RenderOtisSPEC60Button1 extends BlockEntityRenderer<OtisSPEC60Button1.BlockEntity> implements DirectionHelper, IGui, IBlock {
 
     private static final int HOVER_COLOR = 0xFFFFCC66;
-    private static final int PRESSED_COLOR = 0xFFFF8800;
+    private static final int PRESSED_COLOR = 0xFFFF0000;
     private static final Identifier ARROW_TEXTURE = new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/otis_spec_60_arrow_1.png");
     private static final Identifier BUTTON_TEXTURE = new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/otis_ak10_button_1.png");
     private static final Identifier BUTTON_LIGHT_TEXTURE = new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/otis_ak10_button_1_light.png");
@@ -76,7 +76,6 @@ public class RenderOtisSPEC60Button1 extends BlockEntityRenderer<OtisSPEC60Butto
         parentLayout.setWidth(LayoutSize.MATCH_PARENT);
         parentLayout.setHeight(LayoutSize.MATCH_PARENT);
 
-
         final LinearLayout screenLayout = new LinearLayout(false);
         screenLayout.setBasicsAttributes(world, blockPos);
         screenLayout.setWidth(LayoutSize.WRAP_CONTENT);
@@ -84,12 +83,11 @@ public class RenderOtisSPEC60Button1 extends BlockEntityRenderer<OtisSPEC60Butto
         screenLayout.setGravity(Gravity.CENTER_HORIZONTAL);
         screenLayout.setMargin(0, 0.7F / 16, 0, 0);
 
-
         final FrameLayout buttonLayout = new FrameLayout();
         buttonLayout.setBasicsAttributes(world, blockPos);
         buttonLayout.setWidth(LayoutSize.MATCH_PARENT);
         buttonLayout.setHeight(LayoutSize.MATCH_PARENT);
-        buttonLayout.setMargin(0, 0.05F / 16, 0, 0);
+        buttonLayout.setMargin(0, 0.45F / 16, 0, 0);
 
         final LinearLayout buttonContainer = new LinearLayout(true);
         buttonContainer.setBasicsAttributes(world, blockPos);
@@ -118,7 +116,7 @@ public class RenderOtisSPEC60Button1 extends BlockEntityRenderer<OtisSPEC60Butto
         buttonUp.setGravity(Gravity.CENTER);
         buttonUp.setLight(light);
 
-        NewButtonView buttonUpLight = new NewButtonView();
+        ButtonView buttonUpLight = new ButtonView();
         buttonUpLight.setId("up");
         buttonUpLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonUpLight.setTexture(BUTTON_LIGHT_TEXTURE);
@@ -137,7 +135,7 @@ public class RenderOtisSPEC60Button1 extends BlockEntityRenderer<OtisSPEC60Butto
         buttonDown.setLight(light);
         buttonDown.setFlip(false, true);
 
-        NewButtonView buttonDownLight = new NewButtonView();
+        ButtonView buttonDownLight = new ButtonView();
         buttonDownLight.setId("down");
         buttonDownLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonDownLight.setTexture(BUTTON_LIGHT_TEXTURE);
@@ -204,6 +202,11 @@ public class RenderOtisSPEC60Button1 extends BlockEntityRenderer<OtisSPEC60Butto
 
                 liftFloorDisplayView.setTextAlign(TextView.HorizontalTextAlign.RIGHT);
 
+                final LinearLayout arrowLayout = new LinearLayout(false);
+                arrowLayout.setBasicsAttributes(world, blockPos);
+                arrowLayout.setWidth(LayoutSize.WRAP_CONTENT);
+                arrowLayout.setHeight(LayoutSize.WRAP_CONTENT);
+                arrowLayout.setGravity(Gravity.CENTER_HORIZONTAL);
 
                 final LiftArrowView liftArrowViewUP = new LiftArrowView();
                 liftArrowViewUP.setBasicsAttributes(world, blockPos, sortedPositionsAndLifts.get(i).right(), LiftArrowView.ArrowType.UP);
@@ -223,12 +226,15 @@ public class RenderOtisSPEC60Button1 extends BlockEntityRenderer<OtisSPEC60Butto
                 liftArrowViewDown.setGravity(Gravity.CENTER_HORIZONTAL);
                 liftArrowViewDown.setColor(0xFFFF0000);
 
+                arrowLayout.addChild(liftArrowViewDown);
+                arrowLayout.addChild(liftArrowViewUP);
 
                 final LinearLayout numberLayout = new LinearLayout(true);
                 numberLayout.setBasicsAttributes(world, blockPos);
                 numberLayout.setWidth(LayoutSize.WRAP_CONTENT);
                 numberLayout.setHeight(LayoutSize.WRAP_CONTENT);
-                numberLayout.addChild(liftArrowViewUP);
+
+                numberLayout.addChild(arrowLayout);
                 numberLayout.addChild(liftFloorDisplayView);
 
                 if (reverseRendering) {
@@ -251,7 +257,9 @@ public class RenderOtisSPEC60Button1 extends BlockEntityRenderer<OtisSPEC60Butto
 
         if (buttonDescriptor.hasDownButton()) {
             if (buttonDescriptor.hasUpButton()) {
-                downButtonGroup.setMargin(0, 0.5F / 16, 0, 0);
+                downButtonGroup.setMargin(0, 0.7F / 16, 0, 0);
+            } else {
+                downButtonGroup.setMargin(0, 1.6F / 16, 0, 0);
             }
             buttonContainer.addChild(downButtonGroup);
         }

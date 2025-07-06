@@ -1,170 +1,67 @@
 package top.xfunny.mod.client.view;
 
 import org.mtr.mapping.holder.*;
-import org.mtr.mapping.mapper.GraphicsHolder;
 import org.mtr.mod.Init;
 import org.mtr.mod.block.IBlock;
-import org.mtr.mod.client.IDrawing;
-import org.mtr.mod.render.MainRenderer;
 import org.mtr.mod.render.QueuedRenderLayer;
-import org.mtr.mod.render.StoredMatrixTransformations;
-
-import java.util.function.Consumer;
+import top.xfunny.mod.keymapping.DefaultButtonsKeyMapping;
+import top.xfunny.mod.util.TransformPositionX;
 
 import static org.mtr.mapping.mapper.DirectionHelper.FACING;
 
-public class ButtonView implements RenderView {
-    String hitButton;
-    private String id;
-    private StoredMatrixTransformations storedMatrixTransformations, storedMatrixTransformations1;
-    private float marginLeft, marginTop, marginRight, marginBottom;
-    private float x, y;
-    private Gravity gravity;
-    private float width, height;
-    private World world;
-    private BlockPos blockPos;
-    private int defaultColor, hoverColor;
-    private Identifier texture;
-    private BlockState blockState;
-    private Direction facing;
-    private int light;
+public class ButtonView extends ImageView {
+    private int hoverColor;
+    private int pressedColor;
+    private int defaultColor;
+    private boolean isFocused;
+    private boolean isPressed;
     private boolean isAlwaysOn;
+    private DefaultButtonsKeyMapping keyMapping;
+    private float[] location, dimension;
+    private float[] uv;
+
+    public ButtonView() {
+        location = new float[2];
+        dimension = new float[2];
+        uv = new float[]{1, 1, 0, 0};
+    }
+
+    public void setBasicsAttributes(World world, BlockPos blockPos, DefaultButtonsKeyMapping keyMapping) {
+        this.keyMapping = keyMapping;
+        super.setBasicsAttributes(world, blockPos);
+    }
+
+    public void setBasicsAttributes(World world, BlockPos blockPos) {
+        super.setBasicsAttributes(world, blockPos);
+    }
 
     @Override
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public void render() {
-        this.blockState = world.getBlockState(blockPos);
-        this.facing = IBlock.getStatePropertySafe(blockState, FACING);
-        this.storedMatrixTransformations1 = storedMatrixTransformations.copy();
+        location[0] = x;
+        location[1] = y;
+        dimension[0] = width;
+        dimension[1] = height;
+
         final HitResult hitResult = MinecraftClient.getInstance().getCrosshairTargetMapped();
-        boolean inBlock;
-        if (hitResult != null) {
+        if (hitResult != null && keyMapping != null) {
+            keyMapping.registerButton(id, location, dimension);
+            BlockState blockState = world.getBlockState(blockPos);
+            Direction facing = IBlock.getStatePropertySafe(blockState, FACING);
+
             final Vector3d hitLocation = hitResult.getPos();
-            inBlock = Init.newBlockPos(hitLocation.getXMapped(), hitLocation.getYMapped(), hitLocation.getZMapped()).equals(blockPos);
-        } else {
-            inBlock = false;
+            final String inButton = keyMapping.mapping(TransformPositionX.transform(MathHelper.fractionalPart(hitLocation.getXMapped()), MathHelper.fractionalPart(hitLocation.getZMapped()), facing), MathHelper.fractionalPart(hitLocation.getYMapped()));
+            final boolean inBlock = Init.newBlockPos(hitLocation.getXMapped(), hitLocation.getYMapped(), hitLocation.getZMapped()).equals(blockPos);
+
+            isFocused = inBlock && inButton.equals(id);
         }
 
-        storedMatrixTransformations1.add(graphicsHolder -> {
-        });
+        if (isFocused || isPressed || isAlwaysOn) {
+            setQueuedRenderLayer(QueuedRenderLayer.LIGHT_TRANSLUCENT);
+        }
 
-        MainRenderer.scheduleRender(
-                texture, false, (id.equals(hitButton) && inBlock) || isAlwaysOn ? QueuedRenderLayer.LIGHT_TRANSLUCENT : QueuedRenderLayer.EXTERIOR,
-                (graphicsHolder, offset) -> {
-                    storedMatrixTransformations1.transform(graphicsHolder, offset);
-                    IDrawing.drawTexture(
-                            graphicsHolder,
-                            x, y, width, height,
-                            1, 1, 0, 0,
-                            facing,
-                            id.equals(hitButton) && inBlock ? hoverColor : defaultColor,
-                            light
-                    );
-                    graphicsHolder.pop();
-                }
-        );
-    }
-
-    // 布局方法
-    @Override
-    public void setStoredMatrixTransformations(StoredMatrixTransformations storedMatrixTransformations) {
-        this.storedMatrixTransformations = storedMatrixTransformations;
-    }
-
-    @Override
-    public float[] getMargin() {
-        return new float[]{marginLeft, marginTop, marginRight, marginBottom};
-    }
-
-    @Override
-    public Gravity getGravity() {
-        return gravity;
-    }
-
-    @Override
-    public void setGravity(Gravity gravity) {
-        this.gravity = gravity;
-    }
-
-    @Override
-    public float getWidth() {
-        return width;
-    }
-
-    public void setWidth(float width) {
-        this.width = width;
-    }
-
-    @Override
-    public float getHeight() {
-        return height;
-    }
-
-    public void setHeight(float height) {
-        this.height = height;
-    }
-
-    @Override
-    public void setMargin(float left, float top, float right, float bottom) {
-        this.marginLeft = left;
-        this.marginTop = top;
-        this.marginRight = right;
-        this.marginBottom = bottom;
-    }
-
-    @Override
-    public void setPosition(float x, float y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    public void setLight(int light) {
-        this.light = light;
-    }
-
-    // 不适用的布局方法
-    @Override
-    public void setParentDimensions(float parentWidth, float parentHeight) {
-    }
-
-    @Override
-    public void calculateLayoutWidth() {
-    }
-
-    @Override
-    public void calculateLayoutHeight() {
-    }
-
-    @Override
-    public float[] calculateChildGravityOffset(float childWidth, float childHeight, float[] childMargin, Gravity childGravity) {
-        return new float[0];
-    }
-
-    @Override
-    public Object getParentType() {
-        return null;
-    }
-
-    @Override
-    public void setParentType(Object thisObject) {
-    }
-
-    // 设置基本属性的方法
-    public void setBasicsAttributes(World world, BlockPos blockPos, String hitButton) {
-        this.world = world;
-        this.blockPos = blockPos;
-        this.hitButton = hitButton;
-    }
-
-    public void setDefaultColor(int defaultColor) {
-        this.defaultColor = defaultColor;
+        setUv(uv);
+        color = isPressed ? pressedColor : isFocused ? hoverColor : defaultColor;
+        super.render();
     }
 
     public void setDefaultColor(int defaultColor, boolean isAlwaysOn) {
@@ -172,15 +69,35 @@ public class ButtonView implements RenderView {
         this.isAlwaysOn = isAlwaysOn;
     }
 
+    public void setDefaultColor(int defaultColor) {
+        this.defaultColor = defaultColor;
+    }
+
     public void setHoverColor(int hoverColor) {
         this.hoverColor = hoverColor;
     }
 
-    public void setTexture(Identifier texture) {
-        this.texture = texture;
+    public void setPressedColor(int pressedColor) {
+        this.pressedColor = pressedColor;
     }
 
-    public void addStoredMatrixTransformations(Consumer<GraphicsHolder> transformation) {
-        storedMatrixTransformations1.add(transformation);
+    public void setFlip(boolean flipVertical, boolean flipHorizontal) {
+        if (flipVertical) {
+            // 垂直翻转
+            final float tempV = uv[0];
+            uv[0] = uv[2];
+            uv[2] = tempV;
+        }
+        if (flipHorizontal) {
+            // 水平翻转
+            final float tempU = uv[1];
+            uv[1] = uv[3];
+            uv[3] = tempU;
+        }
+    }
+
+
+    public void activate() {
+        isPressed = true;
     }
 }

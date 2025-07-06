@@ -18,7 +18,6 @@ import top.xfunny.mod.Init;
 import top.xfunny.mod.block.SchindlerMSeriesRoundLantern1Even;
 import top.xfunny.mod.block.base.LiftButtonsBase;
 import top.xfunny.mod.client.view.*;
-import top.xfunny.mod.client.view.view_group.FrameLayout;
 import top.xfunny.mod.client.view.view_group.LinearLayout;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
@@ -70,7 +69,7 @@ public class RenderSchindlerMSeriesRoundLantern1<T extends LiftButtonsBase.Block
         parentLayout.setWidth(LayoutSize.MATCH_PARENT);
         parentLayout.setHeight(LayoutSize.MATCH_PARENT);
 
-        NewButtonView lanternUp = new NewButtonView();
+        ButtonView lanternUp = new ButtonView();
         lanternUp.setBasicsAttributes(world, blockPos);
         lanternUp.setTexture(BUTTON_TEXTURE);
         lanternUp.setDimension(7.5F / 16,3.475F / 7.5F);
@@ -80,7 +79,7 @@ public class RenderSchindlerMSeriesRoundLantern1<T extends LiftButtonsBase.Block
         lanternUp.setMargin(0, 0, 0, 0.55F/16);
         lanternUp.setLight(light);
 
-        NewButtonView lanternDown = new NewButtonView();
+        ButtonView lanternDown = new ButtonView();
         lanternDown.setBasicsAttributes(world, blockPos);
         lanternDown.setTexture(BUTTON_TEXTURE);
         lanternDown.setDimension(7.5F / 16,3.475F / 7.5F);

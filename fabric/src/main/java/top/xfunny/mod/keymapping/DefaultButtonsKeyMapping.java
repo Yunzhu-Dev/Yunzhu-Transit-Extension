@@ -1,5 +1,8 @@
 package top.xfunny.mod.keymapping;
 
+import top.xfunny.mod.Init;
+
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,14 +10,13 @@ public class DefaultButtonsKeyMapping {
     final private Map<String, ButtonArea> buttonMap = new HashMap<>();
 
     public void registerButton(String buttonName, float[] location, float[] dimension) {
-        final String key = buttonName.toLowerCase();
-        if (!buttonMap.containsKey(key)) {
-            buttonMap.put(key, new ButtonArea(location, dimension));
+        if (!buttonMap.containsKey(buttonName)) {
+            buttonMap.put(buttonName, new ButtonArea(location, dimension));
         }
     }
 
     public void removeButton(String buttonName) {
-        buttonMap.remove(buttonName.toLowerCase());
+        buttonMap.remove(buttonName);
     }
 
     public String mapping(double x, double hitY) {
@@ -27,6 +29,10 @@ public class DefaultButtonsKeyMapping {
             }
         }
         return "null";
+    }
+
+    public int getButtonCount() {
+        return buttonMap.size();
     }
 
     private static class ButtonArea {

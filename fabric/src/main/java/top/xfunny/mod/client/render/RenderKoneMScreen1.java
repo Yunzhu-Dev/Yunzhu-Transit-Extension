@@ -19,7 +19,6 @@ import top.xfunny.mod.block.KoneMScreen1Even;
 import top.xfunny.mod.block.base.LiftButtonsBase;
 import top.xfunny.mod.client.resource.FontList;
 import top.xfunny.mod.client.view.*;
-import top.xfunny.mod.client.view.view_group.FrameLayout;
 import top.xfunny.mod.client.view.view_group.LinearLayout;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
@@ -72,7 +71,7 @@ public class RenderKoneMScreen1<T extends LiftButtonsBase.BlockEntityBase> exten
         parentLayout.setWidth(LayoutSize.MATCH_PARENT);
         parentLayout.setHeight(LayoutSize.MATCH_PARENT);
 
-        NewButtonView upLantern  = new NewButtonView();
+        ButtonView upLantern  = new ButtonView();
         upLantern.setBasicsAttributes(world, blockPos);
         upLantern.setTexture(BUTTON_TEXTURE);
         upLantern.setDimension(2F / 16);
@@ -82,7 +81,7 @@ public class RenderKoneMScreen1<T extends LiftButtonsBase.BlockEntityBase> exten
         upLantern.setPressedColor(PRESSED_COLOR);
         upLantern.setMargin(1F/16, 0, 3F/16, 0);
 
-        NewButtonView upLantern1  = new NewButtonView();
+        ButtonView upLantern1  = new ButtonView();
         upLantern1.setBasicsAttributes(world, blockPos);
         upLantern1.setTexture(BUTTON_TEXTURE);
         upLantern1.setDimension(2F / 16);
@@ -92,7 +91,7 @@ public class RenderKoneMScreen1<T extends LiftButtonsBase.BlockEntityBase> exten
         upLantern1.setPressedColor(PRESSED_COLOR);
         upLantern1.setMargin(0, 0, 1.2F/16, 0);
 
-        NewButtonView downLantern  = new NewButtonView();
+        ButtonView downLantern  = new ButtonView();
         downLantern.setBasicsAttributes(world, blockPos);
         downLantern.setTexture(BUTTON_TEXTURE);
         downLantern.setDimension(2F / 16);
@@ -103,7 +102,7 @@ public class RenderKoneMScreen1<T extends LiftButtonsBase.BlockEntityBase> exten
         downLantern.setMargin(1F/16, 0, 3F /16, 0);
         downLantern.setFlip(false,true);
 
-        NewButtonView downLantern1  = new NewButtonView();
+        ButtonView downLantern1  = new ButtonView();
         downLantern1.setBasicsAttributes(world, blockPos);
         downLantern1.setTexture(BUTTON_TEXTURE);
         downLantern1.setDimension(2F / 16);

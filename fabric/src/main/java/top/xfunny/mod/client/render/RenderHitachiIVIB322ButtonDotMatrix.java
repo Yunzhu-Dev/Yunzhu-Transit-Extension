@@ -123,7 +123,7 @@ public class RenderHitachiIVIB322ButtonDotMatrix extends BlockEntityRenderer<Hit
         buttonUp.setGravity(Gravity.CENTER);
         buttonUp.setLight(light);
 
-        NewButtonView buttonUpLight = new NewButtonView();
+        ButtonView buttonUpLight = new ButtonView();
         buttonUpLight.setId("up");
         buttonUpLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonUpLight.setTexture(LIGHT_UP_TEXTURE);
@@ -142,7 +142,7 @@ public class RenderHitachiIVIB322ButtonDotMatrix extends BlockEntityRenderer<Hit
         buttonDown.setLight(light);
         buttonDown.setFlip(false, false);
 
-        NewButtonView buttonDownLight = new NewButtonView();
+        ButtonView buttonDownLight = new ButtonView();
         buttonDownLight.setId("down");
         buttonDownLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonDownLight.setTexture(LIGHT_DOWN_TEXTURE);

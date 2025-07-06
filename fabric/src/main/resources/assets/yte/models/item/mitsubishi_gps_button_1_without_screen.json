@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "yte:item/mitsubishi_gps_button_1_without_screen"
+  }
+}

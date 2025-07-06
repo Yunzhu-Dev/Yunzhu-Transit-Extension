@@ -1,0 +1,82 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "north",
+        "single": "true"
+      },
+      "apply": {
+        "model": "yte:block/schindler_linea_button_2_black_single"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "single": "true"
+      },
+      "apply": {
+        "model": "yte:block/schindler_linea_button_2_black_single",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "single": "true"
+      },
+      "apply": {
+        "model": "yte:block/schindler_linea_button_2_black_single",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "single": "true"
+      },
+      "apply": {
+        "model": "yte:block/schindler_linea_button_2_black_single",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "single": "false"
+      },
+      "apply": {
+        "model": "yte:block/schindler_linea_button_2_black"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "single": "false"
+      },
+      "apply": {
+        "model": "yte:block/schindler_linea_button_2_black",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "single": "false"
+      },
+      "apply": {
+        "model": "yte:block/schindler_linea_button_2_black",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "single": "false"
+      },
+      "apply": {
+        "model": "yte:block/schindler_linea_button_2_black",
+        "y": 270
+      }
+    }
+  ]
+}

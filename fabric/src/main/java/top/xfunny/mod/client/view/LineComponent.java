@@ -6,6 +6,7 @@ import org.mtr.mod.block.IBlock;
 import org.mtr.mod.render.MainRenderer;
 import org.mtr.mod.render.QueuedRenderLayer;
 import org.mtr.mod.render.StoredMatrixTransformations;
+import top.xfunny.mod.block.base.LiftDestinationDispatchTerminalBase;
 import top.xfunny.mod.block.base.LiftButtonsBase;
 
 import static org.mtr.mapping.mapper.DirectionHelper.FACING;
@@ -40,7 +41,7 @@ public class LineComponent {
 
         StoredMatrixTransformations storedMatrixTransformations = new StoredMatrixTransformations(blockPos.getX() + 0.5, blockPos.getY(), blockPos.getZ() + 0.5);
 
-        if (world.getBlockState(buttonPosition).getBlock().data instanceof LiftButtonsBase) {
+        if (world.getBlockState(buttonPosition).getBlock().data instanceof LiftButtonsBase || world.getBlockState(buttonPosition).getBlock().data instanceof LiftDestinationDispatchTerminalBase) {
             final Direction trackFacing = IBlock.getStatePropertySafe(world, buttonPosition, FACING);
             RenderButtonObjectLink(
                     storedMatrixTransformations,

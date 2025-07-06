@@ -84,7 +84,7 @@ public class LinearLayout implements RenderView {
 
         StoredMatrixTransformations storedMatrixTransformations2 = storedMatrixTransformations.copy();
         storedMatrixTransformations2.add(graphicsHolder -> {
-            graphicsHolder.translate(0, 0, (backgroundColor != 0 ? 2 : 0) * -SMALL_OFFSET);
+            graphicsHolder.translate(0, 0, (backgroundColor != 0 ? 2 : 0) * - SMALL_OFFSET / 4);
         });
 
 

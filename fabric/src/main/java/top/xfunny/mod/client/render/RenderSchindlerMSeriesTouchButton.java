@@ -19,7 +19,7 @@ import top.xfunny.mod.block.base.LiftButtonsBase;
 import top.xfunny.mod.client.view.Gravity;
 import top.xfunny.mod.client.view.ImageView;
 import top.xfunny.mod.client.view.LayoutSize;
-import top.xfunny.mod.client.view.NewButtonView;
+import top.xfunny.mod.client.view.ButtonView;
 import top.xfunny.mod.client.view.view_group.FrameLayout;
 import top.xfunny.mod.client.view.view_group.LinearLayout;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
@@ -110,7 +110,7 @@ public class RenderSchindlerMSeriesTouchButton extends BlockEntityRenderer<Schin
         buttonUp.setGravity(Gravity.CENTER);
         buttonUp.setLight(light);
 
-        NewButtonView buttonUpLight = new NewButtonView();
+        ButtonView buttonUpLight = new ButtonView();
         buttonUpLight.setId("up");
         buttonUpLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonUpLight.setTexture(BUTTON_LIGHT_TEXTURE);
@@ -129,7 +129,7 @@ public class RenderSchindlerMSeriesTouchButton extends BlockEntityRenderer<Schin
         buttonDown.setLight(light);
         buttonDown.setFlip(false, false);
 
-        NewButtonView buttonDownLight = new NewButtonView();
+        ButtonView buttonDownLight = new ButtonView();
         buttonDownLight.setId("down");
         buttonDownLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonDownLight.setTexture(BUTTON_LIGHT_TEXTURE);

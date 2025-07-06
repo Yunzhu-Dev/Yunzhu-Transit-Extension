@@ -13,7 +13,6 @@ import org.mtr.mapping.mapper.GraphicsHolder;
 import org.mtr.mapping.mapper.PlayerHelper;
 import org.mtr.mod.block.IBlock;
 import org.mtr.mod.data.IGui;
-import org.mtr.mod.render.QueuedRenderLayer;
 import org.mtr.mod.render.RenderLifts;
 import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.Init;
@@ -74,7 +73,7 @@ public class RenderOtisSeries3ELDScreen1<T extends LiftButtonsBase.BlockEntityBa
         parentLayout.setWidth(LayoutSize.MATCH_PARENT);
         parentLayout.setHeight(LayoutSize.MATCH_PARENT);
 
-        final NewButtonView upLantern = new NewButtonView();
+        final ButtonView upLantern = new ButtonView();
         upLantern.setBasicsAttributes(world, blockPos);
         upLantern.setTexture(ARROW_TEXTURE);
         upLantern.setDimension(1.5F / 16);
@@ -83,7 +82,7 @@ public class RenderOtisSeries3ELDScreen1<T extends LiftButtonsBase.BlockEntityBa
         upLantern.setDefaultColor(DEFAULT_COLOR);
         upLantern.setPressedColor(PRESSED_COLOR);
 
-        final NewButtonView downLantern = new NewButtonView();
+        final ButtonView downLantern = new ButtonView();
         downLantern.setBasicsAttributes(world, blockPos);
         downLantern.setTexture(ARROW_TEXTURE);
         downLantern.setDimension(1.5F / 16);

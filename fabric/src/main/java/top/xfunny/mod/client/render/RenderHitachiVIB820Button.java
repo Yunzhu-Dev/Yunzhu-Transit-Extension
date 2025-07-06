@@ -123,7 +123,7 @@ public class RenderHitachiVIB820Button extends BlockEntityRenderer<HitachiVIB820
         buttonUp.setGravity(Gravity.CENTER);
         buttonUp.setLight(light);
 
-        NewButtonView buttonUpLight = new NewButtonView();
+        ButtonView buttonUpLight = new ButtonView();
         buttonUpLight.setId("up");
         buttonUpLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonUpLight.setTexture(LIGHT_UP_TEXTURE);
@@ -142,7 +142,7 @@ public class RenderHitachiVIB820Button extends BlockEntityRenderer<HitachiVIB820
         buttonDown.setLight(light);
         buttonDown.setFlip(false, false);
 
-        NewButtonView buttonDownLight = new NewButtonView();
+        ButtonView buttonDownLight = new ButtonView();
         buttonDownLight.setId("down");
         buttonDownLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonDownLight.setTexture(LIGHT_DOWN_TEXTURE);
@@ -197,7 +197,7 @@ public class RenderHitachiVIB820Button extends BlockEntityRenderer<HitachiVIB820
                         FontList.instance.getFont("hitachi-lcd-seg"),
                         7.5F,
                         0xFFDEF6FF);
-                liftFloorDisplayView.setTextureId("hitachi-vib-320-segmented");
+                liftFloorDisplayView.setTextureId("hitachi-vib-820");
                 liftFloorDisplayView.setWidth(1.5F / 16);
                 liftFloorDisplayView.setHeight(1.7F / 16);
 

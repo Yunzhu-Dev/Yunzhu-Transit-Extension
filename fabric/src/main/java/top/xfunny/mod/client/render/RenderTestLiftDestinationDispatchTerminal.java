@@ -8,23 +8,21 @@ import org.mtr.mapping.mapper.PlayerHelper;
 import org.mtr.mod.block.IBlock;
 import org.mtr.mod.data.IGui;
 import org.mtr.mod.render.StoredMatrixTransformations;
+import top.xfunny.mod.Init;
 import top.xfunny.mod.block.TestLiftDestinationDispatchTerminal;
 import top.xfunny.mod.client.resource.FontList;
-import top.xfunny.mod.client.view.ButtonView;
-import top.xfunny.mod.client.view.LayoutSize;
-import top.xfunny.mod.client.view.LineComponent;
-import top.xfunny.mod.client.view.TextView;
+import top.xfunny.mod.client.view.*;
 import top.xfunny.mod.client.view.view_group.LinearLayout;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
-import top.xfunny.mod.keymapping.TestLiftDestinationDispatchTerminalKeyMapping;
+import top.xfunny.mod.keymapping.DefaultButtonsKeyMapping;
 import top.xfunny.mod.util.ArrayListToString;
-import top.xfunny.mod.util.TransformPositionX;
 
 import java.util.ArrayList;
 
 public class RenderTestLiftDestinationDispatchTerminal extends BlockEntityRenderer<TestLiftDestinationDispatchTerminal.BlockEntity> implements DirectionHelper, IGui, IBlock {
     private static final int HOVER_COLOR = 0xFFFFCC66;
+    private static final int DEFAULT_COLOR = 0xFFFFFFF;
     private final boolean isOdd;
 
     public RenderTestLiftDestinationDispatchTerminal(Argument dispatcher, boolean isOdd) {
@@ -46,29 +44,19 @@ public class RenderTestLiftDestinationDispatchTerminal extends BlockEntityRender
             return;
         }
 
+        final DefaultButtonsKeyMapping keyMapping = blockEntity.getKeyMapping();
+
         final boolean holdingLinker = PlayerHelper.isHolding(PlayerEntity.cast(clientPlayerEntity), item -> item.data instanceof YteLiftButtonsLinker || item.data instanceof YteGroupLiftButtonsLinker);
         final BlockPos blockPos = blockEntity.getPos2();
         final BlockState blockState = world.getBlockState(blockPos);
         final Direction facing = IBlock.getStatePropertySafe(blockState, FACING);
         final ArrayList<Object> inputNumber = blockEntity.getInputNumber();
 
-        final HitResult hitResult = MinecraftClient.getInstance().getCrosshairTargetMapped();
-        final Vector3d hitLocation = hitResult.getPos();
-
-        final double hitY = MathHelper.fractionalPart(hitLocation.getYMapped());
-        final double hitX = MathHelper.fractionalPart(hitLocation.getXMapped());
-        final double hitZ = MathHelper.fractionalPart(hitLocation.getZMapped());
-
-        TestLiftDestinationDispatchTerminalKeyMapping mapping = new TestLiftDestinationDispatchTerminalKeyMapping();
-        double transformedX = TransformPositionX.transform(hitX, hitZ, facing);
-
-        String hitButton = mapping.mapping("test_lift_destination_dispatch_terminal_key_mapping_home", transformedX, hitY);
-
         final StoredMatrixTransformations storedMatrixTransformations = new StoredMatrixTransformations(blockPos.getX() + 0.5, blockPos.getY(), blockPos.getZ() + 0.5);
         StoredMatrixTransformations storedMatrixTransformations1 = storedMatrixTransformations.copy();
         storedMatrixTransformations1.add(graphicsHolder -> {
             graphicsHolder.rotateYDegrees(-facing.asRotation());
-            graphicsHolder.translate(-0.5, 0, 7.9F / 16 - SMALL_OFFSET);
+            graphicsHolder.translate(0, 0, 7.9F / 16 - SMALL_OFFSET);
         });
 
         final LineComponent line = new LineComponent();
@@ -80,11 +68,10 @@ public class RenderTestLiftDestinationDispatchTerminal extends BlockEntityRender
         final LinearLayout parentLayout = new LinearLayout(true);
         parentLayout.setBasicsAttributes(world, blockPos);
         parentLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
-        parentLayout.setParentDimensions((float) 16 / 16, (float) 11 / 16);
-        parentLayout.setPosition((float) 0, (float) 0);
+        parentLayout.setParentDimensions(16F / 16, 11F / 16);
+        parentLayout.setPosition(-8F/16, 0);
         parentLayout.setWidth(LayoutSize.MATCH_PARENT);//宽度为match_parent，即占满父容器，最底层父容器大小已通过setParentDimensions设置
         parentLayout.setHeight(LayoutSize.MATCH_PARENT);//高度为match_parent，即占满父容器，最底层父容器大小已通过setParentDimensions设置
-
 
         if (screenId.equals("test_lift_destination_dispatch_terminal_key_mapping_home")) {
             final LinearLayout group1 = new LinearLayout(false);
@@ -118,135 +105,123 @@ public class RenderTestLiftDestinationDispatchTerminal extends BlockEntityRender
 
             final ButtonView number1 = new ButtonView();
             number1.setId("number1");
-            number1.setBasicsAttributes(world, blockPos, hitButton);
-            number1.setWidth(1F / 16);
-            number1.setHeight(1F / 16);
-            number1.setMargin(1F / 16, 0, 0, 0);
+            number1.setBasicsAttributes(world, blockPos, keyMapping);
+            number1.setTexture(new Identifier(Init.MOD_ID, "textures/block/test_lift_destination_dispatch_terminal/number1.png"));
+            number1.setDimension(1F / 16);
             number1.setLight(light);
-            number1.setDefaultColor(0xFFFFFFFF);
+            number1.setDefaultColor(DEFAULT_COLOR);
             number1.setHoverColor(HOVER_COLOR);
-            number1.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/number1.png"));
+            number1.setMargin(1F / 16, 0, 0, 0);
 
             final ButtonView number2 = new ButtonView();
             number2.setId("number2");
-            number2.setBasicsAttributes(world, blockPos, hitButton);
-            number2.setWidth(1F / 16);
-            number2.setHeight(1F / 16);
-            number2.setMargin(1F / 16, 0, 0, 0);
+            number2.setBasicsAttributes(world, blockPos, keyMapping);
+            number2.setTexture(new Identifier(Init.MOD_ID, "textures/block/test_lift_destination_dispatch_terminal/number2.png"));
+            number2.setDimension(1F / 16);
             number2.setLight(light);
-            number2.setDefaultColor(0xFFFFFFFF);
+            number2.setDefaultColor(DEFAULT_COLOR);
             number2.setHoverColor(HOVER_COLOR);
-            number2.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/number2.png"));
+            number2.setMargin(1F / 16, 0, 0, 0);
 
             final ButtonView number3 = new ButtonView();
             number3.setId("number3");
-            number3.setBasicsAttributes(world, blockPos, hitButton);
-            number3.setWidth(1F / 16);
-            number3.setHeight(1F / 16);
-            number3.setMargin(1F / 16, 0, 0, 0);
+            number3.setBasicsAttributes(world, blockPos, keyMapping);
+            number3.setTexture(new Identifier(Init.MOD_ID, "textures/block/test_lift_destination_dispatch_terminal/number3.png"));
+            number3.setDimension(1F / 16);
             number3.setLight(light);
-            number3.setDefaultColor(0xFFFFFFFF);
+            number3.setDefaultColor(DEFAULT_COLOR);
             number3.setHoverColor(HOVER_COLOR);
-            number3.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/number3.png"));
+            number3.setMargin(1F / 16, 0, 0, 0);
 
             final ButtonView number4 = new ButtonView();
             number4.setId("number4");
-            number4.setBasicsAttributes(world, blockPos, hitButton);
-            number4.setWidth(1F / 16);
-            number4.setHeight(1F / 16);
-            number4.setMargin(1F / 16, 0, 0, 0);
+            number4.setBasicsAttributes(world, blockPos, keyMapping);
+            number4.setTexture(new Identifier(Init.MOD_ID, "textures/block/test_lift_destination_dispatch_terminal/number4.png"));
+            number4.setDimension(1F / 16);
             number4.setLight(light);
-            number4.setDefaultColor(0xFFFFFFFF);
+            number4.setDefaultColor(DEFAULT_COLOR);
             number4.setHoverColor(HOVER_COLOR);
-            number4.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/number4.png"));
+            number4.setMargin(1F / 16, 0, 0, 0);
 
             final ButtonView number5 = new ButtonView();
             number5.setId("number5");
-            number5.setBasicsAttributes(world, blockPos, hitButton);
-            number5.setWidth(1F / 16);
-            number5.setHeight(1F / 16);
-            number5.setMargin(1F / 16, 0, 0, 0);
+            number5.setBasicsAttributes(world, blockPos, keyMapping);
+            number5.setTexture(new Identifier(Init.MOD_ID, "textures/block/test_lift_destination_dispatch_terminal/number5.png"));
+            number5.setDimension(1F / 16);
             number5.setLight(light);
-            number5.setDefaultColor(0xFFFFFFFF);
+            number5.setDefaultColor(DEFAULT_COLOR);
             number5.setHoverColor(HOVER_COLOR);
-            number5.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/number5.png"));
+            number5.setMargin(1F / 16, 0, 0, 0);
 
             final ButtonView number6 = new ButtonView();
             number6.setId("number6");
-            number6.setBasicsAttributes(world, blockPos, hitButton);
-            number6.setWidth(1F / 16);
-            number6.setHeight(1F / 16);
-            number6.setMargin(1F / 16, 0, 0, 0);
+            number6.setBasicsAttributes(world, blockPos, keyMapping);
+            number6.setTexture(new Identifier(Init.MOD_ID, "textures/block/test_lift_destination_dispatch_terminal/number6.png"));
+            number6.setDimension(1F / 16);
             number6.setLight(light);
-            number6.setDefaultColor(0xFFFFFFFF);
+            number6.setDefaultColor(DEFAULT_COLOR);
             number6.setHoverColor(HOVER_COLOR);
-            number6.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/number6.png"));
+            number6.setMargin(1F / 16, 0, 0, 0);
 
             final ButtonView number7 = new ButtonView();
             number7.setId("number7");
-            number7.setBasicsAttributes(world, blockPos, hitButton);
-            number7.setWidth(1F / 16);
-            number7.setHeight(1F / 16);
-            number7.setMargin(1F / 16, 0, 0, 0);
+            number7.setBasicsAttributes(world, blockPos, keyMapping);
+            number7.setTexture(new Identifier(Init.MOD_ID, "textures/block/test_lift_destination_dispatch_terminal/number7.png"));
+            number7.setDimension(1F / 16);
             number7.setLight(light);
-            number7.setDefaultColor(0xFFFFFFFF);
+            number7.setDefaultColor(DEFAULT_COLOR);
             number7.setHoverColor(HOVER_COLOR);
-            number7.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/number7.png"));
+            number7.setMargin(1F / 16, 0, 0, 0);
 
             final ButtonView number8 = new ButtonView();
             number8.setId("number8");
-            number8.setBasicsAttributes(world, blockPos, hitButton);
-            number8.setWidth(1F / 16);
-            number8.setHeight(1F / 16);
-            number8.setMargin(1F / 16, 0, 0, 0);
+            number8.setBasicsAttributes(world, blockPos, keyMapping);
+            number8.setTexture(new Identifier(Init.MOD_ID, "textures/block/test_lift_destination_dispatch_terminal/number8.png"));
+            number8.setDimension(1F / 16);
             number8.setLight(light);
-            number8.setDefaultColor(0xFFFFFFFF);
+            number8.setDefaultColor(DEFAULT_COLOR);
             number8.setHoverColor(HOVER_COLOR);
-            number8.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/number8.png"));
+            number8.setMargin(1F / 16, 0, 0, 0);
 
             final ButtonView number9 = new ButtonView();
             number9.setId("number9");
-            number9.setBasicsAttributes(world, blockPos, hitButton);
-            number9.setWidth(1F / 16);
-            number9.setHeight(1F / 16);
-            number9.setMargin(1F / 16, 0, 0, 0);
+            number9.setBasicsAttributes(world, blockPos, keyMapping);
+            number9.setTexture(new Identifier(Init.MOD_ID, "textures/block/test_lift_destination_dispatch_terminal/number9.png"));
+            number9.setDimension(1F / 16);
             number9.setLight(light);
-            number9.setDefaultColor(0xFFFFFFFF);
+            number9.setDefaultColor(DEFAULT_COLOR);
             number9.setHoverColor(HOVER_COLOR);
-            number9.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/number9.png"));
+            number9.setMargin(1F / 16, 0, 0, 0);
 
             final ButtonView number0 = new ButtonView();
             number0.setId("number0");
-            number0.setBasicsAttributes(world, blockPos, hitButton);
-            number0.setWidth(1F / 16);
-            number0.setHeight(1F / 16);
-            number0.setMargin(1F / 16, 0, 0, 0);
+            number0.setBasicsAttributes(world, blockPos, keyMapping);
+            number0.setTexture(new Identifier(Init.MOD_ID, "textures/block/test_lift_destination_dispatch_terminal/number0.png"));
+            number0.setDimension(1F / 16);
             number0.setLight(light);
-            number0.setDefaultColor(0xFFFFFFFF);
+            number0.setDefaultColor(DEFAULT_COLOR);
             number0.setHoverColor(HOVER_COLOR);
-            number0.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/number0.png"));
+            number0.setMargin(1F / 16, 0, 0, 0);
 
             final ButtonView clearNumber = new ButtonView();
             clearNumber.setId("clearNumber");
-            clearNumber.setBasicsAttributes(world, blockPos, hitButton);
-            clearNumber.setWidth(1F / 16);
-            clearNumber.setHeight(1F / 16);
-            clearNumber.setMargin(1F / 16, 0, 0, 0);
+            clearNumber.setBasicsAttributes(world, blockPos, keyMapping);
+            clearNumber.setTexture(new Identifier(Init.MOD_ID, "textures/block/cross.png"));
+            clearNumber.setDimension(1F / 16);
             clearNumber.setLight(light);
-            clearNumber.setDefaultColor(0xFFFFFFFF);
+            clearNumber.setDefaultColor(DEFAULT_COLOR);
             clearNumber.setHoverColor(HOVER_COLOR);
-            clearNumber.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/cross.png"));
+            clearNumber.setMargin(1F / 16, 0, 0, 0);
 
             final ButtonView callLift = new ButtonView();
             callLift.setId("callLift");
-            callLift.setBasicsAttributes(world, blockPos, hitButton);
-            callLift.setWidth(1F / 16);
-            callLift.setHeight(1F / 16);
-            callLift.setMargin(1F / 16, 0, 0, 0);
+            callLift.setBasicsAttributes(world, blockPos, keyMapping);
+            callLift.setTexture(new Identifier(Init.MOD_ID, "textures/block/test_lift_destination_dispatch_terminal/call_lift.png"));
+            callLift.setDimension(1F / 16);
             callLift.setLight(light);
-            callLift.setDefaultColor(0xFFFFFFFF);
+            callLift.setDefaultColor(DEFAULT_COLOR);
             callLift.setHoverColor(HOVER_COLOR);
-            callLift.setTexture(new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/call_lift.png"));
+            callLift.setMargin(1F / 16, 0, 0, 0);
 
             group1.addChild(number1);
             group1.addChild(number2);

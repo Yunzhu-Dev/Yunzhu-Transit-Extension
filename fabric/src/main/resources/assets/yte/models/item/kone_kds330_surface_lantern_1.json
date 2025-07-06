@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "yte:item/kone_kds330_surface_lantern_1"
+  }
+}

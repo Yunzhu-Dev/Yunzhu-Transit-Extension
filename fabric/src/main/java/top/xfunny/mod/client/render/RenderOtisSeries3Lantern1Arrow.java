@@ -18,7 +18,6 @@ import top.xfunny.mod.Init;
 import top.xfunny.mod.block.SchindlerMSeriesRoundLantern1Even;
 import top.xfunny.mod.block.base.LiftButtonsBase;
 import top.xfunny.mod.client.view.*;
-import top.xfunny.mod.client.view.view_group.FrameLayout;
 import top.xfunny.mod.client.view.view_group.LinearLayout;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
@@ -71,7 +70,7 @@ public class RenderOtisSeries3Lantern1Arrow<T extends LiftButtonsBase.BlockEntit
         parentLayout.setWidth(LayoutSize.MATCH_PARENT);
         parentLayout.setHeight(LayoutSize.MATCH_PARENT);
 
-        NewButtonView upLantern  = new NewButtonView();
+        ButtonView upLantern  = new ButtonView();
         upLantern.setBasicsAttributes(world, blockPos);
         upLantern.setTexture(BUTTON_TEXTURE);
         upLantern.setDimension(1.2F / 16);
@@ -81,7 +80,7 @@ public class RenderOtisSeries3Lantern1Arrow<T extends LiftButtonsBase.BlockEntit
         upLantern.setPressedColor(PRESSED_COLOR_UP);
         upLantern.setMargin(0, 0.5F/16, 0, 1.1F/16);
 
-        NewButtonView downLantern  = new NewButtonView();
+        ButtonView downLantern  = new ButtonView();
         downLantern.setBasicsAttributes(world, blockPos);
         downLantern.setTexture(BUTTON_TEXTURE);
         downLantern.setDimension(1.2F / 16);

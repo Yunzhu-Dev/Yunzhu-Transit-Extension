@@ -130,7 +130,7 @@ public class RenderOtisSeries3Button1 extends BlockEntityRenderer<OtisSeries3But
         buttonDownBackground.setGravity(Gravity.CENTER);
         buttonDownBackground.setLight(light);
 
-        NewButtonView buttonUpLight = new NewButtonView();
+        ButtonView buttonUpLight = new ButtonView();
         buttonUpLight.setId("up");
         buttonUpLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonUpLight.setTexture(BUTTON_LIGHT_TEXTURE);
@@ -141,7 +141,7 @@ public class RenderOtisSeries3Button1 extends BlockEntityRenderer<OtisSeries3But
         buttonUpLight.setHoverColor(0xFFCCFFCC);
         buttonUpLight.setPressedColor(0xFF66FF66);
 
-        NewButtonView buttonDownLight = new NewButtonView();
+        ButtonView buttonDownLight = new ButtonView();
         buttonDownLight.setId("down");
         buttonDownLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonDownLight.setTexture(BUTTON_LIGHT_TEXTURE);

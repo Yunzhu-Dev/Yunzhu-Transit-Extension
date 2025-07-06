@@ -1,0 +1,23 @@
+{
+	"format_version": "1.21.6",
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"textures": {
+		"5": "yte:block/mitsubishi_nexway_screen_3",
+		"particle": "yte:block/base10"
+	},
+	"elements": [
+		{
+			"from": [8.75, 9.5, 0],
+			"to": [16, 13, 0.1],
+			"rotation": {"angle": 0, "axis": "y", "origin": [9.5, 8.5, -0.25]},
+			"faces": {
+				"north": {"uv": [0, 0, 8, 2.15], "texture": "#5"},
+				"south": {"uv": [0, 0, 8, 16], "texture": "#5"},
+				"west": {"uv": [0, 0, 0.25, 13], "texture": "#5"},
+				"up": {"uv": [0, 0, 8, 0.25], "texture": "#5"},
+				"down": {"uv": [0, 0, 8, 0.25], "texture": "#5"}
+			}
+		}
+	]
+}

@@ -130,7 +130,7 @@ public class RenderMitsubishiNexWayScreen1<T extends LiftButtonsBase.BlockEntity
         lanternArrowDownRight.setLight(light);
         lanternArrowDownRight.setFlip(false,true);
 
-        final NewButtonView downLanternLeft = new NewButtonView();
+        final ButtonView downLanternLeft = new ButtonView();
         downLanternLeft.setBasicsAttributes(world, blockPos);
         downLanternLeft.setTexture(BUTTON_TEXTURE);
         downLanternLeft.setDimension(2.75F / 16);
@@ -139,7 +139,7 @@ public class RenderMitsubishiNexWayScreen1<T extends LiftButtonsBase.BlockEntity
         downLanternLeft.setDefaultColor(DEFAULT_COLOR);
         downLanternLeft.setPressedColor(PRESSED_COLOR);
 
-        final NewButtonView downLanternRight = new NewButtonView();
+        final ButtonView downLanternRight = new ButtonView();
         downLanternRight.setBasicsAttributes(world, blockPos);
         downLanternRight.setTexture(BUTTON_TEXTURE);
         downLanternRight.setDimension(2.75F / 16);
@@ -148,7 +148,7 @@ public class RenderMitsubishiNexWayScreen1<T extends LiftButtonsBase.BlockEntity
         downLanternRight.setDefaultColor(DEFAULT_COLOR);
         downLanternRight.setPressedColor(PRESSED_COLOR);
 
-        final NewButtonView upLanternLeft = new NewButtonView();
+        final ButtonView upLanternLeft = new ButtonView();
         upLanternLeft.setBasicsAttributes(world, blockPos);
         upLanternLeft.setTexture(BUTTON_TEXTURE);
         upLanternLeft.setDimension(2.75F / 16);
@@ -157,7 +157,7 @@ public class RenderMitsubishiNexWayScreen1<T extends LiftButtonsBase.BlockEntity
         upLanternLeft.setDefaultColor(DEFAULT_COLOR);
         upLanternLeft.setPressedColor(PRESSED_COLOR);
 
-        final NewButtonView upLanternRight = new NewButtonView();
+        final ButtonView upLanternRight = new ButtonView();
         upLanternRight.setBasicsAttributes(world, blockPos);
         upLanternRight.setTexture(BUTTON_TEXTURE);
         upLanternRight.setDimension(2.75F / 16);
@@ -247,7 +247,7 @@ public class RenderMitsubishiNexWayScreen1<T extends LiftButtonsBase.BlockEntity
                         sortedPositionsAndLifts.get(i).right(),
                         FontList.instance.getFont("mitsubishi_modern"),//字体
                         11,//字号
-                        0xFFFFAA00);//字体颜色
+                        0xFFFA7A24);//字体颜色
                 liftFloorDisplayView.setDisplayLength(2, 0);//true开启滚动，开启滚动时的字数条件(>)，滚动速度
                 liftFloorDisplayView.setTextureId("mitsubishi_nexway_screen_1");//字体贴图id，不能与其他显示屏的重复
                 liftFloorDisplayView.setWidth(2F / 16);//显示屏宽度
@@ -263,7 +263,7 @@ public class RenderMitsubishiNexWayScreen1<T extends LiftButtonsBase.BlockEntity
 //                            sortedPositionsAndLifts.get(i).right(),
 //                            FontList.instance.getFont("mitsubishi_small_sht"),
 //                            11,
-//                            0xFFFFAA00);
+//                            0xFFFA7A24);
 //                    liftFloorDisplayView.setAdaptMode(LiftFloorDisplayView.AdaptMode.FORCE_FIT_WIDTH);
 //                    liftFloorDisplayView.setMargin(0.7F / 16, 0, 0.5F / 16, 0);
 //                } else {

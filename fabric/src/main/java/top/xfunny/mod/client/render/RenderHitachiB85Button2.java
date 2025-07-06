@@ -120,7 +120,7 @@ public class RenderHitachiB85Button2 extends BlockEntityRenderer<HitachiB85Butto
         buttonUp.setGravity(Gravity.CENTER);
         buttonUp.setLight(light);
 
-        NewButtonView buttonUpLight = new NewButtonView();
+        ButtonView buttonUpLight = new ButtonView();
         buttonUpLight.setId("up");
         buttonUpLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonUpLight.setTexture(BUTTON_LIGHT_TEXTURE);
@@ -139,7 +139,7 @@ public class RenderHitachiB85Button2 extends BlockEntityRenderer<HitachiB85Butto
         buttonDown.setLight(light);
         buttonDown.setFlip(false, true);
 
-        NewButtonView buttonDownLight = new NewButtonView();
+        ButtonView buttonDownLight = new ButtonView();
         buttonDownLight.setId("down");
         buttonDownLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonDownLight.setTexture(BUTTON_LIGHT_TEXTURE);

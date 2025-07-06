@@ -105,7 +105,7 @@ public class RenderOtisSeries1Button extends BlockEntityRenderer<OtisSeries1Butt
         buttonUp.setLight(light);
         buttonUp.setMargin(0, 0, 0.4F / 16, 0);
 
-        NewButtonView buttonUpLight = new NewButtonView();
+        ButtonView buttonUpLight = new ButtonView();
         buttonUpLight.setId("up");
         buttonUpLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonUpLight.setTexture(BUTTON_LIGHT_TEXTURE);
@@ -125,7 +125,7 @@ public class RenderOtisSeries1Button extends BlockEntityRenderer<OtisSeries1Butt
         buttonDown.setFlip(false, true);
         buttonDown.setMargin(0, 0, 0.4F / 16, 0);
 
-        NewButtonView buttonDownLight = new NewButtonView();
+        ButtonView buttonDownLight = new ButtonView();
         buttonDownLight.setId("down");
         buttonDownLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonDownLight.setTexture(BUTTON_LIGHT_TEXTURE);

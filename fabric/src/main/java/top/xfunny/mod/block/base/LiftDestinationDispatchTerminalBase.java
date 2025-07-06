@@ -19,6 +19,7 @@ import top.xfunny.mod.ButtonRegistry;
 import top.xfunny.mod.Init;
 import top.xfunny.mod.LiftFloorRegistry;
 import top.xfunny.mod.LiftLanternController;
+import top.xfunny.mod.keymapping.DefaultButtonsKeyMapping;
 import top.xfunny.mod.util.GetLiftDetails;
 
 import javax.annotation.Nonnull;
@@ -105,18 +106,27 @@ public abstract class LiftDestinationDispatchTerminalBase extends BlockExtension
         private static final String KEY_LIFT_BUTTON_POSITIONS = "lift_button_position";
         private static final String KEY_SCREEN_ID = "screen_id";
 
+        private DefaultButtonsKeyMapping keyMapping = new DefaultButtonsKeyMapping();
+
 
         public final ObjectOpenHashSet<BlockPos> liftButtonPositions = new ObjectOpenHashSet<>();
         private final LinkedHashSet<BlockPos> trackPositions = new LinkedHashSet<>();
         public LiftDirection liftDirection = NONE;
         public BlockPos selfPos;
         private String screenId;
-        private LiftDirection pressedButtonDirection;
 
         private char liftIdentifier;
 
         public BlockEntityBase(BlockEntityType<?> type, BlockPos blockPos, BlockState blockState) {
             super(type, blockPos, blockState);
+        }
+
+        public DefaultButtonsKeyMapping getKeyMapping() {
+            return keyMapping;
+        }
+
+        public void setKeyMapping(DefaultButtonsKeyMapping keyMapping) {
+            this.keyMapping = keyMapping;
         }
 
         @Override
@@ -275,12 +285,14 @@ public abstract class LiftDestinationDispatchTerminalBase extends BlockExtension
                         if (liftDirection == NONE) {
                             trackPositionsAndChars2.add(new ObjectObjectImmutablePair<>(currentTrackPosition, currentChar));
                         } else if (liftDirection == confirmLiftDirection) {
-                            if (confirmLiftDirection == LiftDirection.UP && currentLiftFloorNumber < currentFloorNumber) {
+                            if (confirmLiftDirection == LiftDirection.UP && currentLiftFloorNumber <= currentFloorNumber) {
                                 trackPositionsAndChars2.add(new ObjectObjectImmutablePair<>(currentTrackPosition, currentChar));
-                            } else if (confirmLiftDirection == LiftDirection.DOWN && currentLiftFloorNumber > currentFloorNumber) {
+                            } else if (confirmLiftDirection == LiftDirection.DOWN && currentLiftFloorNumber >= currentFloorNumber) {
                                 trackPositionsAndChars2.add(new ObjectObjectImmutablePair<>(currentTrackPosition, currentChar));
                             }
                         }
+
+                        Init.LOGGER.info("liftDirection: " + liftDirection + " ,confirmLiftDirection: " + confirmLiftDirection);
                     }
 
                 });
@@ -313,6 +325,14 @@ public abstract class LiftDestinationDispatchTerminalBase extends BlockExtension
                 InitClient.REGISTRY_CLIENT.sendPacketToServer(new PacketPressLiftButton(pressLift));
 
                 scheduler.schedule(() -> {
+                    liftButtonPositions.forEach(lanternPos -> {// 传递乘客方向至到站灯
+                        BlockEntity lanternBlockEntity = world.getBlockEntity(lanternPos);
+                        if (lanternBlockEntity != null && lanternBlockEntity.data instanceof LiftButtonsBase.BlockEntityBase) {
+                            LiftButtonsBase.BlockEntityBase lanternData = (LiftButtonsBase.BlockEntityBase) lanternBlockEntity.data;
+                            lanternData.setPressedButtonDirection(data.liftDirection);
+                        }
+                    });
+
                     final PressLift pressLift1 = new PressLift();
                     pressLift1.add(destinationPosition[0], data.liftDirection);
                     InitClient.REGISTRY_CLIENT.sendPacketToServer(new PacketPressLiftButton(pressLift1));
@@ -367,6 +387,7 @@ public abstract class LiftDestinationDispatchTerminalBase extends BlockExtension
         }
 
         public LiftDirection getPressedButtonDirection() {
+
             return this.liftDirection;
         }
     }

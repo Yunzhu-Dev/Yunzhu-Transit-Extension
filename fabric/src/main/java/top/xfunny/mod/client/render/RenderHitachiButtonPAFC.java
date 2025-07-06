@@ -85,14 +85,14 @@ public class RenderHitachiButtonPAFC extends BlockEntityRenderer<HitachiButtonPA
         screenLayout.setWidth(LayoutSize.WRAP_CONTENT);
         screenLayout.setHeight(LayoutSize.WRAP_CONTENT);
         screenLayout.setGravity(Gravity.CENTER_HORIZONTAL);
-        screenLayout.setMargin(0, 0.35F / 16, 0, 0);
+        screenLayout.setMargin(0, 1.75F / 16, 0, 0);
 
 
         final FrameLayout buttonLayout = new FrameLayout();
         buttonLayout.setBasicsAttributes(world, blockPos);
         buttonLayout.setWidth(LayoutSize.MATCH_PARENT);
         buttonLayout.setHeight(LayoutSize.MATCH_PARENT);
-        buttonLayout.setMargin(0, 1.2F / 16, 0, 0);
+        buttonLayout.setMargin(0, 1F / 16, 0, 0);
 
 
         final LinearLayout buttonContainer = new LinearLayout(true);
@@ -118,15 +118,15 @@ public class RenderHitachiButtonPAFC extends BlockEntityRenderer<HitachiButtonPA
         ImageView buttonUp = new ImageView();
         buttonUp.setBasicsAttributes(world, blockPos);
         buttonUp.setTexture(BUTTON_UP_TEXTURE);
-        buttonUp.setDimension(1F / 16);
+        buttonUp.setDimension(0.9F / 16);
         buttonUp.setGravity(Gravity.CENTER);
         buttonUp.setLight(light);
 
-        NewButtonView buttonUpLight = new NewButtonView();
+        ButtonView buttonUpLight = new ButtonView();
         buttonUpLight.setId("up");
         buttonUpLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonUpLight.setTexture(LIGHT_UP_TEXTURE);
-        buttonUpLight.setDimension(1F / 16);
+        buttonUpLight.setDimension(0.9F / 16);
         buttonUpLight.setGravity(Gravity.CENTER);
         buttonUpLight.setLight(light);
         buttonUpLight.setDefaultColor(DEFAULT_COLOR);
@@ -136,16 +136,16 @@ public class RenderHitachiButtonPAFC extends BlockEntityRenderer<HitachiButtonPA
         ImageView buttonDown = new ImageView();
         buttonDown.setBasicsAttributes(world, blockPos);
         buttonDown.setTexture(BUTTON_DOWN_TEXTURE);
-        buttonDown.setDimension(1F / 16);
+        buttonDown.setDimension(0.9F / 16);
         buttonDown.setGravity(Gravity.CENTER);
         buttonDown.setLight(light);
         buttonDown.setFlip(false, false);
 
-        NewButtonView buttonDownLight = new NewButtonView();
+        ButtonView buttonDownLight = new ButtonView();
         buttonDownLight.setId("down");
         buttonDownLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonDownLight.setTexture(LIGHT_DOWN_TEXTURE);
-        buttonDownLight.setDimension(1F / 16);
+        buttonDownLight.setDimension(0.9F / 16);
         buttonDownLight.setGravity(Gravity.CENTER);
         buttonDownLight.setLight(light);
         buttonDownLight.setDefaultColor(DEFAULT_COLOR);
@@ -194,13 +194,13 @@ public class RenderHitachiButtonPAFC extends BlockEntityRenderer<HitachiButtonPA
                         blockPos,
                         sortedPositionsAndLifts.get(i).right(),
                         FontList.instance.getFont("hitachi-led-dot_matrix"),
-                        5.5F,
+                        4.5F,
                         0xFFFF4800);
                 liftFloorDisplayView.setTextureId("hitachi_button_pafc");
-                liftFloorDisplayView.setWidth(1.38F / 16);
+                liftFloorDisplayView.setWidth(1.36F / 16);
                 liftFloorDisplayView.setHeight(1.7F / 16);
 
-                liftFloorDisplayView.setMargin(0.01F, 0, 0, 0);
+                liftFloorDisplayView.setMargin(0.01F, 0.7F / 16, 0, 0);
                 liftFloorDisplayView.setTextAlign(TextView.HorizontalTextAlign.CENTER);
                 liftFloorDisplayView.addStoredMatrixTransformations(graphicsHolder -> graphicsHolder.translate(0, 0, -SMALL_OFFSET));
                 if (liftFloorDisplayView.getTextLength() >= 3) {
@@ -208,7 +208,7 @@ public class RenderHitachiButtonPAFC extends BlockEntityRenderer<HitachiButtonPA
                             blockPos,
                             sortedPositionsAndLifts.get(i).right(),
                             FontList.instance.getFont("hitachi-led-dot_matrix_small"),
-                            5.5F,
+                            4.5F,
                             0xFFFF4800);
                     liftFloorDisplayView.setAdaptMode(LiftFloorDisplayView.AdaptMode.FORCE_FIT_WIDTH);
                 } else {
@@ -219,8 +219,8 @@ public class RenderHitachiButtonPAFC extends BlockEntityRenderer<HitachiButtonPA
                 final LiftArrowView liftArrowView = new LiftArrowView();
                 liftArrowView.setBasicsAttributes(world, blockPos, sortedPositionsAndLifts.get(i).right(), LiftArrowView.ArrowType.AUTO);
                 liftArrowView.setTexture(ARROW_TEXTURE);
-                liftArrowView.setDimension(0.5F / 16, 384, 512);
-                liftArrowView.setMargin(0, 1.3F / 16, 0, 0);
+                liftArrowView.setDimension(0.38F / 16, 384, 512);
+                liftArrowView.setMargin(0, 2.1F / 16, 0, -1.05F / 16);
                 liftArrowView.setGravity(Gravity.CENTER_HORIZONTAL);
                 liftArrowView.setQueuedRenderLayer(QueuedRenderLayer.LIGHT_TRANSLUCENT);
                 if (unlocked) {

@@ -119,7 +119,7 @@ public class RenderHitachiIVIB322Button extends BlockEntityRenderer<HitachiVIB32
         buttonUp.setGravity(Gravity.CENTER);
         buttonUp.setLight(light);
 
-        NewButtonView buttonUpLight = new NewButtonView();
+        ButtonView buttonUpLight = new ButtonView();
         buttonUpLight.setId("up");
         buttonUpLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonUpLight.setTexture(LIGHT_UP_TEXTURE);
@@ -138,7 +138,7 @@ public class RenderHitachiIVIB322Button extends BlockEntityRenderer<HitachiVIB32
         buttonDown.setLight(light);
         buttonDown.setFlip(false, false);
 
-        NewButtonView buttonDownLight = new NewButtonView();
+        ButtonView buttonDownLight = new ButtonView();
         buttonDownLight.setId("down");
         buttonDownLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonDownLight.setTexture(LIGHT_DOWN_TEXTURE);

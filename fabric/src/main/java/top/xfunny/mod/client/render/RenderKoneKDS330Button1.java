@@ -31,14 +31,14 @@ import java.util.Comparator;
 
 public class RenderKoneKDS330Button1 extends BlockEntityRenderer<KoneKDS330Button1.BlockEntity> implements DirectionHelper, IGui, IBlock {
 
-    private static final int HOVER_COLOR = 0xFFFFFFFF;
-    private static final int PRESSED_COLOR = 0xFF00FF00;
-    private static final int DEFAULT_COLOR = 0xFF452D15;
-    private static final Identifier ARROW_TEXTURE = new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/kone_m_arrow_1.png");
+    private static final int HOVER_COLOR = 0xFFCCCCCC;
+    private static final int PRESSED_COLOR = 0xFFFFFFFF;
+    private static final int DEFAULT_COLOR = 0xFFFFFFFF;
+    private static final Identifier ARROW_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/kone_arrow_light.png");
     private final Identifier BUTTON_TEXTURE_UP = new Identifier(Init.MOD_ID, "textures/block/kone_kds330_up_button.png");
-    private final Identifier BUTTON_TEXTURE_DOWN = new Identifier(Init.MOD_ID, "textures/block/kone_kds330_down_button_b.png");
+    private final Identifier BUTTON_TEXTURE_DOWN = new Identifier(Init.MOD_ID, "textures/block/kone_kds330_up_button.png");//todo
     private final Identifier BUTTON_LIGHT_TEXTURE_UP = new Identifier(Init.MOD_ID, "textures/block/kone_kds330_up_button_light.png");
-    private final Identifier BUTTON_LIGHT_TEXTURE_DOWN = new Identifier(Init.MOD_ID, "textures/block/kone_kds330_down_button_light.png");
+    private final Identifier BUTTON_LIGHT_TEXTURE_DOWN = new Identifier(Init.MOD_ID, "textures/block/kone_kds330_up_button_light.png");//todo
     private static final BooleanProperty UNLOCKED = BooleanProperty.of("unlocked");
     public RenderKoneKDS330Button1(Argument dispatcher) {
         super(dispatcher);
@@ -101,7 +101,7 @@ public class RenderKoneKDS330Button1 extends BlockEntityRenderer<KoneKDS330Butto
         screenLayout.setWidth(LayoutSize.WRAP_CONTENT);
         screenLayout.setHeight(LayoutSize.WRAP_CONTENT);
         screenLayout.setGravity(Gravity.CENTER);
-        screenLayout.setMargin(0, 5F / 16, 0, 0);
+        screenLayout.setMargin(0, 0, 0, 0);
 
         final FrameLayout buttonUpGroup = new FrameLayout();
         buttonUpGroup.setBasicsAttributes(world, blockPos);
@@ -122,7 +122,7 @@ public class RenderKoneKDS330Button1 extends BlockEntityRenderer<KoneKDS330Butto
         buttonUp.setGravity(Gravity.CENTER);
         buttonUp.setLight(light);
 
-        NewButtonView buttonUpLight = new NewButtonView();
+        ButtonView buttonUpLight = new ButtonView();
         buttonUpLight.setId("up");
         buttonUpLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonUpLight.setTexture(BUTTON_LIGHT_TEXTURE_UP);
@@ -139,8 +139,9 @@ public class RenderKoneKDS330Button1 extends BlockEntityRenderer<KoneKDS330Butto
         buttonDown.setDimension(0.9F / 16);
         buttonDown.setGravity(Gravity.CENTER);
         buttonDown.setLight(light);
+        buttonDown.setFlip(false, true);
 
-        NewButtonView buttonDownLight = new NewButtonView();
+        ButtonView buttonDownLight = new ButtonView();
         buttonDownLight.setId("down");
         buttonDownLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonDownLight.setTexture(BUTTON_LIGHT_TEXTURE_DOWN);
@@ -150,6 +151,7 @@ public class RenderKoneKDS330Button1 extends BlockEntityRenderer<KoneKDS330Butto
         buttonDownLight.setDefaultColor(DEFAULT_COLOR);
         buttonDownLight.setHoverColor(HOVER_COLOR);
         buttonDownLight.setPressedColor(PRESSED_COLOR);
+        buttonDownLight.setFlip(false, true);
 
         //添加外呼与楼层轨道的连线
         final LineComponent line = new LineComponent();
@@ -196,20 +198,20 @@ public class RenderKoneKDS330Button1 extends BlockEntityRenderer<KoneKDS330Butto
                         blockPos,
                         sortedPositionsAndLifts.get(i).right(),
                         FontList.instance.getFont("kone-lcd-segment"),//字体
-                        5,//字号
+                        6,//字号
                         0xFFFFFFFF);//字体颜色
-                liftFloorDisplayView.setTextureId("kone-lcd-segment");//字体贴图id，不能与其他显示屏的重复
+                liftFloorDisplayView.setTextureId("kone-kds-330-lcd-segment");//字体贴图id，不能与其他显示屏的重复
                 liftFloorDisplayView.setWidth(1.6F / 16);//显示屏宽度
                 liftFloorDisplayView.setHeight(1.7F / 16);//显示屏高度
-                liftFloorDisplayView.setMargin(0, 0.43F / 16, 0.45F / 16, 0);
+                liftFloorDisplayView.setMargin(0, 0, 0, 0);
                 liftFloorDisplayView.setTextAlign(TextView.HorizontalTextAlign.RIGHT);//文字对齐方式，center为居中对齐，left为左对齐，right为右对齐
 
                 //添加箭头
                 final LiftArrowView liftArrowView = new LiftArrowView();
                 liftArrowView.setBasicsAttributes(world, blockPos, sortedPositionsAndLifts.get(i).right(), LiftArrowView.ArrowType.AUTO);
                 liftArrowView.setTexture(ARROW_TEXTURE);
-                liftArrowView.setDimension(0.5F / 16);
-                liftArrowView.setMargin(0, 1.37F / 16, 0, 0);
+                liftArrowView.setDimension(0.8F / 16);
+                liftArrowView.setMargin(0, 0, 0, 0);
                 liftArrowView.setGravity(Gravity.CENTER_HORIZONTAL);
                 liftArrowView.setQueuedRenderLayer(QueuedRenderLayer.LIGHT_TRANSLUCENT);
                 // If unlocked, display the arrow.
@@ -241,18 +243,18 @@ public class RenderKoneKDS330Button1 extends BlockEntityRenderer<KoneKDS330Butto
 
         if (buttonDescriptor.hasUpButton()) {
             buttonUpGroup.addChild(buttonUp);
-            buttonUpLayout.addChild(buttonUpLight);
+            buttonUpGroup.addChild(buttonUpLight);
             buttonUpLayout.addChild(buttonUpGroup);
         }
 
         if (buttonDescriptor.hasDownButton()) {
             buttonDownGroup.addChild(buttonDown);
-            buttonDownLayout.addChild(buttonDownLight);
+            buttonDownGroup.addChild(buttonDownLight);
             buttonDownLayout.addChild(buttonDownGroup);
         }
 
         buttonDownLayout.render();
         buttonUpLayout.render();
-        screenLayout.render();
+        screenContainer.render();
     }
 }

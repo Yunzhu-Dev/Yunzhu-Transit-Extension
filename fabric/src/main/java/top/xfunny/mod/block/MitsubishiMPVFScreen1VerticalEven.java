@@ -20,10 +20,10 @@ public class MitsubishiMPVFScreen1VerticalEven extends LiftButtonsBase {
     public VoxelShape getOutlineShape2(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
         switch (IBlock.getStatePropertySafe(state, SIDE)) {
             case LEFT:
-                return IBlock.getVoxelShapeByDirection(7, 9, 0, 16, 12, 0.1, IBlock.getStatePropertySafe(state, FACING));
+                return IBlock.getVoxelShapeByDirection(14.65, 1.35, 0, 16, 8.15, 0.1, IBlock.getStatePropertySafe(state, FACING));
 
             case RIGHT:
-                return IBlock.getVoxelShapeByDirection(0, 9, 0, 9, 12, 0.1, IBlock.getStatePropertySafe(state, FACING));
+                return IBlock.getVoxelShapeByDirection(0, 1.35, 0, 1.35, 8.15, 0.1, IBlock.getStatePropertySafe(state, FACING));
 
         }
         return VoxelShapes.empty();

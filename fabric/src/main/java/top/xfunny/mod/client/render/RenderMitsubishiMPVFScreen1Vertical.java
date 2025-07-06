@@ -16,7 +16,6 @@ import org.mtr.mod.render.RenderLifts;
 import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.Init;
 import top.xfunny.mod.block.MitsubishiMPVFButton1;
-import top.xfunny.mod.block.SchindlerMSeriesScreen2Even;
 import top.xfunny.mod.block.base.LiftButtonsBase;
 import top.xfunny.mod.client.resource.FontList;
 import top.xfunny.mod.client.view.*;
@@ -63,14 +62,14 @@ public class RenderMitsubishiMPVFScreen1Vertical<T extends LiftButtonsBase.Block
         StoredMatrixTransformations storedMatrixTransformations1 = storedMatrixTransformations.copy();
         storedMatrixTransformations1.add(graphicsHolder -> {
             graphicsHolder.rotateYDegrees(-facing.asRotation());
-            graphicsHolder.translate(0, 0, 7.9F / 16 - SMALL_OFFSET);
+            graphicsHolder.translate(0, 0, 7.95F / 16 - SMALL_OFFSET);
         });
 
         final FrameLayout parentLayout = new FrameLayout();
         parentLayout.setBasicsAttributes(world, blockEntity.getPos2());
         parentLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
-        parentLayout.setParentDimensions( 2.6F / 16, 6.8F / 16);
-        parentLayout.setPosition(isOdd ? -0.1375F : -0.6375F, 0.065F);
+        parentLayout.setParentDimensions( 1.825F / 16, 3.225F / 16);
+        parentLayout.setPosition(isOdd ? -0.9125F / 16 : -8.9125F / 16, 4.225F / 16);
         parentLayout.setWidth(LayoutSize.MATCH_PARENT);
         parentLayout.setHeight(LayoutSize.MATCH_PARENT);
 
@@ -82,32 +81,32 @@ public class RenderMitsubishiMPVFScreen1Vertical<T extends LiftButtonsBase.Block
 
         final FrameLayout screenLayout = new FrameLayout();
         screenLayout.setBasicsAttributes(world, blockEntity.getPos2());
-        screenLayout.setWidth(LayoutSize.WRAP_CONTENT);
-        screenLayout.setHeight(LayoutSize.WRAP_CONTENT);
-        screenLayout.setGravity(Gravity.CENTER_VERTICAL);
-        screenLayout.setBackgroundColor(0x00000000);
-        screenLayout.setMargin(0, 0, 1.5F/16, 0);
+        screenLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
+        screenLayout.setParentDimensions(1.825F / 16, 1F / 16);
+        screenLayout.setPosition(isOdd? -0.9125F / 16 : -8.9125F / 16, 2.35F / 16);
+        screenLayout.setWidth(LayoutSize.MATCH_PARENT);
+        screenLayout.setHeight(LayoutSize.MATCH_PARENT);
+        screenLayout.setGravity(Gravity.CENTER_HORIZONTAL);
 
-        NewButtonView upLantern = new NewButtonView();
+        ButtonView upLantern = new ButtonView();
         upLantern.setBasicsAttributes(world, blockEntity.getPos2());
         upLantern.setTexture(BUTTON_TEXTURE);
         upLantern.setDimension(1.5F / 16);
-        upLantern.setGravity(Gravity.CENTER_VERTICAL);
+        upLantern.setGravity(Gravity.CENTER_HORIZONTAL);
         upLantern.setLight(light);
         upLantern.setDefaultColor(DEFAULT_COLOR);
         upLantern.setPressedColor(PRESSED_COLOR);
-        upLantern.setMargin(0, 0, 0, 0);
 
-        NewButtonView downLantern  = new NewButtonView();
+        ButtonView downLantern  = new ButtonView();
         downLantern.setBasicsAttributes(world, blockEntity.getPos2());
         downLantern.setTexture(BUTTON_TEXTURE);
         downLantern.setDimension(1.5F / 16);
-        downLantern.setGravity(Gravity.CENTER_VERTICAL);
+        downLantern.setGravity(Gravity.CENTER_HORIZONTAL);
         downLantern.setLight(light);
         downLantern.setDefaultColor(DEFAULT_COLOR);
         downLantern.setPressedColor(PRESSED_COLOR);
         downLantern.setFlip(false,true);
-        downLantern.setMargin(0, 0.25F/16, 0, 0);
+
 
         final LineComponent line = new LineComponent();
         line.setBasicsAttributes(world, blockEntity.getPos2());
@@ -192,7 +191,6 @@ public class RenderMitsubishiMPVFScreen1Vertical<T extends LiftButtonsBase.Block
                 liftFloorDisplayView.setHeight(2F / 16);//显示屏高度
                 liftFloorDisplayView.setGravity(Gravity.CENTER);
                 liftFloorDisplayView.setTextAlign(TextView.HorizontalTextAlign.RIGHT);//文字对齐方式，center为居中对齐，left为左对齐，right为右对齐
-                liftFloorDisplayView.setMargin(0, 0, 0, 0);
 
                 screenLayout.addChild(liftFloorDisplayView);
             }
@@ -203,19 +201,17 @@ public class RenderMitsubishiMPVFScreen1Vertical<T extends LiftButtonsBase.Block
         });
 
         if (buttonDescriptor.hasDownButton() && buttonDescriptor.hasUpButton()) {
+            downLantern.setMargin(0, 0.25F/16, 0, 0);
             linearLayout.addChild(upLantern);
             linearLayout.addChild(downLantern);
-            linearLayout.addChild(screenLayout);
         } else if (buttonDescriptor.hasDownButton()) {
             linearLayout.addChild(downLantern);
-            linearLayout.addChild(screenLayout);
         } else if (buttonDescriptor.hasUpButton()) {
             linearLayout.addChild(upLantern);
-            linearLayout.addChild(screenLayout);
         }
-
 
         parentLayout.addChild(linearLayout);
         parentLayout.render();
+        screenLayout.render();
     }
 }

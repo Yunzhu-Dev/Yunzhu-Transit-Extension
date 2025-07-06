@@ -14,7 +14,6 @@ import org.mtr.mod.block.IBlock;
 import org.mtr.mod.data.IGui;
 import org.mtr.mod.render.QueuedRenderLayer;
 import org.mtr.mod.render.StoredMatrixTransformations;
-import top.xfunny.mixin.MixinLiftSchema;
 import top.xfunny.mod.Init;
 import top.xfunny.mod.block.TestLiftButtons;
 import top.xfunny.mod.block.TestLiftButtonsWithoutScreen;
@@ -98,7 +97,7 @@ public class RenderTestLiftButtons4 extends BlockEntityRenderer<TestLiftButtons.
         buttonGroup.setHeight(LayoutSize.WRAP_CONTENT);
         buttonGroup.setGravity(Gravity.CENTER);
 
-        NewButtonView buttonUp = new NewButtonView();
+        ButtonView buttonUp = new ButtonView();
         buttonUp.setId("up");//必须设置id
         buttonUp.setBasicsAttributes(world, blockPos, keyMapping);
         buttonUp.setTexture(new Identifier(Init.MOD_ID, "textures/block/thyssenkrupp_button.png"));
@@ -109,7 +108,7 @@ public class RenderTestLiftButtons4 extends BlockEntityRenderer<TestLiftButtons.
         buttonUp.setGravity(Gravity.CENTER_HORIZONTAL);
         buttonUp.setLight(light);
 
-        NewButtonView buttonDown = new NewButtonView();
+        ButtonView buttonDown = new ButtonView();
         buttonDown.setId("down");
         buttonDown.setBasicsAttributes(world, blockPos, keyMapping);
         buttonDown.setTexture(new Identifier(Init.MOD_ID, "textures/block/thyssenkrupp_button.png"));

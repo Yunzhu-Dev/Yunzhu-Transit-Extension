@@ -7,6 +7,7 @@ import org.mtr.mod.block.IBlock;
 import top.xfunny.mod.BlockEntityTypes;
 import top.xfunny.mod.Items;
 import top.xfunny.mod.block.base.LiftDestinationDispatchTerminalBase;
+import top.xfunny.mod.keymapping.DefaultButtonsKeyMapping;
 import top.xfunny.mod.keymapping.SchindlerZLine3Keypad1KeyMapping;
 import top.xfunny.mod.util.ArrayListToString;
 import top.xfunny.mod.util.TransformPositionX;
@@ -53,13 +54,7 @@ public class SchindlerZLine3Keypad1 extends LiftDestinationDispatchTerminalBase 
     @Nonnull
     @Override
     public ActionResult onUse2(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        final double hitX = MathHelper.fractionalPart(hit.getPos().getXMapped());
         final double hitY = MathHelper.fractionalPart(hit.getPos().getYMapped());
-        final double hitZ = MathHelper.fractionalPart(hit.getPos().getZMapped());
-
-        final Direction facing = IBlock.getStatePropertySafe(state, FACING);
-        double transformedX = TransformPositionX.transform(hitX, hitZ, facing);
-
 
         final org.mtr.mapping.holder.BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity == null || !(blockEntity.data instanceof LiftDestinationDispatchTerminalBase.BlockEntityBase)) {
@@ -73,8 +68,9 @@ public class SchindlerZLine3Keypad1 extends LiftDestinationDispatchTerminalBase 
         final SchindlerZLine3Keypad1.BlockEntity data1 = (SchindlerZLine3Keypad1.BlockEntity) blockEntity.data;
 
         // 获取按键映射
-        SchindlerZLine3Keypad1KeyMapping mapping = new SchindlerZLine3Keypad1KeyMapping();
-        String output = mapping.mapping(data.getScreenId(), transformedX, hitY);
+        final DefaultButtonsKeyMapping keyMapping = data.getKeyMapping();
+        final String output = keyMapping.mapping(TransformPositionX.transform(MathHelper.fractionalPart(hit.getPos().getXMapped()), MathHelper.fractionalPart(hit.getPos().getZMapped()), IBlock.getStatePropertySafe(state, FACING)), hitY);
+
 
         if (player.isHolding(top.xfunny.mod.Items.YTE_LIFT_BUTTONS_LINK_CONNECTOR.get()) || player.isHolding(top.xfunny.mod.Items.YTE_LIFT_BUTTONS_LINK_REMOVER.get()) || player.isHolding(top.xfunny.mod.Items.YTE_GROUP_LIFT_BUTTONS_LINK_CONNECTOR.get()) || player.isHolding(Items.YTE_GROUP_LIFT_BUTTONS_LINK_REMOVER.get())) {
             return ActionResult.PASS;
@@ -88,7 +84,7 @@ public class SchindlerZLine3Keypad1 extends LiftDestinationDispatchTerminalBase 
     }
 
     private void processKeyInput(World world, BlockPos pos, SchindlerZLine3Keypad1.BlockEntity data1, LiftDestinationDispatchTerminalBase.BlockEntityBase data, String screenId, String output) {
-        Map<String, Integer> numberKeys = new HashMap<String, Integer>() {{
+        Map<String, Integer> numberKeys = new HashMap<>() {{
             put("number1", 1);
             put("number2", 2);
             put("number3", 3);

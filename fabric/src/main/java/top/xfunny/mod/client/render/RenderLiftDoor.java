@@ -11,9 +11,8 @@ import org.mtr.mod.data.IGui;
 import org.mtr.mod.render.MainRenderer;
 import org.mtr.mod.render.QueuedRenderLayer;
 import org.mtr.mod.render.StoredMatrixTransformations;
-import top.xfunny.mod.block.base.OldBlockAPGDoor;
 
-public class RenderLiftDoor<T extends OldBlockAPGDoor.BlockEntityBase> extends BlockEntityRenderer<T> implements IGui, IBlock {
+public class RenderLiftDoor<T extends BlockAPGDoor.BlockEntityBase> extends BlockEntityRenderer<T> implements IGui, IBlock {
 
     private static final ModelSingleCube MODEL_PSD_DOOR_LOCKED = new ModelSingleCube(6, 6, 5, 6, 1, 6, 6, 0);
     private static final ModelSingleCube MODEL_LIFT_LEFT = new ModelSingleCube(28, 18, 0, 0, 0, 12, 16, 2);
@@ -34,7 +33,7 @@ public class RenderLiftDoor<T extends OldBlockAPGDoor.BlockEntityBase> extends B
             return;
         }
 
-        //entity.tick(tickDelta);
+        entity.tick(tickDelta);
 
         final BlockPos blockPos = entity.getPos2();
         final Direction facing = IBlock.getStatePropertySafe(world, blockPos, BlockPSDAPGDoorBase.FACING);

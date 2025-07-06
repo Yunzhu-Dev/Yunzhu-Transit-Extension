@@ -45,14 +45,18 @@ public class FontList {
             loadFont("wqy-microhei", "font/wqy-microhei.ttc");
             loadFont("thyssenkrupp_lcd", "font/new-thyssenkrupp.ttf");
             loadFont("kone-kss", "font/kone-kss-800-signalization.ttf");
-            loadFont("hitachi-led-seg", "font/hitachi_led_segmented_fix.ttf"); // 暂使用修改字体替代原版字体 hitachi-led-segmented.ttf
+//            loadFont("hitachi-led-seg", "font/hitachi_led_segmented.ttf");
+            loadFont("hitachi-led-seg-fix", "font/hitachi_led_segmented_fix.ttf");
             loadFont("hitachi-led-dot_matrix", "font/hitachi-dot-matrix-regular.ttf");
             loadFont("hitachi-led-dot_matrix_small","font/hitachi-dot-matrix-small.ttf");
             loadFont("hitachi-lcd-seg", "font/hitachi-lcd-segmented.ttf");
+            loadFont("hitachi-japan-lcd", "font/hitachi-japan-lcd.ttf");
+            loadFont("hitachi-hip43", "font/hitachi-hip43-lcd.ttf");
             loadFont("schindler_m_series_segment", "font/schindler_m_series_segment.ttf");
             loadFont("tonic-led", "font/tonic-led.ttf");
             loadFont("tonic-led-thin", "font/tonic-thin.ttf");
             loadFont("mitsubishi_old_segmented_1", "font/mitsubishi_old_segmented_1.ttf");
+            loadFont("ryoden-led", "font/ryoden-led.ttf");
             fontsLoaded = true;
         }
     }

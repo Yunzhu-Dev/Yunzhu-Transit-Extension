@@ -15,7 +15,6 @@ import org.mtr.mod.block.IBlock;
 import org.mtr.mod.data.IGui;
 import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.block.MitsubishiMPVFButton1;
-import top.xfunny.mod.block.MitsubishiNexWayButton2WithoutScreen;
 import top.xfunny.mod.block.base.LiftButtonsBase;
 import top.xfunny.mod.client.view.*;
 import top.xfunny.mod.client.view.view_group.FrameLayout;
@@ -99,7 +98,7 @@ public class RenderMitsubishiMPVFButton1 extends BlockEntityRenderer<MitsubishiM
         buttonUp.setGravity(Gravity.CENTER);
         buttonUp.setLight(light);
 
-        NewButtonView buttonUpLight = new NewButtonView();
+        ButtonView buttonUpLight = new ButtonView();
         buttonUpLight.setId("up");
         buttonUpLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonUpLight.setTexture(BUTTON_LIGHT_TEXTURE);
@@ -117,7 +116,7 @@ public class RenderMitsubishiMPVFButton1 extends BlockEntityRenderer<MitsubishiM
         buttonDown.setGravity(Gravity.CENTER);
         buttonDown.setLight(light);
 
-        NewButtonView buttonDownLight = new NewButtonView();
+        ButtonView buttonDownLight = new ButtonView();
         buttonDownLight.setId("down");
         buttonDownLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonDownLight.setTexture(BUTTON_LIGHT_TEXTURE);
@@ -169,7 +168,7 @@ public class RenderMitsubishiMPVFButton1 extends BlockEntityRenderer<MitsubishiM
 
         if (buttonDescriptor.hasDownButton()) {
             if (buttonDescriptor.hasUpButton()) {
-                downButtonGroup.setMargin(0, 0.75F / 16, 0, 0);
+                downButtonGroup.setMargin(0, 1F / 16, 0, 0);
             }
             buttonContainer.addChild(downButtonGroup);
         }

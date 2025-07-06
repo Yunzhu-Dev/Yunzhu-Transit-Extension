@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "yte:item/mitsubishi_nexway_screen_3_segmented_odd"
+  }
+}

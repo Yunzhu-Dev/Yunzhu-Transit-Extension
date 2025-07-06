@@ -117,45 +117,30 @@ public abstract class LiftButtonsBase extends BlockExtension implements Directio
                         data.trackPositions.forEach(trackPosition -> LiftButtonsBase.hasButtonsClient(trackPosition, descriptor, (floor, lift) -> {
                         }));
 
-                        // 同时具有上下方向的按钮
+                        connectedLanternPositions.forEach(lanternPos -> {
+                            BlockEntity lanternBlockEntity = world.getBlockEntity(lanternPos);
+                            if (lanternBlockEntity != null && lanternBlockEntity.data instanceof LiftButtonsBase.BlockEntityBase) {
+                                LiftButtonsBase.BlockEntityBase lanternData = (LiftButtonsBase.BlockEntityBase) lanternBlockEntity.data;
+
+                                if (descriptor.hasDownButton() && descriptor.hasUpButton()) {
+                                    // 双向按钮情况：根据点击位置设置方向
+                                    if (focusButton.equals("down")) {
+                                        lanternData.setPressedButtonDirection(LiftDirection.DOWN);
+                                    } else if (focusButton.equals("up")) {
+                                        lanternData.setPressedButtonDirection(LiftDirection.UP);
+                                    }
+                                } else {
+                                    // 单向按钮情况：统一设置为存在的方向
+                                    lanternData.setPressedButtonDirection(descriptor.hasDownButton() ? LiftDirection.DOWN : LiftDirection.UP);
+                                }
+                            }
+                        });
+
+                        // 确认呼梯方向
                         if (descriptor.hasDownButton() && descriptor.hasUpButton()) {
-                            connectedLanternPositions.forEach(lanternPos -> {
-                                BlockEntity lanternBlockEntity = world.getBlockEntity(lanternPos);
-                                if (lanternBlockEntity != null && lanternBlockEntity.data instanceof LiftButtonsBase.BlockEntityBase) {
-                                    LiftButtonsBase.BlockEntityBase lanternData = (LiftButtonsBase.BlockEntityBase) lanternBlockEntity.data;
-
-                                    if (hitY < median) {
-                                        lanternData.setPressedButtonDirection(LiftDirection.DOWN);
-                                    } else {
-                                        lanternData.setPressedButtonDirection(LiftDirection.UP);
-                                    }
-                                }
-                            });
-
-                            if (focusButton.equals("up")) {
-                                data.liftDirection = LiftDirection.UP;
-                            } else if (focusButton.equals("down")) {
-                                data.liftDirection = LiftDirection.DOWN;
-                            }
-
-                        } else {  // 只有单个方向的按钮
-                            connectedLanternPositions.forEach(lanternPos -> {
-                                BlockEntity lanternBlockEntity = world.getBlockEntity(lanternPos);
-                                if (lanternBlockEntity != null && lanternBlockEntity.data instanceof LiftButtonsBase.BlockEntityBase) {
-                                    LiftButtonsBase.BlockEntityBase lanternData = (LiftButtonsBase.BlockEntityBase) lanternBlockEntity.data;
-
-                                    if (descriptor.hasDownButton()) {
-                                        lanternData.setPressedButtonDirection(LiftDirection.DOWN);
-                                    } else {
-                                        lanternData.setPressedButtonDirection(LiftDirection.UP);
-                                    }
-                                }
-
-                            });
-
-                            if (focusButton.equals("up") || focusButton.equals("down")) {
-                                data.liftDirection = descriptor.hasDownButton() ? LiftDirection.DOWN : LiftDirection.UP;
-                            }
+                            data.liftDirection = focusButton.equals("up") ? LiftDirection.UP : focusButton.equals("down") ? LiftDirection.DOWN : NONE;
+                        } else {
+                            data.liftDirection = descriptor.hasDownButton() ? LiftDirection.DOWN : LiftDirection.UP;
                         }
 
                         // 创建并发送按电梯按钮事件

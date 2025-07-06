@@ -119,7 +119,7 @@ public class RenderMitsubishiNexWayButton1 extends BlockEntityRenderer<Mitsubish
         buttonUp.setGravity(Gravity.CENTER);
         buttonUp.setLight(light);
 
-        NewButtonView buttonUpLight = new NewButtonView();
+        ButtonView buttonUpLight = new ButtonView();
         buttonUpLight.setId("up");
         buttonUpLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonUpLight.setTexture(BUTTON_LIGHT_TEXTURE);
@@ -138,7 +138,7 @@ public class RenderMitsubishiNexWayButton1 extends BlockEntityRenderer<Mitsubish
         buttonDown.setLight(light);
         buttonDown.setFlip(false, true);
 
-        NewButtonView buttonDownLight = new NewButtonView();
+        ButtonView buttonDownLight = new ButtonView();
         buttonDownLight.setId("down");
         buttonDownLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonDownLight.setTexture(BUTTON_LIGHT_TEXTURE);

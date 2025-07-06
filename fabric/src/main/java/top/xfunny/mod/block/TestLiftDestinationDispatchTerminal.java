@@ -5,9 +5,10 @@ import org.mtr.mapping.mapper.BlockEntityExtension;
 import org.mtr.mapping.tool.HolderBase;
 import org.mtr.mod.block.IBlock;
 import top.xfunny.mod.BlockEntityTypes;
+import top.xfunny.mod.Init;
 import top.xfunny.mod.Items;
 import top.xfunny.mod.block.base.LiftDestinationDispatchTerminalBase;
-import top.xfunny.mod.keymapping.TestLiftDestinationDispatchTerminalKeyMapping;
+import top.xfunny.mod.keymapping.DefaultButtonsKeyMapping;
 import top.xfunny.mod.util.ArrayListToString;
 import top.xfunny.mod.util.TransformPositionX;
 
@@ -67,27 +68,21 @@ public class TestLiftDestinationDispatchTerminal extends LiftDestinationDispatch
     @Nonnull
     @Override
     public ActionResult onUse2(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        final double hitX = MathHelper.fractionalPart(hit.getPos().getXMapped());
         final double hitY = MathHelper.fractionalPart(hit.getPos().getYMapped());
-        final double hitZ = MathHelper.fractionalPart(hit.getPos().getZMapped());
 
-
-        final Direction facing = IBlock.getStatePropertySafe(state, FACING);
-        double transformedX = TransformPositionX.transform(hitX, hitZ, facing);
         final org.mtr.mapping.holder.BlockEntity blockEntity = world.getBlockEntity(pos);
         final LiftDestinationDispatchTerminalBase.BlockEntityBase data = (LiftDestinationDispatchTerminalBase.BlockEntityBase) blockEntity.data;
         final TestLiftDestinationDispatchTerminal.BlockEntity data1 = (TestLiftDestinationDispatchTerminal.BlockEntity) blockEntity.data;
 
-        TestLiftDestinationDispatchTerminalKeyMapping mapping = new TestLiftDestinationDispatchTerminalKeyMapping();
-
+        final DefaultButtonsKeyMapping keyMapping = data.getKeyMapping();
+        final String focusButton = keyMapping.mapping(TransformPositionX.transform(MathHelper.fractionalPart(hit.getPos().getXMapped()), MathHelper.fractionalPart(hit.getPos().getZMapped()), IBlock.getStatePropertySafe(state, FACING)), hitY);
 
         if (player.isHolding(top.xfunny.mod.Items.YTE_LIFT_BUTTONS_LINK_CONNECTOR.get()) || player.isHolding(top.xfunny.mod.Items.YTE_LIFT_BUTTONS_LINK_REMOVER.get()) || player.isHolding(top.xfunny.mod.Items.YTE_GROUP_LIFT_BUTTONS_LINK_CONNECTOR.get()) || player.isHolding(Items.YTE_GROUP_LIFT_BUTTONS_LINK_REMOVER.get())) {
             return ActionResult.PASS;
         } else {
             //todo:以后区分不同id下的点击事件
-            String testOutput = mapping.mapping(screenId, transformedX, hitY);
             if (screenId.equals("test_lift_destination_dispatch_terminal_key_mapping_home")) {//todo:可能没有必要进行判断
-                switch (testOutput) {
+                switch (focusButton) {
                     case "number1":
                         data1.addInputNumber(1);
                         break;
@@ -132,8 +127,10 @@ public class TestLiftDestinationDispatchTerminal extends LiftDestinationDispatch
                             data1.addInputNumber("Please input floor number!");
                         }, 1, TimeUnit.SECONDS);
                         scheduler.shutdown();
+                        break;
                 }
-                player.sendMessage(Text.of(("transformedX:" + transformedX + ",Y:" + hitY + ",您点击了" + testOutput)), true);
+                player.sendMessage(Text.of(focusButton), true);
+                Init.LOGGER.info("focusButton:" + focusButton);
             }
         }
 

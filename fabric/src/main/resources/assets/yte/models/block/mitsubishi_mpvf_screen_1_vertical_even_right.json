@@ -1,7 +1,9 @@
 {
+	"format_version": "1.21.6",
 	"credit": "Made with Blockbench",
 	"textures": {
-		"2": "yte:block/mitsubishi_mpvf_screen_1_vertical"
+		"2": "yte:block/mitsubishi_mpvf_screen_1_vertical",
+		"particle": "yte:block/mitsubishi_mpvf_screen_1_vertical"
 	},
 	"elements": [
 		{

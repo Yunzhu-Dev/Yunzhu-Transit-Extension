@@ -16,16 +16,14 @@ import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.Init;
 import top.xfunny.mod.block.KoneKDS330Lantern1;
 import top.xfunny.mod.block.base.LiftButtonsBase;
-import top.xfunny.mod.client.view.Gravity;
-import top.xfunny.mod.client.view.LayoutSize;
-import top.xfunny.mod.client.view.LiftButtonView;
-import top.xfunny.mod.client.view.LineComponent;
+import top.xfunny.mod.client.view.*;
 import top.xfunny.mod.client.view.view_group.FrameLayout;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
 
 public class RenderKoneKDS330Lantern1<T extends LiftButtonsBase.BlockEntityBase> extends BlockEntityRenderer<T> implements DirectionHelper, IGui, IBlock {
-    private static final int PRESSED_COLOR = 0xFFFFCC00;
+    private static final int PRESSED_COLOR = 0xFFFFFFFF;
+    private static final int DEFAULT_COLOR = 0x00FFFFFF;
     private static final Identifier BUTTON_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/kone_arrow_back.png");
     private static final Identifier BUTTON_LIGHT_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/kone_arrow_light.png");
 
@@ -55,42 +53,60 @@ public class RenderKoneKDS330Lantern1<T extends LiftButtonsBase.BlockEntityBase>
         StoredMatrixTransformations storedMatrixTransformations1 = storedMatrixTransformations.copy();
         storedMatrixTransformations1.add(graphicsHolder -> {
             graphicsHolder.rotateYDegrees(-facing.asRotation());
-            graphicsHolder.translate(0, 0.17, 7.5F / 16 - SMALL_OFFSET);
+            graphicsHolder.translate(0, 0, 7.5F / 16 - SMALL_OFFSET);
         });
 
-        final FrameLayout parentLayout = new FrameLayout();
-        parentLayout.setBasicsAttributes(world, blockPos);
-        parentLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
-        parentLayout.setParentDimensions(7.5F / 16, 7.5F / 16);
-        parentLayout.setPosition(-3.75F / 16, 4.25F / 16);
-        parentLayout.setWidth(LayoutSize.MATCH_PARENT);
-        parentLayout.setHeight(LayoutSize.MATCH_PARENT);
+        final FrameLayout buttonUpLayout = new FrameLayout();
+        buttonUpLayout.setBasicsAttributes(world, blockPos);
+        buttonUpLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
+        buttonUpLayout.setParentDimensions(3F / 16, 3F / 16);
+        buttonUpLayout.setPosition(-1.5F/16, 10.775F/16);
+        buttonUpLayout.setWidth(LayoutSize.MATCH_PARENT);
+        buttonUpLayout.setHeight(LayoutSize.MATCH_PARENT);
 
-        LiftButtonView button = new LiftButtonView();
-        button.setBasicsAttributes(world, blockPos, buttonDescriptor, true, false, true, true);
-        button.setLight(255);
-        button.setHover(false);
-        button.setDefaultColor(0xFFFFFFFF);
-        button.setPressedColor(0xFFFFFFFF);
-        button.setHoverColor(0xFFFFFFFF);
-        button.setTexture(BUTTON_TEXTURE, true);
-        button.setWidth(1.4875F / 16);
-        button.setHeight(1.75F / 16);
-        button.setSpacing(1.235F / 16);
-        button.setGravity(Gravity.CENTER);
+        final FrameLayout buttonDownLayout = new FrameLayout();
+        buttonDownLayout.setBasicsAttributes(world, blockPos);
+        buttonDownLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
+        buttonDownLayout.setParentDimensions(3F / 16, 3F / 16);
+        buttonDownLayout.setPosition(-1.5F/16, 7.7F/16);
+        buttonDownLayout.setWidth(LayoutSize.MATCH_PARENT);
+        buttonDownLayout.setHeight(LayoutSize.MATCH_PARENT);
 
-        LiftButtonView buttonLight = new LiftButtonView();
-        buttonLight.setBasicsAttributes(world, blockPos, buttonDescriptor, true, false, true, true);
-        buttonLight.setLight(255);
-        buttonLight.setHover(false);
-        buttonLight.setDefaultColor(0x00FFFFFF);
-        buttonLight.setPressedColor(0xFFFFFFFF);
-        buttonLight.setHoverColor(0x00FFFFFF);
-        buttonLight.setTexture(BUTTON_LIGHT_TEXTURE, true);
-        buttonLight.setWidth(1.4875F / 16);
-        buttonLight.setHeight(1.75F / 16);
-        buttonLight.setSpacing(1.235F / 16);
-        buttonLight.setGravity(Gravity.CENTER);
+        ImageView buttonUp = new ImageView();
+        buttonUp.setBasicsAttributes(world, blockPos);
+        buttonUp.setTexture(BUTTON_TEXTURE);
+        buttonUp.setDimension(1.4875F / 16,1.75F / 1.4875F);
+        buttonUp.setGravity(Gravity.CENTER);
+        buttonUp.setLight(light);
+
+        ButtonView buttonUpLight = new ButtonView();
+        buttonUpLight.setId("up");
+        buttonUpLight.setBasicsAttributes(world, blockPos);
+        buttonUpLight.setTexture(BUTTON_LIGHT_TEXTURE);
+        buttonUpLight.setDimension(1.4875F / 16,1.75F/1.4875F);
+        buttonUpLight.setGravity(Gravity.CENTER);
+        buttonUpLight.setLight(light);
+        buttonUpLight.setDefaultColor(DEFAULT_COLOR);
+        buttonUpLight.setPressedColor(PRESSED_COLOR);
+
+        ImageView buttonDown = new ImageView();
+        buttonDown.setBasicsAttributes(world, blockPos);
+        buttonDown.setTexture(BUTTON_TEXTURE);
+        buttonDown.setDimension(1.4875F / 16,1.75F / 1.4875F);
+        buttonDown.setGravity(Gravity.CENTER);
+        buttonDown.setLight(light);
+        buttonDown.setFlip(false, true);
+
+        ButtonView buttonDownLight = new ButtonView();
+        buttonDownLight.setId("down");
+        buttonDownLight.setBasicsAttributes(world, blockPos);
+        buttonDownLight.setTexture(BUTTON_LIGHT_TEXTURE);
+        buttonDownLight.setDimension(1.4875F / 16,1.75F / 1.4875F);
+        buttonDownLight.setGravity(Gravity.CENTER);
+        buttonDownLight.setLight(light);
+        buttonDownLight.setDefaultColor(DEFAULT_COLOR);
+        buttonDownLight.setPressedColor(PRESSED_COLOR);
+        buttonDownLight.setFlip(false, true);
 
         final LineComponent line = new LineComponent();
         line.setBasicsAttributes(world, blockPos);
@@ -110,10 +126,10 @@ public class RenderKoneKDS330Lantern1<T extends LiftButtonsBase.BlockEntityBase>
                 instructionDirections.forEach(liftDirection -> {
                     switch (liftDirection) {
                         case DOWN:
-                            buttonLight.setDownButtonLight();
+                            buttonDownLight.activate();
                             break;
                         case UP:
-                            buttonLight.setUpButtonLight();
+                            buttonUpLight.activate();
                             break;
                     }
                 });
@@ -123,9 +139,15 @@ public class RenderKoneKDS330Lantern1<T extends LiftButtonsBase.BlockEntityBase>
         blockEntity.forEachLiftButtonPosition(buttonPosition -> {
             buttonLine.RenderLine(holdingLinker, buttonPosition, true);
         });
-        parentLayout.addChild(button);
-        parentLayout.addChild(buttonLight);
 
-        parentLayout.render();
+
+        buttonUpLayout.addChild(buttonUp);
+        buttonUpLayout.addChild(buttonUpLight);
+        buttonDownLayout.addChild(buttonDown);
+        buttonDownLayout.addChild(buttonDownLight);
+
+
+        buttonDownLayout.render();
+        buttonUpLayout.render();
     }
 }

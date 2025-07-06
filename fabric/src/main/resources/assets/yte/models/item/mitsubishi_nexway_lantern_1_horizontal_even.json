@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "yte:item/mitsubishi_nexway_lantern_1_horizontal_even"
+  }
+}
