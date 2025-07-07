@@ -1,4 +1,4 @@
-package org.mtr.mod.packet;
+package top.xfunny.mod.packet;
 
 import org.mtr.mapping.holder.BlockEntity;
 import org.mtr.mapping.holder.BlockPos;
