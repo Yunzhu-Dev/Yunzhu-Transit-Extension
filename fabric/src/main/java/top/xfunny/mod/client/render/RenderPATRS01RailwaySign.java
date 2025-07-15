@@ -24,7 +24,6 @@ import org.mtr.mod.data.IGui;
 import org.mtr.mod.generated.lang.TranslationProvider;
 import org.mtr.mod.render.MainRenderer;
 import org.mtr.mod.render.QueuedRenderLayer;
-import org.mtr.mod.render.RenderRailwaySign;
 import org.mtr.mod.render.StoredMatrixTransformations;
 import org.mtr.mod.resource.SignResource;
 import org.mtr.mod.screen.EditStationScreen;
@@ -40,88 +39,6 @@ public class RenderPATRS01RailwaySign<T extends PATRS01RailwaySign.BlockEntity> 
 
     public RenderPATRS01RailwaySign(Argument dispatcher) {
         super(dispatcher);
-    }
-
-    @Override
-    public void render(T entity, float tickDelta, GraphicsHolder graphicsHolder, int light, int overlay) {
-        final World world = entity.getWorld2();
-        if (world == null) {
-            return;
-        }
-
-        final BlockPos pos = entity.getPos2();
-        final BlockState state = world.getBlockState(pos);
-        if (!(state.getBlock().data instanceof BlockRailwaySign)) {
-            return;
-        }
-        final BlockRailwaySign block = (BlockRailwaySign) state.getBlock().data;
-        if (entity.getSignIds().length != block.length) {
-            return;
-        }
-        final Direction facing = IBlock.getStatePropertySafe(state, BlockStationNameBase.FACING);
-        final String[] signIds = entity.getSignIds();
-
-        boolean renderBackground = false;
-        int backgroundColor = 0;
-        for (final String signId : signIds) {
-            if (signId != null) {
-                final SignResource sign = getSign(signId);
-                if (sign != null) {
-                    renderBackground = true;
-                    if (sign.getBackgroundColor() != 0) {
-                        backgroundColor = sign.getBackgroundColor();
-                        break;
-                    }
-                }
-            }
-        }
-
-        final StoredMatrixTransformations storedMatrixTransformations = new StoredMatrixTransformations(0.5 + entity.getPos2().getX(), 0.53125 + entity.getPos2().getY(), 0.5 + entity.getPos2().getZ());
-        storedMatrixTransformations.add(graphicsHolderNew -> {
-            graphicsHolderNew.rotateYDegrees(-facing.asRotation());
-            graphicsHolderNew.rotateZDegrees(180);
-            graphicsHolderNew.translate(block.getXStart() / 16F - 0.5, 0, -0.0625 - SMALL_OFFSET * 2);
-        });
-
-        graphicsHolder.push();
-        graphicsHolder.translate(0.5, 0.53125, 0.5);
-        graphicsHolder.rotateYDegrees(-facing.asRotation());
-        graphicsHolder.rotateZDegrees(180);
-        graphicsHolder.translate(block.getXStart() / 16F - 0.5, 0, -0.0625 - SMALL_OFFSET * 2);
-
-        if (renderBackground) {
-            final int newBackgroundColor = backgroundColor | ARGB_BLACK;
-            MainRenderer.scheduleRender(new Identifier(Init.MOD_ID, "textures/block/white.png"), false, QueuedRenderLayer.LIGHT, (graphicsHolderNew, offset) -> {
-                storedMatrixTransformations.transform(graphicsHolderNew, offset);
-                IDrawing.drawTexture(graphicsHolderNew, 0, 0, SMALL_OFFSET, 0.5F * (signIds.length), 0.5F, SMALL_OFFSET, facing, newBackgroundColor, GraphicsHolder.getDefaultLight());
-                graphicsHolderNew.pop();
-            });
-        }
-        for (int i = 0; i < signIds.length; i++) {
-            if (signIds[i] != null) {
-                drawSign(
-                        graphicsHolder,
-                        storedMatrixTransformations,
-                        pos,
-                        signIds[i],
-                        0.5F * i,
-                        0,
-                        0.5F,
-                        getMaxWidth(signIds, i, false),
-                        getMaxWidth(signIds, i, true),
-                        entity.getSelectedIds(),
-                        facing,
-                        backgroundColor | ARGB_BLACK,
-                        (textureId, x, y, size, flipTexture) -> MainRenderer.scheduleRender(textureId, true, QueuedRenderLayer.LIGHT_TRANSLUCENT, (graphicsHolderNew, offset) -> {
-                            storedMatrixTransformations.transform(graphicsHolderNew, offset);
-                            IDrawing.drawTexture(graphicsHolderNew, x, y, size, size, flipTexture ? 1 : 0, 0, flipTexture ? 0 : 1, 1, facing, -1, GraphicsHolder.getDefaultLight());
-                            graphicsHolderNew.pop();
-                        })
-                );
-            }
-        }
-
-        graphicsHolder.pop();
     }
 
     public static void drawSign(GraphicsHolder graphicsHolder, @Nullable StoredMatrixTransformations storedMatrixTransformations, BlockPos pos, String signId, float x, float y, float size, float maxWidthLeft, float maxWidthRight, LongAVLTreeSet selectedIds, Direction facing, int backgroundColor, DrawTexture drawTexture) {
@@ -319,6 +236,88 @@ public class RenderPATRS01RailwaySign<T extends PATRS01RailwaySign.BlockEntity> 
         }
 
         return maxWidthLeft;
+    }
+
+    @Override
+    public void render(T entity, float tickDelta, GraphicsHolder graphicsHolder, int light, int overlay) {
+        final World world = entity.getWorld2();
+        if (world == null) {
+            return;
+        }
+
+        final BlockPos pos = entity.getPos2();
+        final BlockState state = world.getBlockState(pos);
+        if (!(state.getBlock().data instanceof BlockRailwaySign)) {
+            return;
+        }
+        final BlockRailwaySign block = (BlockRailwaySign) state.getBlock().data;
+        if (entity.getSignIds().length != block.length) {
+            return;
+        }
+        final Direction facing = IBlock.getStatePropertySafe(state, BlockStationNameBase.FACING);
+        final String[] signIds = entity.getSignIds();
+
+        boolean renderBackground = false;
+        int backgroundColor = 0;
+        for (final String signId : signIds) {
+            if (signId != null) {
+                final SignResource sign = getSign(signId);
+                if (sign != null) {
+                    renderBackground = true;
+                    if (sign.getBackgroundColor() != 0) {
+                        backgroundColor = sign.getBackgroundColor();
+                        break;
+                    }
+                }
+            }
+        }
+
+        final StoredMatrixTransformations storedMatrixTransformations = new StoredMatrixTransformations(0.5 + entity.getPos2().getX(), 0.53125 + entity.getPos2().getY(), 0.5 + entity.getPos2().getZ());
+        storedMatrixTransformations.add(graphicsHolderNew -> {
+            graphicsHolderNew.rotateYDegrees(-facing.asRotation());
+            graphicsHolderNew.rotateZDegrees(180);
+            graphicsHolderNew.translate(block.getXStart() / 16F - 0.5, 0, -0.0625 - SMALL_OFFSET * 2);
+        });
+
+        graphicsHolder.push();
+        graphicsHolder.translate(0.5, 0.53125, 0.5);
+        graphicsHolder.rotateYDegrees(-facing.asRotation());
+        graphicsHolder.rotateZDegrees(180);
+        graphicsHolder.translate(block.getXStart() / 16F - 0.5, 0, -0.0625 - SMALL_OFFSET * 2);
+
+        if (renderBackground) {
+            final int newBackgroundColor = backgroundColor | ARGB_BLACK;
+            MainRenderer.scheduleRender(new Identifier(Init.MOD_ID, "textures/block/white.png"), false, QueuedRenderLayer.LIGHT, (graphicsHolderNew, offset) -> {
+                storedMatrixTransformations.transform(graphicsHolderNew, offset);
+                IDrawing.drawTexture(graphicsHolderNew, 0, 0, SMALL_OFFSET, 0.5F * (signIds.length), 0.5F, SMALL_OFFSET, facing, newBackgroundColor, GraphicsHolder.getDefaultLight());
+                graphicsHolderNew.pop();
+            });
+        }
+        for (int i = 0; i < signIds.length; i++) {
+            if (signIds[i] != null) {
+                drawSign(
+                        graphicsHolder,
+                        storedMatrixTransformations,
+                        pos,
+                        signIds[i],
+                        0.5F * i,
+                        0,
+                        0.5F,
+                        getMaxWidth(signIds, i, false),
+                        getMaxWidth(signIds, i, true),
+                        entity.getSelectedIds(),
+                        facing,
+                        backgroundColor | ARGB_BLACK,
+                        (textureId, x, y, size, flipTexture) -> MainRenderer.scheduleRender(textureId, true, QueuedRenderLayer.LIGHT_TRANSLUCENT, (graphicsHolderNew, offset) -> {
+                            storedMatrixTransformations.transform(graphicsHolderNew, offset);
+                            IDrawing.drawTexture(graphicsHolderNew, x, y, size, size, flipTexture ? 1 : 0, 0, flipTexture ? 0 : 1, 1, facing, -1, GraphicsHolder.getDefaultLight());
+                            graphicsHolderNew.pop();
+                        })
+                );
+            }
+        }
+
+        graphicsHolder.pop();
     }
 
     @FunctionalInterface

@@ -125,7 +125,7 @@ public class RenderSchindlerLineaButton1White extends BlockEntityRenderer<Schind
         buttonUpLight.setDimension(0.8F / 16);
         buttonUpLight.setGravity(Gravity.CENTER);
         buttonUpLight.setLight(light);
-        buttonUpLight.setDefaultColor(ARGB_WHITE,true);
+        buttonUpLight.setDefaultColor(ARGB_WHITE, true);
         buttonUpLight.setHoverColor(HOVER_COLOR);
         buttonUpLight.setPressedColor(PRESSED_COLOR);
 
@@ -144,7 +144,7 @@ public class RenderSchindlerLineaButton1White extends BlockEntityRenderer<Schind
         buttonDownLight.setDimension(0.8F / 16);
         buttonDownLight.setGravity(Gravity.CENTER);
         buttonDownLight.setLight(light);
-        buttonDownLight.setDefaultColor(ARGB_WHITE,true);
+        buttonDownLight.setDefaultColor(ARGB_WHITE, true);
         buttonDownLight.setHoverColor(HOVER_COLOR);
         buttonDownLight.setPressedColor(PRESSED_COLOR);
 

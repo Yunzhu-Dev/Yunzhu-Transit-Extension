@@ -27,11 +27,10 @@ import top.xfunny.mod.util.ClientGetLiftDetails;
 import java.util.Comparator;
 
 public class RenderSchindlerMSeriesScreen4<T extends LiftButtonsBase.BlockEntityBase> extends BlockEntityRenderer<T> implements DirectionHelper, IGui, IBlock {
-    private final boolean isOdd;
     private static final Identifier BUTTON_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/schindler_m_series_screen_4_arrow.png");
-
     private static final int PRESSED_COLOR = 0xFFFF0000;
     private static final int DEFAULT_COLOR = 0xFF4D0000;
+    private final boolean isOdd;
 
     public RenderSchindlerMSeriesScreen4(Argument dispatcher, Boolean isOdd) {
         super(dispatcher);
@@ -68,7 +67,7 @@ public class RenderSchindlerMSeriesScreen4<T extends LiftButtonsBase.BlockEntity
         parentLayout.setBasicsAttributes(world, blockPos);
         parentLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
         parentLayout.setParentDimensions(9F / 16, 2F / 16);
-        parentLayout.setPosition(isOdd ? -4.5F/16 : -12.5F/16F, 9.5F / 16);
+        parentLayout.setPosition(isOdd ? -4.5F / 16 : -12.5F / 16F, 9.5F / 16);
         parentLayout.setWidth(LayoutSize.MATCH_PARENT);
         parentLayout.setHeight(LayoutSize.MATCH_PARENT);
 
@@ -77,7 +76,7 @@ public class RenderSchindlerMSeriesScreen4<T extends LiftButtonsBase.BlockEntity
         screenLayout.setWidth(LayoutSize.WRAP_CONTENT);
         screenLayout.setHeight(LayoutSize.WRAP_CONTENT);
         screenLayout.setGravity(Gravity.CENTER_VERTICAL);
-        screenLayout.setMargin(0.9F/16, 0, 0, 0);
+        screenLayout.setMargin(0.9F / 16, 0, 0, 0);
 
         ButtonView upLanternLeft = new ButtonView();
         upLanternLeft.setBasicsAttributes(world, blockEntity.getPos2());
@@ -87,9 +86,9 @@ public class RenderSchindlerMSeriesScreen4<T extends LiftButtonsBase.BlockEntity
         upLanternLeft.setLight(light);
         upLanternLeft.setDefaultColor(DEFAULT_COLOR);
         upLanternLeft.setPressedColor(PRESSED_COLOR);
-        upLanternLeft.setMargin(1.25F/16, 0, 0, 0);
+        upLanternLeft.setMargin(1.25F / 16, 0, 0, 0);
 
-        ButtonView upLanternRight  = new ButtonView();
+        ButtonView upLanternRight = new ButtonView();
         upLanternRight.setBasicsAttributes(world, blockEntity.getPos2());
         upLanternRight.setTexture(BUTTON_TEXTURE);
         upLanternRight.setDimension(0.625F / 16);
@@ -99,7 +98,7 @@ public class RenderSchindlerMSeriesScreen4<T extends LiftButtonsBase.BlockEntity
         upLanternRight.setPressedColor(PRESSED_COLOR);
         upLanternRight.setMargin(1.75F / 16, 0, 0, 0);
 
-        ButtonView downLanternLeft  = new ButtonView();
+        ButtonView downLanternLeft = new ButtonView();
         downLanternLeft.setBasicsAttributes(world, blockEntity.getPos2());
         downLanternLeft.setTexture(BUTTON_TEXTURE);
         downLanternLeft.setDimension(0.625F / 16);
@@ -107,10 +106,10 @@ public class RenderSchindlerMSeriesScreen4<T extends LiftButtonsBase.BlockEntity
         downLanternLeft.setLight(light);
         downLanternLeft.setDefaultColor(DEFAULT_COLOR);
         downLanternLeft.setPressedColor(PRESSED_COLOR);
-        downLanternLeft.setFlip(false,true);
-        downLanternLeft.setMargin(1.25F/16, 0, 0, 0);
+        downLanternLeft.setFlip(false, true);
+        downLanternLeft.setMargin(1.25F / 16, 0, 0, 0);
 
-        ButtonView downLanternRight  = new ButtonView();
+        ButtonView downLanternRight = new ButtonView();
         downLanternRight.setBasicsAttributes(world, blockEntity.getPos2());
         downLanternRight.setTexture(BUTTON_TEXTURE);
         downLanternRight.setDimension(0.625F / 16);
@@ -118,7 +117,7 @@ public class RenderSchindlerMSeriesScreen4<T extends LiftButtonsBase.BlockEntity
         downLanternRight.setLight(light);
         downLanternRight.setDefaultColor(DEFAULT_COLOR);
         downLanternRight.setPressedColor(PRESSED_COLOR);
-        downLanternRight.setFlip(false,true);
+        downLanternRight.setFlip(false, true);
         downLanternRight.setMargin(1.75F / 16, 0, 0, 0);
 
 
@@ -133,7 +132,7 @@ public class RenderSchindlerMSeriesScreen4<T extends LiftButtonsBase.BlockEntity
                 sortedPositionsAndLifts.add(new ObjectObjectImmutablePair<>(trackPosition, lift));
                 ObjectObjectImmutablePair<LiftDirection, ObjectObjectImmutablePair<String, String>> liftDetails = ClientGetLiftDetails.getLiftDetails(world, lift, org.mtr.mod.Init.positionToBlockPos(lift.getCurrentFloor().getPosition()));
                 final LiftDirection liftDirection = liftDetails.left();
-                switch (liftDirection){
+                switch (liftDirection) {
                     case UP:
                         upLanternRight.activate();
                         upLanternLeft.activate();

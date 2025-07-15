@@ -14,7 +14,6 @@ import org.mtr.mod.data.IGui;
 import org.mtr.mod.render.QueuedRenderLayer;
 import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.Init;
-import top.xfunny.mod.block.MitsubishiNexWayScreen3Even;
 import top.xfunny.mod.block.MitsubishiNexWayScreen3SegmentedEven;
 import top.xfunny.mod.block.base.LiftPanelBase;
 import top.xfunny.mod.client.resource.FontList;
@@ -95,7 +94,7 @@ public class RenderMitsubishiNexWayScreen3Segmented<T extends LiftPanelBase.Bloc
                 liftFloorDisplayView.setTextAlign(TextView.HorizontalTextAlign.RIGHT);
                 liftFloorDisplayView.setLetterSpacing(0);
                 liftFloorDisplayView.setDisplayLength(2, 0);
-                liftFloorDisplayView.setMargin(1.5F / 16, 1.325F / 16, 0.1F/16, 0);
+                liftFloorDisplayView.setMargin(1.5F / 16, 1.325F / 16, 0.1F / 16, 0);
                 liftFloorDisplayView.addStoredMatrixTransformations(graphicsHolder -> graphicsHolder.translate(0, 0, -SMALL_OFFSET));
 
                 final LiftArrowView liftArrowView_right = new LiftArrowView();

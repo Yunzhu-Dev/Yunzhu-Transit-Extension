@@ -18,7 +18,10 @@ import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.Init;
 import top.xfunny.mod.block.TestLiftHallLanterns;
 import top.xfunny.mod.block.base.LiftButtonsBase;
-import top.xfunny.mod.client.view.*;
+import top.xfunny.mod.client.view.ButtonView;
+import top.xfunny.mod.client.view.Gravity;
+import top.xfunny.mod.client.view.LayoutSize;
+import top.xfunny.mod.client.view.LineComponent;
 import top.xfunny.mod.client.view.view_group.LinearLayout;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
@@ -28,10 +31,10 @@ import static org.mtr.core.data.LiftDirection.NONE;
 
 public class RenderTestLiftHallLanterns extends BlockEntityRenderer<TestLiftHallLanterns.BlockEntity> implements DirectionHelper, IGui, IBlock {
 
-    private final boolean isOdd;
     private static final Identifier ARROW_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/test_lift_lanterns_arrow.png");
     private static final int PRESSED_COLOR = 0xFFFFFFFF;
     private static final int DEFAULT_COLOR = 0x00FFFFFF;
+    private final boolean isOdd;
 
 
     public RenderTestLiftHallLanterns(Argument dispatcher, Boolean isOdd) {
@@ -77,7 +80,7 @@ public class RenderTestLiftHallLanterns extends BlockEntityRenderer<TestLiftHall
         buttonUpLight.setId("up");
         buttonUpLight.setBasicsAttributes(world, blockPos);
         buttonUpLight.setTexture(ARROW_TEXTURE);
-        buttonUpLight.setDimension(3F/16);
+        buttonUpLight.setDimension(3F / 16);
         buttonUpLight.setGravity(Gravity.CENTER);
         buttonUpLight.setLight(light);
         buttonUpLight.setDefaultColor(DEFAULT_COLOR);
@@ -87,7 +90,7 @@ public class RenderTestLiftHallLanterns extends BlockEntityRenderer<TestLiftHall
         buttonDownLight.setId("down");
         buttonDownLight.setBasicsAttributes(world, blockPos);
         buttonDownLight.setTexture(ARROW_TEXTURE);
-        buttonDownLight.setDimension(3F/16);
+        buttonDownLight.setDimension(3F / 16);
         buttonDownLight.setGravity(Gravity.CENTER);
         buttonDownLight.setLight(light);
         buttonDownLight.setDefaultColor(DEFAULT_COLOR);

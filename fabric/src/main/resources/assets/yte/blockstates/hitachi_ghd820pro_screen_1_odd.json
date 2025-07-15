@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "yte:block/hitachi_ghd820pro_screen_1_odd"
+    },
+    "facing=east": {
+      "model": "yte:block/hitachi_ghd820pro_screen_1_odd",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "yte:block/hitachi_ghd820pro_screen_1_odd",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "yte:block/hitachi_ghd820pro_screen_1_odd",
+      "y": 270
+    }
+  }
+}

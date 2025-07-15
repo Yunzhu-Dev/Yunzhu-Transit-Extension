@@ -1,24 +1,88 @@
 {
-	"format_version": "1.21.6",
-	"credit": "Made with Blockbench",
-	"parent": "block/block",
-	"textures": {
-		"2": "yte:block/steel",
-		"particle": "yte:block/mitsubishi_lantern_arrow"
-	},
-	"elements": [
-		{
-			"from": [5.75, 7, 0],
-			"to": [10.25, 15.5, 0.1],
-			"rotation": {"angle": 0, "axis": "y", "origin": [1, 8.5, -0.25]},
-			"faces": {
-				"north": {"uv": [0, 0, 16, 2.3125], "texture": "#2"},
-				"east": {"uv": [0, 0, 0.25, 13], "texture": "#2"},
-				"south": {"uv": [0, 0, 16, 16], "texture": "#2"},
-				"west": {"uv": [0, 0, 0.25, 13], "texture": "#2"},
-				"up": {"uv": [0, 0, 8, 0.25], "texture": "#2"},
-				"down": {"uv": [0, 0, 16, 0.25], "texture": "#2"}
-			}
-		}
-	]
+  "format_version": "1.21.6",
+  "credit": "Made with Blockbench",
+  "parent": "block/block",
+  "textures": {
+    "2": "yte:block/steel",
+    "particle": "yte:block/mitsubishi_lantern_arrow"
+  },
+  "elements": [
+    {
+      "from": [
+        5.75,
+        7,
+        0
+      ],
+      "to": [
+        10.25,
+        15.5,
+        0.1
+      ],
+      "rotation": {
+        "angle": 0,
+        "axis": "y",
+        "origin": [
+          1,
+          8.5,
+          -0.25
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            2.3125
+          ],
+          "texture": "#2"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.25,
+            13
+          ],
+          "texture": "#2"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#2"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.25,
+            13
+          ],
+          "texture": "#2"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            0.25
+          ],
+          "texture": "#2"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            0.25
+          ],
+          "texture": "#2"
+        }
+      }
+    }
+  ]
 }

@@ -41,6 +41,7 @@ public class RenderHitachiVIB820ButtonLCD extends BlockEntityRenderer<HitachiVIB
     private static final Identifier BUTTON_DOWN_TEXTURE = new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/wl_mwb_down.png");
     private static final Identifier LIGHT_DOWN_TEXTURE = new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/wl_mwb_down_light.png");
     private static final BooleanProperty UNLOCKED = BooleanProperty.of("unlocked");
+
     public RenderHitachiVIB820ButtonLCD(Argument dispatcher) {
         super(dispatcher);
     }
@@ -225,13 +226,13 @@ public class RenderHitachiVIB820ButtonLCD extends BlockEntityRenderer<HitachiVIB
                 numberLayout.setBasicsAttributes(world, blockPos);
                 numberLayout.setWidth(LayoutSize.WRAP_CONTENT);
                 numberLayout.setHeight(LayoutSize.WRAP_CONTENT);
-                numberLayout.setMargin(i == 1? 0.35F/16 : 0, 1.37F / 16, 0, 0);
+                numberLayout.setMargin(i == 1 ? 0.35F / 16 : 0, 1.37F / 16, 0, 0);
                 numberLayout.setBackgroundColor(0xFFFFFFFF);
 
-                if(liftDirection.equals(LiftDirection.DOWN)){
+                if (liftDirection.equals(LiftDirection.DOWN)) {
                     numberLayout.addChild(liftFloorDisplayView);
                     numberLayout.addChild(liftArrowView);
-                }else{
+                } else {
                     numberLayout.addChild(liftArrowView);
                     numberLayout.addChild(liftFloorDisplayView);
 

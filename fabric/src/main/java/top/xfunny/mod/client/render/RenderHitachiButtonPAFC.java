@@ -38,6 +38,7 @@ public class RenderHitachiButtonPAFC extends BlockEntityRenderer<HitachiButtonPA
     private static final Identifier LIGHT_UP_TEXTURE = new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/hitachi_button_pafc_light_up.png");
     private static final Identifier LIGHT_DOWN_TEXTURE = new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/hitachi_button_pafc_light_down.png");
     private static final BooleanProperty UNLOCKED = BooleanProperty.of("unlocked");
+
     public RenderHitachiButtonPAFC(Argument dispatcher) {
         super(dispatcher);
     }
@@ -228,7 +229,6 @@ public class RenderHitachiButtonPAFC extends BlockEntityRenderer<HitachiButtonPA
                 } else {
                     liftArrowView.setColor(0xFF000000);
                 }
-
 
 
                 final LinearLayout numberLayout = new LinearLayout(true);

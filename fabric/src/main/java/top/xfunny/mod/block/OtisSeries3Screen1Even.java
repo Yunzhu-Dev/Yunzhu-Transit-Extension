@@ -20,10 +20,10 @@ public class OtisSeries3Screen1Even extends LiftPanelBase {
     public VoxelShape getOutlineShape2(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
         switch (IBlock.getStatePropertySafe(state, SIDE)) {
             case LEFT:
-                return IBlock.getVoxelShapeByDirection(12.25, 9, 0, 16, 14, 0.1, IBlock.getStatePropertySafe(state, FACING));
+                return IBlock.getVoxelShapeByDirection(14.825, 7.325, 0, 16, 10.1, 0.35, IBlock.getStatePropertySafe(state, FACING));
 
             case RIGHT:
-                return IBlock.getVoxelShapeByDirection(0, 9, 0, 3.75, 14, 0.1, IBlock.getStatePropertySafe(state, FACING));
+                return IBlock.getVoxelShapeByDirection(0, 7.325, 0, 6.825, 10.1, 0.35, IBlock.getStatePropertySafe(state, FACING));
 
         }
         return VoxelShapes.empty();

@@ -53,7 +53,7 @@ public class Blocks {
 
     public static final BlockRegistryObject MITSUBISHI_GPS_BUTTON_1;
     public static final BlockRegistryObject MITSUBISHI_GPS_BUTTON_1_WITHOUT_SCREEN;
-    public static final BlockRegistryObject MITSUBISHI_BUTTON_SHUN_HING_PLAZA;
+    public static final BlockRegistryObject MITSUBISHI_BUTTON_SHUN_HING_SQUARE;
     public static final BlockRegistryObject MITSUBISHI_RYODEN_SCREEN_1_EVEN;
     public static final BlockRegistryObject MITSUBISHI_RYODEN_SCREEN_1_ODD;
     public static final BlockRegistryObject MITSUBISHI_NEXWAY_BUTTON_1;
@@ -111,9 +111,29 @@ public class Blocks {
     public static final BlockRegistryObject SCHINDLER_M_SERIES_SCREEN_4_ODD;
     public static final BlockRegistryObject SCHINDLER_M_SERIES_SCREEN_4_EVEN;
     public static final BlockRegistryObject SCHINDLER_LINEA_BUTTON_1_WHITE;
+    public static final BlockRegistryObject SCHINDLER_LINEA_BUTTON_1_WHITE_WITHOUT_SCREEN;
     public static final BlockRegistryObject SCHINDLER_LINEA_BUTTON_1_BLACK;
+    public static final BlockRegistryObject SCHINDLER_LINEA_BUTTON_1_BLACK_WITHOUT_SCREEN;
     public static final BlockRegistryObject SCHINDLER_LINEA_BUTTON_2_WHITE;
+    public static final BlockRegistryObject SCHINDLER_LINEA_BUTTON_2_WHITE_WITHOUT_SCREEN;
     public static final BlockRegistryObject SCHINDLER_LINEA_BUTTON_2_BLACK;
+    public static final BlockRegistryObject SCHINDLER_LINEA_BUTTON_2_BLACK_WITHOUT_SCREEN;
+    public static final BlockRegistryObject SCHINDLER_LINEA_SCREEN_1_WHITE_HORIZONTAL_ODD;
+    public static final BlockRegistryObject SCHINDLER_LINEA_SCREEN_1_WHITE_HORIZONTAL_EVEN;
+    public static final BlockRegistryObject SCHINDLER_LINEA_SCREEN_1_WHITE_VERTICAL_ODD;
+    public static final BlockRegistryObject SCHINDLER_LINEA_SCREEN_1_WHITE_VERTICAL_EVEN;
+    public static final BlockRegistryObject SCHINDLER_LINEA_SCREEN_1_BLACK_HORIZONTAL_ODD;
+    public static final BlockRegistryObject SCHINDLER_LINEA_SCREEN_1_BLACK_HORIZONTAL_EVEN;
+    public static final BlockRegistryObject SCHINDLER_LINEA_SCREEN_1_BLACK_VERTICAL_ODD;
+    public static final BlockRegistryObject SCHINDLER_LINEA_SCREEN_1_BLACK_VERTICAL_EVEN;
+    public static final BlockRegistryObject SCHINDLER_LINEA_SCREEN_2_WHITE_HORIZONTAL_ODD;
+    public static final BlockRegistryObject SCHINDLER_LINEA_SCREEN_2_WHITE_HORIZONTAL_EVEN;
+    public static final BlockRegistryObject SCHINDLER_LINEA_SCREEN_2_WHITE_VERTICAL_ODD;
+    public static final BlockRegistryObject SCHINDLER_LINEA_SCREEN_2_WHITE_VERTICAL_EVEN;
+    public static final BlockRegistryObject SCHINDLER_LINEA_SCREEN_2_BLACK_HORIZONTAL_ODD;
+    public static final BlockRegistryObject SCHINDLER_LINEA_SCREEN_2_BLACK_HORIZONTAL_EVEN;
+    public static final BlockRegistryObject SCHINDLER_LINEA_SCREEN_2_BLACK_VERTICAL_ODD;
+    public static final BlockRegistryObject SCHINDLER_LINEA_SCREEN_2_BLACK_VERTICAL_EVEN;
     public static final BlockRegistryObject SCHINDLER_Z_LINE_3_KEYPAD_1;
 
     public static final BlockRegistryObject THYSSENKRUPP_TEGL1_BUTTON_1;
@@ -132,7 +152,17 @@ public class Blocks {
     public static final BlockRegistryObject HITACHI_VIB221_BUTTON_DOT_MATRIX;
     public static final BlockRegistryObject HITACHI_VIB820_BUTTON;
     public static final BlockRegistryObject HITACHI_VIB820_BUTTON_LCD;
+    public static final BlockRegistryObject HITACHI_HB820_BUTTON;
+    public static final BlockRegistryObject HITACHI_HSB820_BUTTON;
+    public static final BlockRegistryObject HITACHI_VIB820PRO_BUTTON;
+    public static final BlockRegistryObject HITACHI_HSB820PRO_BUTTON;
+    public static final BlockRegistryObject HITACHI_GHD820PRO_SCREEN_ODD;
+    public static final BlockRegistryObject HITACHI_GHD820PRO_SCREEN_EVEN;
+    public static final BlockRegistryObject HITACHI_GHI675_SCREEN_ODD;
+    public static final BlockRegistryObject HITACHI_GHI675_SCREEN_EVEN;
     public static final BlockRegistryObject HITACHI_VIB668_BUTTON;
+    public static final BlockRegistryObject HITACHI_VIB658_BUTTON;
+    public static final BlockRegistryObject HITACHI_VIB663_BUTTON;
 
     public static final BlockRegistryObject TONIC_DS_SCREEN_1_ODD;
     public static final BlockRegistryObject TONIC_DS_SCREEN_1_EVEN;
@@ -196,7 +226,7 @@ public class Blocks {
 
         MITSUBISHI_GPS_BUTTON_1 = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "mitsubishi_gps_button_1"), () -> new Block(new MitsubishiGPSButton1()), CreativeModeTabs.YTE_LIFT_FIXTURES);
         MITSUBISHI_GPS_BUTTON_1_WITHOUT_SCREEN = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "mitsubishi_gps_button_1_without_screen"), () -> new Block(new MitsubishiGPSButton1WithoutScreen()), CreativeModeTabs.YTE_LIFT_FIXTURES);
-        MITSUBISHI_BUTTON_SHUN_HING_PLAZA = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "mitsubishi_button_shun_hing_plaza"), () -> new Block(new MitsubishiButtonShunHingPlaza()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        MITSUBISHI_BUTTON_SHUN_HING_SQUARE = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "mitsubishi_button_shun_hing_plaza"), () -> new Block(new MitsubishiButtonShunHingSquare()), CreativeModeTabs.YTE_LIFT_FIXTURES);
         MITSUBISHI_RYODEN_SCREEN_1_ODD = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "mitsubishi_ryoden_screen_1_odd"), () -> new Block(new MitsubishiRyodenScreen1Odd()), CreativeModeTabs.YTE_LIFT_FIXTURES);
         MITSUBISHI_RYODEN_SCREEN_1_EVEN = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "mitsubishi_ryoden_screen_1_even"), () -> new Block(new MitsubishiRyodenScreen1Even()), CreativeModeTabs.YTE_LIFT_FIXTURES);
         MITSUBISHI_NEXWAY_BUTTON_1 = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "mitsubishi_nexway_button_1"), () -> new Block(new MitsubishiNexWayButton1()), CreativeModeTabs.YTE_LIFT_FIXTURES);
@@ -273,9 +303,29 @@ public class Blocks {
         SCHINDLER_M_SERIES_SCREEN_4_EVEN = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_m_series_screen_4_even"), () -> new Block(new SchindlerMSeriesScreen4Even()), CreativeModeTabs.YTE_LIFT_FIXTURES);
         SCHINDLER_S_SERIES_GREY_BUTTON = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_s_series_grey_button"), () -> new Block(new SchindlerSSeriesGreyButton()), CreativeModeTabs.YTE_LIFT_FIXTURES);
         SCHINDLER_LINEA_BUTTON_1_WHITE = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_button_1_white"), () -> new Block(new SchindlerLineaButton1White()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        SCHINDLER_LINEA_BUTTON_1_WHITE_WITHOUT_SCREEN = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_button_1_white_without_screen"), () -> new Block(new SchindlerLineaButton1WhiteWithoutScreen()), CreativeModeTabs.YTE_LIFT_FIXTURES);
         SCHINDLER_LINEA_BUTTON_1_BLACK = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_button_1_black"), () -> new Block(new SchindlerLineaButton1Black()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        SCHINDLER_LINEA_BUTTON_1_BLACK_WITHOUT_SCREEN = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_button_1_black_without_screen"), () -> new Block(new SchindlerLineaButton1BlackWithoutScreen()), CreativeModeTabs.YTE_LIFT_FIXTURES);
         SCHINDLER_LINEA_BUTTON_2_WHITE = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_button_2_white"), () -> new Block(new SchindlerLineaButton2White()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        SCHINDLER_LINEA_BUTTON_2_WHITE_WITHOUT_SCREEN = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_button_2_white_without_screen"), () -> new Block(new SchindlerLineaButton2WhiteWithoutScreen()), CreativeModeTabs.YTE_LIFT_FIXTURES);
         SCHINDLER_LINEA_BUTTON_2_BLACK = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_button_2_black"), () -> new Block(new SchindlerLineaButton2Black()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        SCHINDLER_LINEA_BUTTON_2_BLACK_WITHOUT_SCREEN = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_button_2_black_without_screen"), () -> new Block(new SchindlerLineaButton2BlackWithoutScreen()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        SCHINDLER_LINEA_SCREEN_1_WHITE_HORIZONTAL_ODD = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_screen_1_white_horizontal_odd"), () -> new Block(new SchindlerLineaScreen1WhiteHorizontalOdd()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        SCHINDLER_LINEA_SCREEN_1_WHITE_HORIZONTAL_EVEN = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_screen_1_white_horizontal_even"), () -> new Block(new SchindlerLineaScreen1WhiteHorizontalEven()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        SCHINDLER_LINEA_SCREEN_1_WHITE_VERTICAL_ODD = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_screen_1_white_vertical_odd"), () -> new Block(new SchindlerLineaScreen1WhiteVerticalOdd()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        SCHINDLER_LINEA_SCREEN_1_WHITE_VERTICAL_EVEN = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_screen_1_white_vertical_even"), () -> new Block(new SchindlerLineaScreen1WhiteVerticalEven()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        SCHINDLER_LINEA_SCREEN_1_BLACK_HORIZONTAL_ODD = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_screen_1_black_horizontal_odd"), () -> new Block(new SchindlerLineaScreen1BlackHorizontalOdd()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        SCHINDLER_LINEA_SCREEN_1_BLACK_HORIZONTAL_EVEN = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_screen_1_black_horizontal_even"), () -> new Block(new SchindlerLineaScreen1BlackHorizontalEven()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        SCHINDLER_LINEA_SCREEN_1_BLACK_VERTICAL_ODD = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_screen_1_black_vertical_odd"), () -> new Block(new SchindlerLineaScreen1BlackVerticalOdd()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        SCHINDLER_LINEA_SCREEN_1_BLACK_VERTICAL_EVEN = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_screen_1_black_vertical_even"), () -> new Block(new SchindlerLineaScreen1BlackVerticalEven()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        SCHINDLER_LINEA_SCREEN_2_WHITE_HORIZONTAL_ODD = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_screen_2_white_horizontal_odd"), () -> new Block(new SchindlerLineaScreen2WhiteHorizontalOdd()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        SCHINDLER_LINEA_SCREEN_2_WHITE_HORIZONTAL_EVEN = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_screen_2_white_horizontal_even"), () -> new Block(new SchindlerLineaScreen2WhiteHorizontalEven()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        SCHINDLER_LINEA_SCREEN_2_WHITE_VERTICAL_ODD = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_screen_2_white_vertical_odd"), () -> new Block(new SchindlerLineaScreen2WhiteVerticalOdd()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        SCHINDLER_LINEA_SCREEN_2_WHITE_VERTICAL_EVEN = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_screen_2_white_vertical_even"), () -> new Block(new SchindlerLineaScreen2WhiteVerticalEven()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        SCHINDLER_LINEA_SCREEN_2_BLACK_HORIZONTAL_ODD = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_screen_2_black_horizontal_odd"), () -> new Block(new SchindlerLineaScreen2BlackHorizontalOdd()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        SCHINDLER_LINEA_SCREEN_2_BLACK_HORIZONTAL_EVEN = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_screen_2_black_horizontal_even"), () -> new Block(new SchindlerLineaScreen2BlackHorizontalEven()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        SCHINDLER_LINEA_SCREEN_2_BLACK_VERTICAL_ODD = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_screen_2_black_vertical_odd"), () -> new Block(new SchindlerLineaScreen2BlackVerticalOdd()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        SCHINDLER_LINEA_SCREEN_2_BLACK_VERTICAL_EVEN = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_linea_screen_2_black_vertical_even"), () -> new Block(new SchindlerLineaScreen2BlackVerticalEven()), CreativeModeTabs.YTE_LIFT_FIXTURES);
         SCHINDLER_Z_LINE_3_KEYPAD_1 = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "schindler_z_line_3_keypad_1"), () -> new Block(new SchindlerZLine3Keypad1()), CreativeModeTabs.YTE_LIFT_FIXTURES);
 
         HITACHI_VIB320_BUTTON = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "hitachi_vib320_button_1"), () -> new Block(new HitachiVIB320Button()), CreativeModeTabs.YTE_LIFT_FIXTURES);
@@ -286,7 +336,17 @@ public class Blocks {
         HITACHI_VIB221_BUTTON_DOT_MATRIX = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "hitachi_vib221_button_1_dot_matrix"), () -> new Block(new HitachiVIB221ButtonDotMatrix()), CreativeModeTabs.YTE_LIFT_FIXTURES);
         HITACHI_VIB820_BUTTON = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "hitachi_vib820_button_1"), () -> new Block(new HitachiVIB820Button()), CreativeModeTabs.YTE_LIFT_FIXTURES);
         HITACHI_VIB820_BUTTON_LCD = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "hitachi_vib820_button_1_lcd"), () -> new Block(new HitachiVIB820ButtonLCD()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        HITACHI_HB820_BUTTON = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "hitachi_hb820_button_1"), () -> new Block(new HitachiHB820Button()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        HITACHI_HSB820_BUTTON = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "hitachi_hsb820_button_1"), () -> new Block(new HitachiHSB820Button()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        HITACHI_GHI675_SCREEN_ODD = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "hitachi_ghi675_screen_1_odd"), () -> new Block(new HitachiGHI675Screen1Odd()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        HITACHI_GHI675_SCREEN_EVEN = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "hitachi_ghi675_screen_1_even"), () -> new Block(new HitachiGHI675Screen1Even()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        HITACHI_VIB820PRO_BUTTON = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "hitachi_vib820pro_button_1"), () -> new Block(new HitachiVIB820proButton()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        HITACHI_HSB820PRO_BUTTON = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "hitachi_hsb820pro_button_1"), () -> new Block(new HitachiHSB820proButton()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        HITACHI_GHD820PRO_SCREEN_ODD = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "hitachi_ghd820pro_screen_1_odd"), () -> new Block(new HitachiGHD820proScreen1Odd()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        HITACHI_GHD820PRO_SCREEN_EVEN = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "hitachi_ghd820pro_screen_1_even"), () -> new Block(new HitachiGHD820proScreen1Even()), CreativeModeTabs.YTE_LIFT_FIXTURES);
         HITACHI_VIB668_BUTTON = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "hitachi_vib668_button_1"), () -> new Block(new HitachiVIB668Button()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        HITACHI_VIB658_BUTTON = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "hitachi_vib658_button_1"), () -> new Block(new HitachiVIB658Button()), CreativeModeTabs.YTE_LIFT_FIXTURES);
+        HITACHI_VIB663_BUTTON = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "hitachi_vib663_button_1"), () -> new Block(new HitachiVIB663Button()), CreativeModeTabs.YTE_LIFT_FIXTURES);
 
         HITACHI_B85_BUTTON_1 = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "hitachi_b85_button_1"), () -> new Block(new HitachiB85Button1()), CreativeModeTabs.YTE_LIFT_FIXTURES);
         HITACHI_B85_BUTTON_1_WITHOUT_SCREEN = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "hitachi_b85_button_1_without_screen"), () -> new Block(new HitachiB85Button1WithoutScreen()), CreativeModeTabs.YTE_LIFT_FIXTURES);

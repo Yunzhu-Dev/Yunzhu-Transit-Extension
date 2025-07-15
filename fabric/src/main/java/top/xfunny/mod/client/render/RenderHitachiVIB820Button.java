@@ -39,6 +39,7 @@ public class RenderHitachiVIB820Button extends BlockEntityRenderer<HitachiVIB820
     private static final Identifier BUTTON_DOWN_TEXTURE = new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/wl_mwb_down.png");
     private static final Identifier LIGHT_DOWN_TEXTURE = new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/wl_mwb_down_light.png");
     private static final BooleanProperty UNLOCKED = BooleanProperty.of("unlocked");
+
     public RenderHitachiVIB820Button(Argument dispatcher) {
         super(dispatcher);
     }

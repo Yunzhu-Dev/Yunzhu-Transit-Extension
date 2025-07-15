@@ -1,0 +1,138 @@
+{
+  "format_version": "1.21.6",
+  "credit": "Made with Blockbench",
+  "texture_size": [
+    225,
+    950
+  ],
+  "textures": {
+    "0": "yte:block/hitachi_vib221",
+    "1": "yte:block/black",
+    "particle": "yte:block/hitachi_vib221"
+  },
+  "elements": [
+    {
+      "from": [
+        11.65,
+        10.75,
+        0
+      ],
+      "to": [
+        16,
+        13.25,
+        0.1
+      ],
+      "rotation": {
+        "angle": 0,
+        "axis": "y",
+        "origin": [
+          7.875,
+          1.875,
+          0
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            1.43158,
+            8,
+            6.31579
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            0,
+            0.84211,
+            8,
+            15.15789
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            0,
+            0.84211,
+            0.71111,
+            15.15789
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            0,
+            1.16211,
+            8,
+            1.48211
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            0,
+            9.71789,
+            8,
+            10.03789
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "from": [
+        12.65,
+        11.125,
+        0.125
+      ],
+      "to": [
+        16,
+        12.875,
+        0.125
+      ],
+      "rotation": {
+        "angle": 0,
+        "axis": "y",
+        "origin": [
+          7.875,
+          1.875,
+          0.125
+        ]
+      },
+      "faces": {
+        "south": {
+          "uv": [
+            0,
+            0.84211,
+            16,
+            15.15789
+          ],
+          "texture": "#1"
+        }
+      }
+    }
+  ],
+  "display": {
+    "thirdperson_righthand": {
+      "translation": [
+        0,
+        3.75,
+        7.5
+      ]
+    },
+    "thirdperson_lefthand": {
+      "translation": [
+        0,
+        3.75,
+        7.5
+      ]
+    },
+    "fixed": {
+      "translation": [
+        0,
+        0,
+        8.5
+      ]
+    }
+  }
+}

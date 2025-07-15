@@ -69,7 +69,7 @@ public class RenderMitsubishiNexWayLantern1Horizontal<T extends LiftButtonsBase.
         parentLayout.setBasicsAttributes(world, blockPos);
         parentLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
         parentLayout.setParentDimensions(15.5F / 16, 4.5F / 16);
-        parentLayout.setPosition(isOdd ? -7.75F/16 : -15.75F/16, 9F/16);
+        parentLayout.setPosition(isOdd ? -7.75F / 16 : -15.75F / 16, 9F / 16);
         parentLayout.setWidth(LayoutSize.MATCH_PARENT);
         parentLayout.setHeight(LayoutSize.MATCH_PARENT);
 
@@ -111,7 +111,7 @@ public class RenderMitsubishiNexWayLantern1Horizontal<T extends LiftButtonsBase.
         lanternArrowDownLeft.setDimension(2.75F / 16);
         lanternArrowDownLeft.setGravity(Gravity.CENTER);
         lanternArrowDownLeft.setLight(light);
-        lanternArrowDownLeft.setFlip(false,true);
+        lanternArrowDownLeft.setFlip(false, true);
 
         final ImageView lanternArrowDownRight = new ImageView();
         lanternArrowDownRight.setBasicsAttributes(world, blockPos);
@@ -119,7 +119,7 @@ public class RenderMitsubishiNexWayLantern1Horizontal<T extends LiftButtonsBase.
         lanternArrowDownRight.setDimension(2.75F / 16);
         lanternArrowDownRight.setGravity(Gravity.CENTER);
         lanternArrowDownRight.setLight(light);
-        lanternArrowDownRight.setFlip(false,true);
+        lanternArrowDownRight.setFlip(false, true);
 
         final ButtonView downLanternLeft = new ButtonView();
         downLanternLeft.setBasicsAttributes(world, blockPos);
@@ -232,7 +232,7 @@ public class RenderMitsubishiNexWayLantern1Horizontal<T extends LiftButtonsBase.
         });
 
         if (buttonDescriptor.hasDownButton() && buttonDescriptor.hasUpButton()) {
-            lanternGroupLeft.setMargin(0, 0, 0.5F/16, 0);
+            lanternGroupLeft.setMargin(0, 0, 0.5F / 16, 0);
             lanternGroupLeft.addChild(downLanternLeft);
             lanternGroupLeft.addChild(lanternArrowDownLeft);
             lanternGroupRight.addChild(upLanternRight);

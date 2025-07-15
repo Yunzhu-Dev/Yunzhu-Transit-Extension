@@ -1,23 +1,87 @@
 {
-	"format_version": "1.21.6",
-	"credit": "Made with Blockbench",
-	"textures": {
-		"2": "yte:block/mitsubishi_mpvf_panel_1",
-		"particle": "yte:block/mitsubishi_mpvf_panel_1"
-	},
-	"elements": [
-		{
-			"from": [6.95, 1.35, 0],
-			"to": [9.05, 6.65, 0.05],
-			"rotation": {"angle": 0, "axis": "y", "origin": [3.775, 2, 0]},
-			"faces": {
-				"north": {"uv": [0, 0, 0.3, 11], "texture": "#2"},
-				"east": {"uv": [0, 0, 0.3, 11], "texture": "#2"},
-				"south": {"uv": [0, 0, 16, 16], "texture": "#2"},
-				"west": {"uv": [0, 0, 0.5, 11], "texture": "#2"},
-				"up": {"uv": [0, 0, 0.3, 11], "texture": "#2"},
-				"down": {"uv": [0, 0, 0.3, 11], "texture": "#2"}
-			}
-		}
-	]
+  "format_version": "1.21.6",
+  "credit": "Made with Blockbench",
+  "textures": {
+    "2": "yte:block/mitsubishi_mpvf_panel_1",
+    "particle": "yte:block/mitsubishi_mpvf_panel_1"
+  },
+  "elements": [
+    {
+      "from": [
+        6.95,
+        1.35,
+        0
+      ],
+      "to": [
+        9.05,
+        6.65,
+        0.05
+      ],
+      "rotation": {
+        "angle": 0,
+        "axis": "y",
+        "origin": [
+          3.775,
+          2,
+          0
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            0.3,
+            11
+          ],
+          "texture": "#2"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.3,
+            11
+          ],
+          "texture": "#2"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#2"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            11
+          ],
+          "texture": "#2"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            0.3,
+            11
+          ],
+          "texture": "#2"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            0.3,
+            11
+          ],
+          "texture": "#2"
+        }
+      }
+    }
+  ]
 }

@@ -35,11 +35,12 @@ public class RenderKoneKDS330Button1 extends BlockEntityRenderer<KoneKDS330Butto
     private static final int PRESSED_COLOR = 0xFFFFFFFF;
     private static final int DEFAULT_COLOR = 0xFFFFFFFF;
     private static final Identifier ARROW_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/kone_arrow_light.png");
+    private static final BooleanProperty UNLOCKED = BooleanProperty.of("unlocked");
     private final Identifier BUTTON_TEXTURE_UP = new Identifier(Init.MOD_ID, "textures/block/kone_kds330_up_button.png");
     private final Identifier BUTTON_TEXTURE_DOWN = new Identifier(Init.MOD_ID, "textures/block/kone_kds330_up_button.png");//todo
     private final Identifier BUTTON_LIGHT_TEXTURE_UP = new Identifier(Init.MOD_ID, "textures/block/kone_kds330_up_button_light.png");
     private final Identifier BUTTON_LIGHT_TEXTURE_DOWN = new Identifier(Init.MOD_ID, "textures/block/kone_kds330_up_button_light.png");//todo
-    private static final BooleanProperty UNLOCKED = BooleanProperty.of("unlocked");
+
     public RenderKoneKDS330Button1(Argument dispatcher) {
         super(dispatcher);
     }
@@ -76,7 +77,7 @@ public class RenderKoneKDS330Button1 extends BlockEntityRenderer<KoneKDS330Butto
         screenContainer.setBasicsAttributes(world, blockPos);
         screenContainer.setStoredMatrixTransformations(storedMatrixTransformations1);
         screenContainer.setParentDimensions(4.5F / 16, 3F / 16);
-        screenContainer.setPosition(-2.25F/16, 3.775F/16);
+        screenContainer.setPosition(-2.25F / 16, 3.775F / 16);
         screenContainer.setWidth(LayoutSize.MATCH_PARENT);
         screenContainer.setHeight(LayoutSize.MATCH_PARENT);
 
@@ -84,7 +85,7 @@ public class RenderKoneKDS330Button1 extends BlockEntityRenderer<KoneKDS330Butto
         buttonUpLayout.setBasicsAttributes(world, blockPos);
         buttonUpLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
         buttonUpLayout.setParentDimensions(4.5F / 16, 3.05F / 16);
-        buttonUpLayout.setPosition(-2.25F/16, 6.775F/16);
+        buttonUpLayout.setPosition(-2.25F / 16, 6.775F / 16);
         buttonUpLayout.setWidth(LayoutSize.MATCH_PARENT);
         buttonUpLayout.setHeight(LayoutSize.MATCH_PARENT);
 
@@ -92,7 +93,7 @@ public class RenderKoneKDS330Button1 extends BlockEntityRenderer<KoneKDS330Butto
         buttonDownLayout.setBasicsAttributes(world, blockPos);
         buttonDownLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
         buttonDownLayout.setParentDimensions(4.5F / 16, 3.05F / 16);
-        buttonDownLayout.setPosition(-2.25F/16, 0.725F/16);
+        buttonDownLayout.setPosition(-2.25F / 16, 0.725F / 16);
         buttonDownLayout.setWidth(LayoutSize.MATCH_PARENT);
         buttonDownLayout.setHeight(LayoutSize.MATCH_PARENT);
 
@@ -201,9 +202,9 @@ public class RenderKoneKDS330Button1 extends BlockEntityRenderer<KoneKDS330Butto
                         6,//字号
                         0xFFFFFFFF);//字体颜色
                 liftFloorDisplayView.setTextureId("kone-kds-330-lcd-segment");//字体贴图id，不能与其他显示屏的重复
-                liftFloorDisplayView.setWidth(1.6F / 16);//显示屏宽度
+                liftFloorDisplayView.setWidth(1.8F / 16);//显示屏宽度
                 liftFloorDisplayView.setHeight(1.7F / 16);//显示屏高度
-                liftFloorDisplayView.setMargin(0, 0, 0, 0);
+                liftFloorDisplayView.setMargin(-0.25F / 16, 0, 0.4F / 16, 0);
                 liftFloorDisplayView.setTextAlign(TextView.HorizontalTextAlign.RIGHT);//文字对齐方式，center为居中对齐，left为左对齐，right为右对齐
 
                 //添加箭头

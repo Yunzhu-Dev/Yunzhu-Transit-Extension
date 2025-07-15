@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "yte:block/schindler_linea_screen_1_black_vertical_odd"
+    },
+    "facing=east": {
+      "model": "yte:block/schindler_linea_screen_1_black_vertical_odd",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "yte:block/schindler_linea_screen_1_black_vertical_odd",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "yte:block/schindler_linea_screen_1_black_vertical_odd",
+      "y": 270
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "yte:item/hitachi_ghi675_screen_1_even"
+  }
+}

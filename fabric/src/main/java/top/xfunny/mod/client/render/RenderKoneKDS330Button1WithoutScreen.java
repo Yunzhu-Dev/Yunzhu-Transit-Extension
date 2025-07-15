@@ -69,7 +69,7 @@ public class RenderKoneKDS330Button1WithoutScreen extends BlockEntityRenderer<Ko
         buttonUpLayout.setBasicsAttributes(world, blockPos);
         buttonUpLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
         buttonUpLayout.setParentDimensions(4.5F / 16, 3.05F / 16);
-        buttonUpLayout.setPosition(-2.25F/16, 5.275F/16);
+        buttonUpLayout.setPosition(-2.25F / 16, 5.275F / 16);
         buttonUpLayout.setWidth(LayoutSize.MATCH_PARENT);
         buttonUpLayout.setHeight(LayoutSize.MATCH_PARENT);
 
@@ -77,7 +77,7 @@ public class RenderKoneKDS330Button1WithoutScreen extends BlockEntityRenderer<Ko
         buttonDownLayout.setBasicsAttributes(world, blockPos);
         buttonDownLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
         buttonDownLayout.setParentDimensions(4.5F / 16, 3.05F / 16);
-        buttonDownLayout.setPosition(-2.25F/16, 0.725F/16);
+        buttonDownLayout.setPosition(-2.25F / 16, 0.725F / 16);
         buttonDownLayout.setWidth(LayoutSize.MATCH_PARENT);
         buttonDownLayout.setHeight(LayoutSize.MATCH_PARENT);
 

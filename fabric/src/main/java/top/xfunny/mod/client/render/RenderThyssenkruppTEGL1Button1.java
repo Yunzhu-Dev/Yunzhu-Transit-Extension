@@ -149,7 +149,6 @@ public class RenderThyssenkruppTEGL1Button1 extends BlockEntityRenderer<Thyssenk
         buttonDownLight.setFlip(false, true);
 
 
-
         final LineComponent line = new LineComponent();
         line.setBasicsAttributes(world, blockPos);
 

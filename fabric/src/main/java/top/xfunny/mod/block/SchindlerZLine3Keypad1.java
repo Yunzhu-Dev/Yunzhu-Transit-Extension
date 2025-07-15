@@ -8,7 +8,6 @@ import top.xfunny.mod.BlockEntityTypes;
 import top.xfunny.mod.Items;
 import top.xfunny.mod.block.base.LiftDestinationDispatchTerminalBase;
 import top.xfunny.mod.keymapping.DefaultButtonsKeyMapping;
-import top.xfunny.mod.keymapping.SchindlerZLine3Keypad1KeyMapping;
 import top.xfunny.mod.util.ArrayListToString;
 import top.xfunny.mod.util.TransformPositionX;
 

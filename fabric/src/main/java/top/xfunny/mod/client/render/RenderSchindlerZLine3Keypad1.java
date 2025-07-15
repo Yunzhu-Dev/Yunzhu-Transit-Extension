@@ -182,7 +182,7 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
         final ButtonView number1 = new ButtonView();
         number1.setId("number1");
         number1.setBasicsAttributes(world, blockPos, keyMapping);
-        number1.setDimension(1F / 16,94,101);
+        number1.setDimension(1F / 16, 94, 101);
         number1.setLight(light);
         number1.setDefaultColor(DEFAULT_COLOR);
         number1.setHoverColor(HOVER_COLOR);
@@ -192,7 +192,7 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
         final ButtonView number2 = new ButtonView();
         number2.setId("number2");
         number2.setBasicsAttributes(world, blockPos, keyMapping);
-        number2.setDimension(1F / 16,94,101);
+        number2.setDimension(1F / 16, 94, 101);
         number2.setLight(light);
         number2.setDefaultColor(DEFAULT_COLOR);
         number2.setHoverColor(HOVER_COLOR);
@@ -202,7 +202,7 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
         final ButtonView number3 = new ButtonView();
         number3.setId("number3");
         number3.setBasicsAttributes(world, blockPos, keyMapping);
-        number3.setDimension(1F / 16,94,101);
+        number3.setDimension(1F / 16, 94, 101);
         number3.setLight(light);
         number3.setDefaultColor(DEFAULT_COLOR);
         number3.setHoverColor(HOVER_COLOR);
@@ -211,7 +211,7 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
         final ButtonView number4 = new ButtonView();
         number4.setId("number4");
         number4.setBasicsAttributes(world, blockPos, keyMapping);
-        number4.setDimension(1F / 16,94,101);
+        number4.setDimension(1F / 16, 94, 101);
         number4.setLight(light);
         number4.setDefaultColor(DEFAULT_COLOR);
         number4.setHoverColor(HOVER_COLOR);
@@ -221,7 +221,7 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
         final ButtonView number5 = new ButtonView();
         number5.setId("number5");
         number5.setBasicsAttributes(world, blockPos, keyMapping);
-        number5.setDimension(1F / 16,94,101);
+        number5.setDimension(1F / 16, 94, 101);
         number5.setLight(light);
         number5.setDefaultColor(DEFAULT_COLOR);
         number5.setHoverColor(HOVER_COLOR);
@@ -231,7 +231,7 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
         final ButtonView number6 = new ButtonView();
         number6.setId("number6");
         number6.setBasicsAttributes(world, blockPos, keyMapping);
-        number6.setDimension(1F / 16,94,101);
+        number6.setDimension(1F / 16, 94, 101);
         number6.setLight(light);
         number6.setDefaultColor(DEFAULT_COLOR);
         number6.setHoverColor(HOVER_COLOR);
@@ -240,7 +240,7 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
         final ButtonView number7 = new ButtonView();
         number7.setId("number7");
         number7.setBasicsAttributes(world, blockPos, keyMapping);
-        number7.setDimension(1F / 16,94,101);
+        number7.setDimension(1F / 16, 94, 101);
         number7.setLight(light);
         number7.setDefaultColor(DEFAULT_COLOR);
         number7.setHoverColor(HOVER_COLOR);
@@ -250,7 +250,7 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
         final ButtonView number8 = new ButtonView();
         number8.setId("number8");
         number8.setBasicsAttributes(world, blockPos, keyMapping);
-        number8.setDimension(1F / 16,94,101);
+        number8.setDimension(1F / 16, 94, 101);
         number8.setLight(light);
         number8.setDefaultColor(DEFAULT_COLOR);
         number8.setHoverColor(HOVER_COLOR);
@@ -260,7 +260,7 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
         final ButtonView number9 = new ButtonView();
         number9.setId("number9");
         number9.setBasicsAttributes(world, blockPos, keyMapping);
-        number9.setDimension(1F / 16,94,101);
+        number9.setDimension(1F / 16, 94, 101);
         number9.setLight(light);
         number9.setDefaultColor(DEFAULT_COLOR);
         number9.setHoverColor(HOVER_COLOR);
@@ -269,7 +269,7 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
         final ButtonView number0 = new ButtonView();
         number0.setId("number0");
         number0.setBasicsAttributes(world, blockPos, keyMapping);
-        number0.setDimension(1F / 16,94,101);
+        number0.setDimension(1F / 16, 94, 101);
         number0.setLight(light);
         number0.setDefaultColor(DEFAULT_COLOR);
         number0.setHoverColor(HOVER_COLOR);
@@ -279,7 +279,7 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
         final ButtonView lobby = new ButtonView();
         lobby.setId("lobby");
         lobby.setBasicsAttributes(world, blockPos, keyMapping);
-        lobby.setDimension(1F / 16,94,101);
+        lobby.setDimension(1F / 16, 94, 101);
         lobby.setLight(light);
         lobby.setDefaultColor(DEFAULT_COLOR);
         lobby.setHoverColor(HOVER_COLOR);
@@ -289,7 +289,7 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
         final ButtonView basement = new ButtonView();
         basement.setId("basement");
         basement.setBasicsAttributes(world, blockPos, keyMapping);
-        basement.setDimension(1F / 16,94,101);
+        basement.setDimension(1F / 16, 94, 101);
         basement.setLight(light);
         basement.setDefaultColor(DEFAULT_COLOR);
         basement.setHoverColor(HOVER_COLOR);
@@ -299,7 +299,7 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
         final ButtonView accessibility = new ButtonView();
         accessibility.setId("accessibility");
         accessibility.setBasicsAttributes(world, blockPos, keyMapping);
-        accessibility.setDimension(3.5F / 16,326,98);
+        accessibility.setDimension(3.5F / 16, 326, 98);
         accessibility.setLight(light);
         accessibility.setDefaultColor(DEFAULT_COLOR);
         accessibility.setHoverColor(HOVER_COLOR);

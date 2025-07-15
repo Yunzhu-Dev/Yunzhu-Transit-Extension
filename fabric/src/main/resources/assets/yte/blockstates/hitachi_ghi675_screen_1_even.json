@@ -1,0 +1,82 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "north",
+        "side": "left"
+      },
+      "apply": {
+        "model": "yte:block/hitachi_ghi675_screen_1_even_left"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "side": "left"
+      },
+      "apply": {
+        "model": "yte:block/hitachi_ghi675_screen_1_even_left",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "side": "left"
+      },
+      "apply": {
+        "model": "yte:block/hitachi_ghi675_screen_1_even_left",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "side": "left"
+      },
+      "apply": {
+        "model": "yte:block/hitachi_ghi675_screen_1_even_left",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "side": "right"
+      },
+      "apply": {
+        "model": "yte:block/hitachi_ghi675_screen_1_even_right"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "side": "right"
+      },
+      "apply": {
+        "model": "yte:block/hitachi_ghi675_screen_1_even_right",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "side": "right"
+      },
+      "apply": {
+        "model": "yte:block/hitachi_ghi675_screen_1_even_right",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "side": "right"
+      },
+      "apply": {
+        "model": "yte:block/hitachi_ghi675_screen_1_even_right",
+        "y": 270
+      }
+    }
+  ]
+}

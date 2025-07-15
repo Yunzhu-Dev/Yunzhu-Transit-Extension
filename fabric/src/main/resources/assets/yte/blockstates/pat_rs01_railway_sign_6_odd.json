@@ -1,19 +1,19 @@
 {
-	"variants": {
-		"facing=north": {
-			"model": "yte:block/pat_rs01_railway_sign_end_zero"
-		},
-		"facing=east": {
-			"model": "yte:block/pat_rs01_railway_sign_end_zero",
-			"y": 90
-		},
-		"facing=south": {
-			"model": "yte:block/pat_rs01_railway_sign_end_zero",
-			"y": 180
-		},
-		"facing=west": {
-			"model": "yte:block/pat_rs01_railway_sign_end_zero",
-			"y": 270
-		}
-	}
+  "variants": {
+    "facing=north": {
+      "model": "yte:block/pat_rs01_railway_sign_end_zero"
+    },
+    "facing=east": {
+      "model": "yte:block/pat_rs01_railway_sign_end_zero",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "yte:block/pat_rs01_railway_sign_end_zero",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "yte:block/pat_rs01_railway_sign_end_zero",
+      "y": 270
+    }
+  }
 }

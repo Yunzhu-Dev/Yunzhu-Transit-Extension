@@ -13,30 +13,28 @@ import org.mtr.mapping.mapper.GraphicsHolder;
 import org.mtr.mapping.mapper.PlayerHelper;
 import org.mtr.mod.block.IBlock;
 import org.mtr.mod.data.IGui;
-import org.mtr.mod.render.QueuedRenderLayer;
 import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.Init;
-import top.xfunny.mod.block.KoneKSS280Button1;
 import top.xfunny.mod.block.KoneKSS280Button1WithoutScreen;
 import top.xfunny.mod.block.base.LiftButtonsBase;
-import top.xfunny.mod.client.resource.FontList;
-import top.xfunny.mod.client.view.*;
+import top.xfunny.mod.client.view.ButtonView;
+import top.xfunny.mod.client.view.Gravity;
+import top.xfunny.mod.client.view.LayoutSize;
+import top.xfunny.mod.client.view.LineComponent;
 import top.xfunny.mod.client.view.view_group.FrameLayout;
 import top.xfunny.mod.client.view.view_group.LinearLayout;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
 import top.xfunny.mod.keymapping.DefaultButtonsKeyMapping;
-import top.xfunny.mod.util.ReverseRendering;
-
-import java.util.Comparator;
 
 public class RenderKoneKSS280Button1WithoutScreen extends BlockEntityRenderer<KoneKSS280Button1WithoutScreen.BlockEntity> implements DirectionHelper, IGui, IBlock {
 
     private static final int HOVER_COLOR = 0xFFCCCCCC;
     private static final int PRESSED_COLOR = 0xFFFFFFFF;
     private static final int DEFAULT_COLOR = 0xFF000000;
-    private final Identifier BUTTON_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/kone_kss280_button_1.png");//todo
     private static final BooleanProperty UNLOCKED = BooleanProperty.of("unlocked");
+    private final Identifier BUTTON_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/kone_kss280_button_1.png");//todo
+
     public RenderKoneKSS280Button1WithoutScreen(Argument dispatcher) {
         super(dispatcher);
     }
@@ -73,7 +71,7 @@ public class RenderKoneKSS280Button1WithoutScreen extends BlockEntityRenderer<Ko
         screenContainer.setBasicsAttributes(world, blockPos);
         screenContainer.setStoredMatrixTransformations(storedMatrixTransformations1);
         screenContainer.setParentDimensions(2.5F / 16, 3F / 16);
-        screenContainer.setPosition(-1.25F/16, 0.675F/16);
+        screenContainer.setPosition(-1.25F / 16, 0.675F / 16);
         screenContainer.setWidth(LayoutSize.MATCH_PARENT);
         screenContainer.setHeight(LayoutSize.MATCH_PARENT);
 
@@ -81,7 +79,7 @@ public class RenderKoneKSS280Button1WithoutScreen extends BlockEntityRenderer<Ko
         buttonUpLayout.setBasicsAttributes(world, blockPos);
         buttonUpLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
         buttonUpLayout.setParentDimensions(2.5F / 16, 3.05F / 16);
-        buttonUpLayout.setPosition(-1.25F/16, 3.875F/16);
+        buttonUpLayout.setPosition(-1.25F / 16, 3.875F / 16);
         buttonUpLayout.setWidth(LayoutSize.MATCH_PARENT);
         buttonUpLayout.setHeight(LayoutSize.MATCH_PARENT);
 
@@ -89,7 +87,7 @@ public class RenderKoneKSS280Button1WithoutScreen extends BlockEntityRenderer<Ko
         buttonDownLayout.setBasicsAttributes(world, blockPos);
         buttonDownLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
         buttonDownLayout.setParentDimensions(2.5F / 16, 3.05F / 16);
-        buttonDownLayout.setPosition(-1.25F/16, 0.925F/16);
+        buttonDownLayout.setPosition(-1.25F / 16, 0.925F / 16);
         buttonDownLayout.setWidth(LayoutSize.MATCH_PARENT);
         buttonDownLayout.setHeight(LayoutSize.MATCH_PARENT);
 
@@ -98,7 +96,7 @@ public class RenderKoneKSS280Button1WithoutScreen extends BlockEntityRenderer<Ko
         screenLayout.setWidth(LayoutSize.WRAP_CONTENT);
         screenLayout.setHeight(LayoutSize.WRAP_CONTENT);
         screenLayout.setGravity(Gravity.CENTER);
-        screenLayout.setMargin(0.2F/16, 0, 0, 0);
+        screenLayout.setMargin(0.2F / 16, 0, 0, 0);
 
         final FrameLayout buttonUpGroup = new FrameLayout();
         buttonUpGroup.setBasicsAttributes(world, blockPos);
@@ -116,7 +114,7 @@ public class RenderKoneKSS280Button1WithoutScreen extends BlockEntityRenderer<Ko
         buttonUpLight.setId("up");
         buttonUpLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonUpLight.setTexture(BUTTON_TEXTURE);
-        buttonUpLight.setDimension(0.7F / 16,569,395);
+        buttonUpLight.setDimension(0.7F / 16, 569, 395);
         buttonUpLight.setGravity(Gravity.CENTER);
         buttonUpLight.setLight(light);
         buttonUpLight.setDefaultColor(DEFAULT_COLOR);
@@ -127,7 +125,7 @@ public class RenderKoneKSS280Button1WithoutScreen extends BlockEntityRenderer<Ko
         buttonDownLight.setId("down");
         buttonDownLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonDownLight.setTexture(BUTTON_TEXTURE);
-        buttonDownLight.setDimension(0.7F / 16,569,395);
+        buttonDownLight.setDimension(0.7F / 16, 569, 395);
         buttonDownLight.setGravity(Gravity.CENTER);
         buttonDownLight.setLight(light);
         buttonDownLight.setDefaultColor(DEFAULT_COLOR);

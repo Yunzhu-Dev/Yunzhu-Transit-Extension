@@ -17,7 +17,10 @@ import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.Init;
 import top.xfunny.mod.block.SchindlerMSeriesRoundLantern1Even;
 import top.xfunny.mod.block.base.LiftButtonsBase;
-import top.xfunny.mod.client.view.*;
+import top.xfunny.mod.client.view.ButtonView;
+import top.xfunny.mod.client.view.Gravity;
+import top.xfunny.mod.client.view.LayoutSize;
+import top.xfunny.mod.client.view.LineComponent;
 import top.xfunny.mod.client.view.view_group.LinearLayout;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
@@ -70,7 +73,7 @@ public class RenderOtisSeries3Lantern1Arrow<T extends LiftButtonsBase.BlockEntit
         parentLayout.setWidth(LayoutSize.MATCH_PARENT);
         parentLayout.setHeight(LayoutSize.MATCH_PARENT);
 
-        ButtonView upLantern  = new ButtonView();
+        ButtonView upLantern = new ButtonView();
         upLantern.setBasicsAttributes(world, blockPos);
         upLantern.setTexture(BUTTON_TEXTURE);
         upLantern.setDimension(1.2F / 16);
@@ -78,9 +81,9 @@ public class RenderOtisSeries3Lantern1Arrow<T extends LiftButtonsBase.BlockEntit
         upLantern.setLight(light);
         upLantern.setDefaultColor(DEFAULT_COLOR);
         upLantern.setPressedColor(PRESSED_COLOR_UP);
-        upLantern.setMargin(0, 0.5F/16, 0, 1.1F/16);
+        upLantern.setMargin(0, 0.5F / 16, 0, 1.1F / 16);
 
-        ButtonView downLantern  = new ButtonView();
+        ButtonView downLantern = new ButtonView();
         downLantern.setBasicsAttributes(world, blockPos);
         downLantern.setTexture(BUTTON_TEXTURE);
         downLantern.setDimension(1.2F / 16);
@@ -88,7 +91,7 @@ public class RenderOtisSeries3Lantern1Arrow<T extends LiftButtonsBase.BlockEntit
         downLantern.setLight(light);
         downLantern.setDefaultColor(DEFAULT_COLOR);
         downLantern.setPressedColor(PRESSED_COLOR_DOWN);
-        downLantern.setFlip(false,true);
+        downLantern.setFlip(false, true);
         downLantern.setMargin(0, 0, 0, 0);
 
         final LineComponent line = new LineComponent();
@@ -157,7 +160,7 @@ public class RenderOtisSeries3Lantern1Arrow<T extends LiftButtonsBase.BlockEntit
             buttonLine.RenderLine(holdingLinker, buttonPosition, true);
         });
 
-        if(buttonDescriptor.hasUpButton() || buttonDescriptor.hasDownButton()){
+        if (buttonDescriptor.hasUpButton() || buttonDescriptor.hasDownButton()) {
             parentLayout.addChild(upLantern);
             parentLayout.addChild(downLantern);
         }

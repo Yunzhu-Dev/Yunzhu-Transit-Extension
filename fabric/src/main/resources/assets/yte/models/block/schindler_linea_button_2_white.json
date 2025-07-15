@@ -1,23 +1,90 @@
 {
-	"format_version": "1.21.6",
-	"credit": "Made with Blockbench",
-	"texture_size": [466, 1125],
-	"textures": {
-		"1": "yte:block/schindler_linea_panel_1"
-	},
-	"elements": [
-		{
-			"from": [6.625, 0, 0],
-			"to": [9.375, 7, 0.35],
-			"rotation": {"angle": 0, "axis": "y", "origin": [7, 0, 0]},
-			"faces": {
-				"north": {"uv": [0, 14.32143, 16, 16], "texture": "#1"},
-				"east": {"uv": [15.49127, 0, 16, 16], "texture": "#1"},
-				"south": {"uv": [0, 0, 15.38197, 16], "texture": "#1"},
-				"west": {"uv": [16, 0, 15.48197, 16], "texture": "#1"},
-				"up": {"uv": [0, 0, 16, 0.1], "texture": "#1"},
-				"down": {"uv": [0, 15.9, 16, 16], "texture": "#1"}
-			}
-		}
-	]
+  "format_version": "1.21.6",
+  "credit": "Made with Blockbench",
+  "texture_size": [
+    466,
+    1125
+  ],
+  "textures": {
+    "1": "yte:block/schindler_linea_panel_1"
+  },
+  "elements": [
+    {
+      "from": [
+        6.625,
+        0,
+        0
+      ],
+      "to": [
+        9.375,
+        7,
+        0.35
+      ],
+      "rotation": {
+        "angle": 0,
+        "axis": "y",
+        "origin": [
+          7,
+          0,
+          0
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            14.32143,
+            16,
+            16
+          ],
+          "texture": "#1"
+        },
+        "east": {
+          "uv": [
+            15.49127,
+            0,
+            16,
+            16
+          ],
+          "texture": "#1"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            15.38197,
+            16
+          ],
+          "texture": "#1"
+        },
+        "west": {
+          "uv": [
+            16,
+            0,
+            15.48197,
+            16
+          ],
+          "texture": "#1"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            0.1
+          ],
+          "texture": "#1"
+        },
+        "down": {
+          "uv": [
+            0,
+            15.9,
+            16,
+            16
+          ],
+          "texture": "#1"
+        }
+      }
+    }
+  ]
 }

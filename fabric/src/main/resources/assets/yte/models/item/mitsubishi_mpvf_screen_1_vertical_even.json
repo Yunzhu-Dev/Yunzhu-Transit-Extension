@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "yte:item/mitsubishi_mpvf_screen_1_vertical_even"
+  }
+}

@@ -24,8 +24,8 @@ public class HitachiButtonPAFC extends LiftButtonsBase {
         final boolean single = !IBlock.getStatePropertySafe(world.getBlockState(pos), SINGLE);
         return IBlock.getVoxelShapeByDirection(single ? 6.1 : 6.95, 0.6, 0, single ? 9.9 : 9.05, 12.4, 0.05, IBlock.getStatePropertySafe(state, FACING));
     }
-    /**
 
+    /**
      * 创建方块实体扩展
      * 此方法用于实例化与电梯按钮相关的方块实体
      *
@@ -53,6 +53,7 @@ public class HitachiButtonPAFC extends LiftButtonsBase {
         properties.add(UNLOCKED);
         properties.add(SINGLE);
     }
+
     public void addTooltips(@NotNull ItemStack stack, @Nullable BlockView world, List<MutableText> tooltip, @NotNull TooltipContext options) {
         tooltip.add(TextHelper.translatable("tooltip.warning_block_testing").formatted(TextFormatting.RED));
     }

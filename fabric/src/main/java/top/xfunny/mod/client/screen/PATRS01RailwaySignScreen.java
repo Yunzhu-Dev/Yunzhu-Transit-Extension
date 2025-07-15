@@ -16,7 +16,6 @@ import org.mtr.mod.client.IDrawing;
 import org.mtr.mod.client.MinecraftClientData;
 import org.mtr.mod.data.IGui;
 import org.mtr.mod.generated.lang.TranslationProvider;
-import org.mtr.mod.packet.PacketUpdateRailwaySignConfig;
 import org.mtr.mod.render.RenderRailwaySign;
 import org.mtr.mod.resource.SignResource;
 import org.mtr.mod.screen.*;
@@ -26,12 +25,9 @@ import javax.annotation.Nullable;
 
 public class PATRS01RailwaySignScreen extends ScreenExtension implements IGui {
 
-    private int editingIndex;
-    private int page;
-    private int totalPages;
-    private int columns;
-    private int rows;
-
+    private static final int SIGN_SIZE = 32;
+    private static final int SIGN_BUTTON_SIZE = 16;
+    private static final int BUTTON_Y_START = SIGN_SIZE + SQUARE_SIZE + SQUARE_SIZE / 2;
     private final BlockPos signPos;
     private final boolean isRailwaySign;
     private final int length;
@@ -42,16 +38,16 @@ public class PATRS01RailwaySignScreen extends ScreenExtension implements IGui {
     private final ObjectArraySet<DashboardListItem> routesForList;
     private final ObjectArraySet<DashboardListItem> stationsForList;
     private final ObjectArrayList<String> allSignIds = new ObjectArrayList<>();
-
     private final ButtonWidgetExtension[] buttonsEdit;
     private final ButtonWidgetExtension[] buttonsSelection;
     private final ButtonWidgetExtension buttonClear;
     private final TexturedButtonWidgetExtension buttonPrevPage;
     private final TexturedButtonWidgetExtension buttonNextPage;
-
-    private static final int SIGN_SIZE = 32;
-    private static final int SIGN_BUTTON_SIZE = 16;
-    private static final int BUTTON_Y_START = SIGN_SIZE + SQUARE_SIZE + SQUARE_SIZE / 2;
+    private int editingIndex;
+    private int page;
+    private int totalPages;
+    private int columns;
+    private int rows;
 
     public PATRS01RailwaySignScreen(BlockPos signPos) {
         super();

@@ -30,10 +30,10 @@ import java.util.Comparator;
 import static org.mtr.core.data.LiftDirection.NONE;
 
 public class RenderOtisSeries3ELDScreen1<T extends LiftButtonsBase.BlockEntityBase> extends BlockEntityRenderer<T> implements DirectionHelper, IGui, IBlock {
-    private final boolean isOdd;
     private static final Identifier ARROW_TEXTURE = new Identifier(Init.MOD_ID, "textures/block/otis_s3_eld_arrow_1.png");
     private static final int DEFAULT_COLOR = 0xFFFFFFFF;
     private static final int PRESSED_COLOR = 0xFFB29B3C;
+    private final boolean isOdd;
 
     public RenderOtisSeries3ELDScreen1(Argument dispatcher, Boolean isOdd) {
         super(dispatcher);
@@ -90,7 +90,7 @@ public class RenderOtisSeries3ELDScreen1<T extends LiftButtonsBase.BlockEntityBa
         downLantern.setLight(light);
         downLantern.setDefaultColor(DEFAULT_COLOR);
         downLantern.setPressedColor(PRESSED_COLOR);
-        downLantern.setFlip(false,true);
+        downLantern.setFlip(false, true);
 
         final LineComponent line = new LineComponent();
         line.setBasicsAttributes(world, blockPos);
@@ -182,7 +182,7 @@ public class RenderOtisSeries3ELDScreen1<T extends LiftButtonsBase.BlockEntityBa
                 liftFloorDisplayView.setMargin(5F / 16, 0, 0, 0);
                 liftFloorDisplayView.addStoredMatrixTransformations(graphicsHolder -> graphicsHolder.translate(0, 0, -SMALL_OFFSET));
 
-                if(!parentLayout.getChildren().contains(upLantern) && !parentLayout.getChildren().contains(downLantern)){
+                if (!parentLayout.getChildren().contains(upLantern) && !parentLayout.getChildren().contains(downLantern)) {
                     parentLayout.addChild(liftFloorDisplayView);
                 }
 

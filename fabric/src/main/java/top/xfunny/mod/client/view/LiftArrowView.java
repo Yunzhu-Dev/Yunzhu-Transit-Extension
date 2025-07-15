@@ -26,22 +26,22 @@ public class LiftArrowView extends ImageView {
 
         switch (arrowType) {
             case UP:
-                if (alwaysOn||liftDirection.equals(LiftDirection.UP)) {
+                if (alwaysOn || liftDirection.equals(LiftDirection.UP)) {
                     super.render();
                 }
                 break;
             case DOWN:
-                if (alwaysOn||liftDirection.equals(LiftDirection.DOWN)) {
+                if (alwaysOn || liftDirection.equals(LiftDirection.DOWN)) {
                     super.render();
                 }
                 break;
             case BOTH:
-                if (alwaysOn||liftDirection.equals(LiftDirection.NONE) && lift.getDoorValue() != 0) {
+                if (alwaysOn || liftDirection.equals(LiftDirection.NONE) && lift.getDoorValue() != 0) {
                     super.render();
                 }
                 break;
             case AUTO:
-                if (alwaysOn||!liftDirection.equals(LiftDirection.NONE)) {
+                if (alwaysOn || !liftDirection.equals(LiftDirection.NONE)) {
                     super.render();
                 }
                 break;
@@ -60,7 +60,7 @@ public class LiftArrowView extends ImageView {
         this.color = color;
     }
 
-    public void setDefaultColor(int color){
+    public void setDefaultColor(int color) {
         this.color = color;
         this.alwaysOn = true;
     }

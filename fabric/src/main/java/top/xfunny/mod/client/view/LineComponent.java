@@ -6,8 +6,8 @@ import org.mtr.mod.block.IBlock;
 import org.mtr.mod.render.MainRenderer;
 import org.mtr.mod.render.QueuedRenderLayer;
 import org.mtr.mod.render.StoredMatrixTransformations;
-import top.xfunny.mod.block.base.LiftDestinationDispatchTerminalBase;
 import top.xfunny.mod.block.base.LiftButtonsBase;
+import top.xfunny.mod.block.base.LiftDestinationDispatchTerminalBase;
 
 import static org.mtr.mapping.mapper.DirectionHelper.FACING;
 

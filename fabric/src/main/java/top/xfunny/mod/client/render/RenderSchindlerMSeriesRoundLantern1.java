@@ -17,7 +17,10 @@ import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.Init;
 import top.xfunny.mod.block.SchindlerMSeriesRoundLantern1Even;
 import top.xfunny.mod.block.base.LiftButtonsBase;
-import top.xfunny.mod.client.view.*;
+import top.xfunny.mod.client.view.ButtonView;
+import top.xfunny.mod.client.view.Gravity;
+import top.xfunny.mod.client.view.LayoutSize;
+import top.xfunny.mod.client.view.LineComponent;
 import top.xfunny.mod.client.view.view_group.LinearLayout;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
@@ -72,22 +75,22 @@ public class RenderSchindlerMSeriesRoundLantern1<T extends LiftButtonsBase.Block
         ButtonView lanternUp = new ButtonView();
         lanternUp.setBasicsAttributes(world, blockPos);
         lanternUp.setTexture(BUTTON_TEXTURE);
-        lanternUp.setDimension(7.5F / 16,3.475F / 7.5F);
+        lanternUp.setDimension(7.5F / 16, 3.475F / 7.5F);
         lanternUp.setGravity(Gravity.CENTER_HORIZONTAL);
         lanternUp.setDefaultColor(DEFAULT_COLOR);
         lanternUp.setPressedColor(PRESSED_COLOR);
-        lanternUp.setMargin(0, 0, 0, 0.55F/16);
+        lanternUp.setMargin(0, 0, 0, 0.55F / 16);
         lanternUp.setLight(light);
 
         ButtonView lanternDown = new ButtonView();
         lanternDown.setBasicsAttributes(world, blockPos);
         lanternDown.setTexture(BUTTON_TEXTURE);
-        lanternDown.setDimension(7.5F / 16,3.475F / 7.5F);
+        lanternDown.setDimension(7.5F / 16, 3.475F / 7.5F);
         lanternDown.setGravity(Gravity.CENTER_HORIZONTAL);
         lanternDown.setDefaultColor(DEFAULT_COLOR);
         lanternDown.setPressedColor(PRESSED_COLOR);
         lanternDown.setLight(light);
-        lanternDown.setFlip(false,true);
+        lanternDown.setFlip(false, true);
 
         final LineComponent line = new LineComponent();
         line.setBasicsAttributes(world, blockEntity.getPos2());

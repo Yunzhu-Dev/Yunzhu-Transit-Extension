@@ -70,7 +70,7 @@ public class RenderMitsubishiRyodenScreen1<T extends LiftButtonsBase.BlockEntity
         parentLayout.setBasicsAttributes(world, blockPos);
         parentLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
         parentLayout.setParentDimensions(15.5F / 16, 4.5F / 16);
-        parentLayout.setPosition(isOdd ? -7.75F/16 : -15.75F/16, 9F/16);
+        parentLayout.setPosition(isOdd ? -7.75F / 16 : -15.75F / 16, 9F / 16);
         parentLayout.setWidth(LayoutSize.MATCH_PARENT);
         parentLayout.setHeight(LayoutSize.MATCH_PARENT);
 
@@ -85,14 +85,14 @@ public class RenderMitsubishiRyodenScreen1<T extends LiftButtonsBase.BlockEntity
         screenLayout.setWidth(LayoutSize.WRAP_CONTENT);
         screenLayout.setHeight(LayoutSize.WRAP_CONTENT);
         screenLayout.setGravity(Gravity.CENTER_VERTICAL);
-        screenLayout.setMargin(0, 0, 2.3F/16, 0);
+        screenLayout.setMargin(0, 0, 2.3F / 16, 0);
 
         final FrameLayout lanternGroupLeft = new FrameLayout();
         lanternGroupLeft.setBasicsAttributes(world, blockPos);
         lanternGroupLeft.setWidth(LayoutSize.WRAP_CONTENT);
         lanternGroupLeft.setHeight(LayoutSize.WRAP_CONTENT);
         lanternGroupLeft.setGravity(Gravity.CENTER_VERTICAL);
-        lanternGroupLeft.setMargin(0, 0, 2.3F/16, 0);
+        lanternGroupLeft.setMargin(0, 0, 2.3F / 16, 0);
 
         final FrameLayout lanternGroupRight = new FrameLayout();
         lanternGroupRight.setBasicsAttributes(world, blockPos);
@@ -120,7 +120,7 @@ public class RenderMitsubishiRyodenScreen1<T extends LiftButtonsBase.BlockEntity
         lanternArrowDownLeft.setDimension(2.75F / 16);
         lanternArrowDownLeft.setGravity(Gravity.CENTER);
         lanternArrowDownLeft.setLight(light);
-        lanternArrowDownLeft.setFlip(false,true);
+        lanternArrowDownLeft.setFlip(false, true);
 
         final ImageView lanternArrowDownRight = new ImageView();
         lanternArrowDownRight.setBasicsAttributes(world, blockPos);
@@ -128,7 +128,7 @@ public class RenderMitsubishiRyodenScreen1<T extends LiftButtonsBase.BlockEntity
         lanternArrowDownRight.setDimension(2.75F / 16);
         lanternArrowDownRight.setGravity(Gravity.CENTER);
         lanternArrowDownRight.setLight(light);
-        lanternArrowDownRight.setFlip(false,true);
+        lanternArrowDownRight.setFlip(false, true);
 
         final ButtonView downLanternLeft = new ButtonView();
         downLanternLeft.setBasicsAttributes(world, blockPos);

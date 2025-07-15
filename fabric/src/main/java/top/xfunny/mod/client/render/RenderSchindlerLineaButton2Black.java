@@ -64,7 +64,7 @@ public class RenderSchindlerLineaButton2Black extends BlockEntityRenderer<Schind
         StoredMatrixTransformations storedMatrixTransformations1 = storedMatrixTransformations.copy();
         storedMatrixTransformations1.add(graphicsHolder -> {
             graphicsHolder.rotateYDegrees(-facing.asRotation());
-            graphicsHolder.translate(0, 0, 7.7F / 16 - SMALL_OFFSET);
+            graphicsHolder.translate(0, 0, 7.675F / 16 - SMALL_OFFSET);
         });
 
 
@@ -125,7 +125,7 @@ public class RenderSchindlerLineaButton2Black extends BlockEntityRenderer<Schind
         buttonUpLight.setDimension(0.8F / 16);
         buttonUpLight.setGravity(Gravity.CENTER);
         buttonUpLight.setLight(light);
-        buttonUpLight.setDefaultColor(ARGB_WHITE,true);
+        buttonUpLight.setDefaultColor(0xFF444444,true);
         buttonUpLight.setHoverColor(HOVER_COLOR);
         buttonUpLight.setPressedColor(PRESSED_COLOR);
 
@@ -144,7 +144,7 @@ public class RenderSchindlerLineaButton2Black extends BlockEntityRenderer<Schind
         buttonDownLight.setDimension(0.8F / 16);
         buttonDownLight.setGravity(Gravity.CENTER);
         buttonDownLight.setLight(light);
-        buttonDownLight.setDefaultColor(ARGB_WHITE,true);
+        buttonDownLight.setDefaultColor(0xFF444444,true);
         buttonDownLight.setHoverColor(HOVER_COLOR);
         buttonDownLight.setPressedColor(PRESSED_COLOR);
 

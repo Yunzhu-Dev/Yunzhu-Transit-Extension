@@ -66,7 +66,7 @@ public class RenderMitsubishiGPSButton1WithoutScreen extends BlockEntityRenderer
         parentLayout.setBasicsAttributes(world, blockPos);
         parentLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
         parentLayout.setParentDimensions(2.35F / 16, 5.3F / 16);
-        parentLayout.setPosition(-1.175F /16,  1.35F/16);
+        parentLayout.setPosition(-1.175F / 16, 1.35F / 16);
         parentLayout.setWidth(LayoutSize.MATCH_PARENT);
         parentLayout.setHeight(LayoutSize.MATCH_PARENT);
 
@@ -94,7 +94,7 @@ public class RenderMitsubishiGPSButton1WithoutScreen extends BlockEntityRenderer
         ImageView buttonUp = new ImageView();
         buttonUp.setBasicsAttributes(world, blockPos);
         buttonUp.setTexture(BUTTON_TEXTURE);
-        buttonUp.setDimension(0.9F / 16,326,256);
+        buttonUp.setDimension(0.9F / 16, 326, 256);
         buttonUp.setGravity(Gravity.CENTER);
         buttonUp.setLight(light);
 
@@ -102,7 +102,7 @@ public class RenderMitsubishiGPSButton1WithoutScreen extends BlockEntityRenderer
         buttonUpLight.setId("up");
         buttonUpLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonUpLight.setTexture(BUTTON_LIGHT_TEXTURE);
-        buttonUpLight.setDimension(0.9F / 16,326,256);
+        buttonUpLight.setDimension(0.9F / 16, 326, 256);
         buttonUpLight.setGravity(Gravity.CENTER);
         buttonUpLight.setLight(light);
         buttonUpLight.setDefaultColor(ARGB_WHITE);
@@ -112,7 +112,7 @@ public class RenderMitsubishiGPSButton1WithoutScreen extends BlockEntityRenderer
         ImageView buttonDown = new ImageView();
         buttonDown.setBasicsAttributes(world, blockPos);
         buttonDown.setTexture(BUTTON_TEXTURE);
-        buttonDown.setDimension(0.9F / 16,326,256);
+        buttonDown.setDimension(0.9F / 16, 326, 256);
         buttonDown.setGravity(Gravity.CENTER);
         buttonDown.setLight(light);
 
@@ -120,7 +120,7 @@ public class RenderMitsubishiGPSButton1WithoutScreen extends BlockEntityRenderer
         buttonDownLight.setId("down");
         buttonDownLight.setBasicsAttributes(world, blockPos, keyMapping);
         buttonDownLight.setTexture(BUTTON_LIGHT_TEXTURE);
-        buttonDownLight.setDimension(0.9F / 16,326,256);
+        buttonDownLight.setDimension(0.9F / 16, 326, 256);
         buttonDownLight.setGravity(Gravity.CENTER);
         buttonDownLight.setLight(light);
         buttonDownLight.setDefaultColor(ARGB_WHITE);

@@ -1,14 +1,8 @@
 package top.xfunny.mod.packet;
 
-import org.mtr.core.data.Lift;
-import org.mtr.core.data.TransportMode;
 import org.mtr.mapping.holder.*;
 import org.mtr.mapping.mapper.ScreenExtension;
-import org.mtr.mod.Init;
-import org.mtr.mod.block.*;
-import org.mtr.mod.client.MinecraftClientData;
-import org.mtr.mod.packet.PacketOpenDashboardScreen;
-import org.mtr.mod.screen.*;
+import org.mtr.mod.screen.RailwaySignScreen;
 import top.xfunny.mod.block.PATRS01RailwaySign;
 import top.xfunny.mod.client.screen.PATRS01RailwaySignScreen;
 

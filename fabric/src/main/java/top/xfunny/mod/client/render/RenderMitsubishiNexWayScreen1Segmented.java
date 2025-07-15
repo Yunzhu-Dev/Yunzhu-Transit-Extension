@@ -15,7 +15,6 @@ import org.mtr.mod.data.IGui;
 import org.mtr.mod.render.RenderLifts;
 import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.Init;
-import top.xfunny.mod.block.MitsubishiNexWayScreen1Even;
 import top.xfunny.mod.block.MitsubishiNexWayScreen1SegmentedEven;
 import top.xfunny.mod.block.base.LiftButtonsBase;
 import top.xfunny.mod.client.resource.FontList;
@@ -71,7 +70,7 @@ public class RenderMitsubishiNexWayScreen1Segmented<T extends LiftButtonsBase.Bl
         parentLayout.setBasicsAttributes(world, blockPos);
         parentLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
         parentLayout.setParentDimensions(15.5F / 16, 4.5F / 16);
-        parentLayout.setPosition(isOdd ? -7.75F/16 : -15.75F/16, 9F/16);
+        parentLayout.setPosition(isOdd ? -7.75F / 16 : -15.75F / 16, 9F / 16);
         parentLayout.setWidth(LayoutSize.MATCH_PARENT);
         parentLayout.setHeight(LayoutSize.MATCH_PARENT);
 
@@ -86,14 +85,14 @@ public class RenderMitsubishiNexWayScreen1Segmented<T extends LiftButtonsBase.Bl
         screenLayout.setWidth(LayoutSize.WRAP_CONTENT);
         screenLayout.setHeight(LayoutSize.WRAP_CONTENT);
         screenLayout.setGravity(Gravity.CENTER_VERTICAL);
-        screenLayout.setMargin(0, 0, 2.3F/16, 0);
+        screenLayout.setMargin(0, 0, 2.3F / 16, 0);
 
         final FrameLayout lanternGroupLeft = new FrameLayout();
         lanternGroupLeft.setBasicsAttributes(world, blockPos);
         lanternGroupLeft.setWidth(LayoutSize.WRAP_CONTENT);
         lanternGroupLeft.setHeight(LayoutSize.WRAP_CONTENT);
         lanternGroupLeft.setGravity(Gravity.CENTER_VERTICAL);
-        lanternGroupLeft.setMargin(0, 0, 2.3F/16, 0);
+        lanternGroupLeft.setMargin(0, 0, 2.3F / 16, 0);
 
         final FrameLayout lanternGroupRight = new FrameLayout();
         lanternGroupRight.setBasicsAttributes(world, blockPos);
@@ -121,7 +120,7 @@ public class RenderMitsubishiNexWayScreen1Segmented<T extends LiftButtonsBase.Bl
         lanternArrowDownLeft.setDimension(2.75F / 16);
         lanternArrowDownLeft.setGravity(Gravity.CENTER);
         lanternArrowDownLeft.setLight(light);
-        lanternArrowDownLeft.setFlip(false,true);
+        lanternArrowDownLeft.setFlip(false, true);
 
         final ImageView lanternArrowDownRight = new ImageView();
         lanternArrowDownRight.setBasicsAttributes(world, blockPos);
@@ -129,7 +128,7 @@ public class RenderMitsubishiNexWayScreen1Segmented<T extends LiftButtonsBase.Bl
         lanternArrowDownRight.setDimension(2.75F / 16);
         lanternArrowDownRight.setGravity(Gravity.CENTER);
         lanternArrowDownRight.setLight(light);
-        lanternArrowDownRight.setFlip(false,true);
+        lanternArrowDownRight.setFlip(false, true);
 
         final ButtonView downLanternLeft = new ButtonView();
         downLanternLeft.setBasicsAttributes(world, blockPos);

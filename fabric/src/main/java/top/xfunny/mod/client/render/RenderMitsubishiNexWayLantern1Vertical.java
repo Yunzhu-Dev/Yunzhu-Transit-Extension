@@ -69,7 +69,7 @@ public class RenderMitsubishiNexWayLantern1Vertical<T extends LiftButtonsBase.Bl
         parentLayout.setBasicsAttributes(world, blockPos);
         parentLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
         parentLayout.setParentDimensions(15.5F / 16, 4.5F / 16);
-        parentLayout.setPosition(isOdd ? -9.125F/16 : -17.125F/16, 9F/16);
+        parentLayout.setPosition(isOdd ? -9.125F / 16 : -17.125F / 16, 9F / 16);
         parentLayout.setWidth(LayoutSize.MATCH_PARENT);
         parentLayout.setHeight(LayoutSize.MATCH_PARENT);
 
@@ -112,7 +112,7 @@ public class RenderMitsubishiNexWayLantern1Vertical<T extends LiftButtonsBase.Bl
         lanternArrowDownLeft.setDimension(2.75F / 16);
         lanternArrowDownLeft.setGravity(Gravity.CENTER);
         lanternArrowDownLeft.setLight(light);
-        lanternArrowDownLeft.setFlip(false,true);
+        lanternArrowDownLeft.setFlip(false, true);
 
         final ImageView lanternArrowDownRight = new ImageView();
         lanternArrowDownRight.setBasicsAttributes(world, blockPos);
@@ -120,7 +120,7 @@ public class RenderMitsubishiNexWayLantern1Vertical<T extends LiftButtonsBase.Bl
         lanternArrowDownRight.setDimension(2.75F / 16);
         lanternArrowDownRight.setGravity(Gravity.CENTER);
         lanternArrowDownRight.setLight(light);
-        lanternArrowDownRight.setFlip(false,true);
+        lanternArrowDownRight.setFlip(false, true);
 
         final ButtonView downLanternLeft = new ButtonView();
         downLanternLeft.setBasicsAttributes(world, blockPos);
@@ -233,7 +233,7 @@ public class RenderMitsubishiNexWayLantern1Vertical<T extends LiftButtonsBase.Bl
         });
 
         if (buttonDescriptor.hasDownButton() && buttonDescriptor.hasUpButton()) {
-            lanternGroupLeft.setMargin(0, 0.5F/16, 0, 0);
+            lanternGroupLeft.setMargin(0, 0.5F / 16, 0, 0);
             lanternGroupRight.addChild(upLanternRight);
             lanternGroupRight.addChild(lanternArrowUpRight);
             lanternGroupLeft.addChild(downLanternLeft);

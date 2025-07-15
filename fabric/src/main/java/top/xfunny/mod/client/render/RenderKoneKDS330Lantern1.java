@@ -60,7 +60,7 @@ public class RenderKoneKDS330Lantern1<T extends LiftButtonsBase.BlockEntityBase>
         buttonUpLayout.setBasicsAttributes(world, blockPos);
         buttonUpLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
         buttonUpLayout.setParentDimensions(3F / 16, 3F / 16);
-        buttonUpLayout.setPosition(-1.5F/16, 10.775F/16);
+        buttonUpLayout.setPosition(-1.5F / 16, 10.775F / 16);
         buttonUpLayout.setWidth(LayoutSize.MATCH_PARENT);
         buttonUpLayout.setHeight(LayoutSize.MATCH_PARENT);
 
@@ -68,14 +68,14 @@ public class RenderKoneKDS330Lantern1<T extends LiftButtonsBase.BlockEntityBase>
         buttonDownLayout.setBasicsAttributes(world, blockPos);
         buttonDownLayout.setStoredMatrixTransformations(storedMatrixTransformations1);
         buttonDownLayout.setParentDimensions(3F / 16, 3F / 16);
-        buttonDownLayout.setPosition(-1.5F/16, 7.7F/16);
+        buttonDownLayout.setPosition(-1.5F / 16, 7.7F / 16);
         buttonDownLayout.setWidth(LayoutSize.MATCH_PARENT);
         buttonDownLayout.setHeight(LayoutSize.MATCH_PARENT);
 
         ImageView buttonUp = new ImageView();
         buttonUp.setBasicsAttributes(world, blockPos);
         buttonUp.setTexture(BUTTON_TEXTURE);
-        buttonUp.setDimension(1.4875F / 16,1.75F / 1.4875F);
+        buttonUp.setDimension(1.4875F / 16, 1.75F / 1.4875F);
         buttonUp.setGravity(Gravity.CENTER);
         buttonUp.setLight(light);
 
@@ -83,7 +83,7 @@ public class RenderKoneKDS330Lantern1<T extends LiftButtonsBase.BlockEntityBase>
         buttonUpLight.setId("up");
         buttonUpLight.setBasicsAttributes(world, blockPos);
         buttonUpLight.setTexture(BUTTON_LIGHT_TEXTURE);
-        buttonUpLight.setDimension(1.4875F / 16,1.75F/1.4875F);
+        buttonUpLight.setDimension(1.4875F / 16, 1.75F / 1.4875F);
         buttonUpLight.setGravity(Gravity.CENTER);
         buttonUpLight.setLight(light);
         buttonUpLight.setDefaultColor(DEFAULT_COLOR);
@@ -92,7 +92,7 @@ public class RenderKoneKDS330Lantern1<T extends LiftButtonsBase.BlockEntityBase>
         ImageView buttonDown = new ImageView();
         buttonDown.setBasicsAttributes(world, blockPos);
         buttonDown.setTexture(BUTTON_TEXTURE);
-        buttonDown.setDimension(1.4875F / 16,1.75F / 1.4875F);
+        buttonDown.setDimension(1.4875F / 16, 1.75F / 1.4875F);
         buttonDown.setGravity(Gravity.CENTER);
         buttonDown.setLight(light);
         buttonDown.setFlip(false, true);
@@ -101,7 +101,7 @@ public class RenderKoneKDS330Lantern1<T extends LiftButtonsBase.BlockEntityBase>
         buttonDownLight.setId("down");
         buttonDownLight.setBasicsAttributes(world, blockPos);
         buttonDownLight.setTexture(BUTTON_LIGHT_TEXTURE);
-        buttonDownLight.setDimension(1.4875F / 16,1.75F / 1.4875F);
+        buttonDownLight.setDimension(1.4875F / 16, 1.75F / 1.4875F);
         buttonDownLight.setGravity(Gravity.CENTER);
         buttonDownLight.setLight(light);
         buttonDownLight.setDefaultColor(DEFAULT_COLOR);

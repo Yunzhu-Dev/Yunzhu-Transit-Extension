@@ -22,12 +22,10 @@ import java.util.Locale;
 
 public class PATRS01RailwaySign extends BlockExtension implements IBlock, DirectionHelper, BlockWithEntity {
 
+    public static final float SMALL_SIGN_PERCENTAGE = 0.75F;
+    private static final String[] legacySigns = {"ARROW_LEFT", "ARROW_RIGHT", "ARROW_UP", "ARROW_DOWN", "ARROW_UP_LEFT", "ARROW_UP_RIGHT", "ARROW_DOWN_LEFT", "ARROW_DOWN_RIGHT", "ARROW_TURN_BACK_LEFT", "ARROW_TURN_BACK_RIGHT", "EXIT_1", "EXIT_2", "EXIT_3", "ESCALATOR", "ESCALATOR_FLIPPED", "STAIRS_UP", "STAIRS_UP_FLIPPED", "STAIRS_DOWN_FLIPPED", "STAIRS_DOWN", "LIFT_1", "LIFT_2", "WHEELCHAIR", "TOILET", "FEMALE", "MALE", "TRAIN", "TRAIN_OLD", "AIRPORT_EXPRESS", "LIGHT_RAIL_1", "LIGHT_RAIL_2", "LIGHT_RAIL_3", "LIGHT_RAIL_4", "XRL_1", "XRL_2", "SP1900", "YELLOW_HEAD_1", "YELLOW_HEAD_2", "BOAT", "CABLE_CAR", "AIRPLANE", "AIRPLANE_LEFT", "AIRPLANE_RIGHT", "AIRPLANE_UP_LEFT", "AIRPLANE_UP_RIGHT", "CROSS", "LOGO", "EXIT_LETTER", "EXIT_LETTER_FLIPPED", "ESCALATOR_TO_CONCOURSE_UP", "ESCALATOR_TO_CONCOURSE_UP_FLIPPED", "ESCALATOR_TO_CONCOURSE_DOWN", "ESCALATOR_TO_CONCOURSE_DOWN_FLIPPED", "PLATFORM", "PLATFORM_FLIPPED", "LINE", "LINE_FLIPPED", "STATION", "STATION_FLIPPED", "LIFT_1_TEXT", "LIFT_1_TEXT_FLIPPED", "LIFT_2_TEXT", "LIFT_2_TEXT_FLIPPED", "TOILETS", "TOILETS_FLIPPED", "FEMALE_TOILETS", "FEMALE_TOILETS_FLIPPED", "MALE_TOILETS", "MALE_TOILETS_FLIPPED", "WHEELCHAIR_TOILETS", "WHEELCHAIR_TOILETS_FLIPPED", "TRAINS", "TRAINS_FLIPPED", "TRAINS_OLD", "TRAINS_OLD_FLIPPED", "AIRPORT_EXPRESS_TRAINS", "AIRPORT_EXPRESS_TRAINS_FLIPPED", "AIRPORT_EXPRESS_TRAINS_CITY", "AIRPORT_EXPRESS_TRAINS_CITY_FLIPPED", "IN_TOWN_CHECK_IN", "IN_TOWN_CHECK_IN_FLIPPED", "CHECK_IN_PASSENGERS", "CHECK_IN_PASSENGERS_FLIPPED", "LIGHT_RAIL_1_TRAINS", "LIGHT_RAIL_1_TRAINS_FLIPPED", "LIGHT_RAIL_2_TRAINS", "LIGHT_RAIL_2_TRAINS_FLIPPED", "LIGHT_RAIL_3_TRAINS", "LIGHT_RAIL_3_TRAINS_FLIPPED", "LIGHT_RAIL_4_TRAINS", "LIGHT_RAIL_4_TRAINS_FLIPPED", "XRL_1_TRAINS", "XRL_1_TRAINS_FLIPPED", "XRL_2_TRAINS", "XRL_2_TRAINS_FLIPPED", "SP1900_TRAINS", "SP1900_TRAINS_FLIPPED", "YELLOW_HEAD_1_TRAINS", "YELLOW_HEAD_1_TRAINS_FLIPPED", "YELLOW_HEAD_2_TRAINS", "YELLOW_HEAD_2_TRAINS_FLIPPED", "BOAT_BOATS", "BOAT_BOATS_FLIPPED", "CABLE_CAR_CABLE_CARS", "CABLE_CAR_CABLE_CARS_FLIPPED", "AIRPORT", "AIRPORT_FLIPPED", "AIRPORT_LEFT", "AIRPORT_RIGHT", "AIRPORT_UP_LEFT", "AIRPORT_UP_RIGHT", "AIRPORT_ARRIVALS", "AIRPORT_ARRIVALS_FLIPPED", "AIRPORT_DEPARTURES", "AIRPORT_DEPARTURES_FLIPPED", "AIRPORT_TRANSFER", "AIRPORT_TRANSFER_FLIPPED", "BAGGAGE_CLAIM", "BAGGAGE_CLAIM_FLIPPED", "CUSTOMER_SERVICE_CENTRE", "CUSTOMER_SERVICE_CENTRE_FLIPPED", "TICKETS", "TICKETS_FLIPPED", "NO_ENTRY", "NO_ENTRY_FLIPPED", "EMERGENCY_EXIT", "EMERGENCY_EXIT_FLIPPED", "WIFI", "WIFI_FLIPPED", "LOGO_TEXT", "LOGO_TEXT_FLIPPED"};
     public final int length;
     public final boolean isOdd;
-
-    public static final float SMALL_SIGN_PERCENTAGE = 0.75F;
-
-    private static final String[] legacySigns = {"ARROW_LEFT", "ARROW_RIGHT", "ARROW_UP", "ARROW_DOWN", "ARROW_UP_LEFT", "ARROW_UP_RIGHT", "ARROW_DOWN_LEFT", "ARROW_DOWN_RIGHT", "ARROW_TURN_BACK_LEFT", "ARROW_TURN_BACK_RIGHT", "EXIT_1", "EXIT_2", "EXIT_3", "ESCALATOR", "ESCALATOR_FLIPPED", "STAIRS_UP", "STAIRS_UP_FLIPPED", "STAIRS_DOWN_FLIPPED", "STAIRS_DOWN", "LIFT_1", "LIFT_2", "WHEELCHAIR", "TOILET", "FEMALE", "MALE", "TRAIN", "TRAIN_OLD", "AIRPORT_EXPRESS", "LIGHT_RAIL_1", "LIGHT_RAIL_2", "LIGHT_RAIL_3", "LIGHT_RAIL_4", "XRL_1", "XRL_2", "SP1900", "YELLOW_HEAD_1", "YELLOW_HEAD_2", "BOAT", "CABLE_CAR", "AIRPLANE", "AIRPLANE_LEFT", "AIRPLANE_RIGHT", "AIRPLANE_UP_LEFT", "AIRPLANE_UP_RIGHT", "CROSS", "LOGO", "EXIT_LETTER", "EXIT_LETTER_FLIPPED", "ESCALATOR_TO_CONCOURSE_UP", "ESCALATOR_TO_CONCOURSE_UP_FLIPPED", "ESCALATOR_TO_CONCOURSE_DOWN", "ESCALATOR_TO_CONCOURSE_DOWN_FLIPPED", "PLATFORM", "PLATFORM_FLIPPED", "LINE", "LINE_FLIPPED", "STATION", "STATION_FLIPPED", "LIFT_1_TEXT", "LIFT_1_TEXT_FLIPPED", "LIFT_2_TEXT", "LIFT_2_TEXT_FLIPPED", "TOILETS", "TOILETS_FLIPPED", "FEMALE_TOILETS", "FEMALE_TOILETS_FLIPPED", "MALE_TOILETS", "MALE_TOILETS_FLIPPED", "WHEELCHAIR_TOILETS", "WHEELCHAIR_TOILETS_FLIPPED", "TRAINS", "TRAINS_FLIPPED", "TRAINS_OLD", "TRAINS_OLD_FLIPPED", "AIRPORT_EXPRESS_TRAINS", "AIRPORT_EXPRESS_TRAINS_FLIPPED", "AIRPORT_EXPRESS_TRAINS_CITY", "AIRPORT_EXPRESS_TRAINS_CITY_FLIPPED", "IN_TOWN_CHECK_IN", "IN_TOWN_CHECK_IN_FLIPPED", "CHECK_IN_PASSENGERS", "CHECK_IN_PASSENGERS_FLIPPED", "LIGHT_RAIL_1_TRAINS", "LIGHT_RAIL_1_TRAINS_FLIPPED", "LIGHT_RAIL_2_TRAINS", "LIGHT_RAIL_2_TRAINS_FLIPPED", "LIGHT_RAIL_3_TRAINS", "LIGHT_RAIL_3_TRAINS_FLIPPED", "LIGHT_RAIL_4_TRAINS", "LIGHT_RAIL_4_TRAINS_FLIPPED", "XRL_1_TRAINS", "XRL_1_TRAINS_FLIPPED", "XRL_2_TRAINS", "XRL_2_TRAINS_FLIPPED", "SP1900_TRAINS", "SP1900_TRAINS_FLIPPED", "YELLOW_HEAD_1_TRAINS", "YELLOW_HEAD_1_TRAINS_FLIPPED", "YELLOW_HEAD_2_TRAINS", "YELLOW_HEAD_2_TRAINS_FLIPPED", "BOAT_BOATS", "BOAT_BOATS_FLIPPED", "CABLE_CAR_CABLE_CARS", "CABLE_CAR_CABLE_CARS_FLIPPED", "AIRPORT", "AIRPORT_FLIPPED", "AIRPORT_LEFT", "AIRPORT_RIGHT", "AIRPORT_UP_LEFT", "AIRPORT_UP_RIGHT", "AIRPORT_ARRIVALS", "AIRPORT_ARRIVALS_FLIPPED", "AIRPORT_DEPARTURES", "AIRPORT_DEPARTURES_FLIPPED", "AIRPORT_TRANSFER", "AIRPORT_TRANSFER_FLIPPED", "BAGGAGE_CLAIM", "BAGGAGE_CLAIM_FLIPPED", "CUSTOMER_SERVICE_CENTRE", "CUSTOMER_SERVICE_CENTRE_FLIPPED", "TICKETS", "TICKETS_FLIPPED", "NO_ENTRY", "NO_ENTRY_FLIPPED", "EMERGENCY_EXIT", "EMERGENCY_EXIT_FLIPPED", "WIFI", "WIFI_FLIPPED", "LOGO_TEXT", "LOGO_TEXT_FLIPPED"};
 
     public PATRS01RailwaySign(int length, boolean isOdd) {
         super(org.mtr.mod.Blocks.createDefaultBlockSettings(true, blockState -> 15));
@@ -118,6 +116,7 @@ public class PATRS01RailwaySign extends BlockExtension implements IBlock, Direct
         tooltip.add(TranslationProvider.TOOLTIP_MTR_RAILWAY_SIGN_LENGTH.getMutableText(length).formatted(TextFormatting.GRAY));
         tooltip.add((isOdd ? TranslationProvider.TOOLTIP_MTR_RAILWAY_SIGN_ODD : TranslationProvider.TOOLTIP_MTR_RAILWAY_SIGN_EVEN).getMutableText().formatted(TextFormatting.GRAY));
     }
+
     @Nonnull
     @Override
     public BlockEntityExtension createBlockEntity(BlockPos blockPos, BlockState blockState) {
@@ -169,15 +168,34 @@ public class PATRS01RailwaySign extends BlockExtension implements IBlock, Direct
 
     public static class BlockEntity extends BlockEntityExtension {
 
-        private final LongAVLTreeSet selectedIds;
-        private final String[] signIds;
         private static final String KEY_SELECTED_IDS = "selected_ids";
         private static final String KEY_SIGN_LENGTH = "sign_length";
+        private final LongAVLTreeSet selectedIds;
+        private final String[] signIds;
 
         public BlockEntity(int length, boolean isOdd, BlockPos pos, BlockState state) {
             super(getType(length, isOdd), pos, state);
             signIds = new String[length];
             selectedIds = new LongAVLTreeSet();
+        }
+
+        private static BlockEntityType<? extends BlockEntityExtension> getType(int length, boolean isOdd) {
+            switch (length) {
+                case 2:
+                    return isOdd ? BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_2_ODD.get() : BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_2_EVEN.get();
+                case 3:
+                    return isOdd ? BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_3_ODD.get() : BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_3_EVEN.get();
+                case 4:
+                    return isOdd ? BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_4_ODD.get() : BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_4_EVEN.get();
+                case 5:
+                    return isOdd ? BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_5_ODD.get() : BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_5_EVEN.get();
+                case 6:
+                    return isOdd ? BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_6_ODD.get() : BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_6_EVEN.get();
+                case 7:
+                    return isOdd ? BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_7_ODD.get() : BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_7_EVEN.get();
+                default:
+                    return BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_2_EVEN.get();
+            }
         }
 
         @Override
@@ -213,25 +231,6 @@ public class PATRS01RailwaySign extends BlockExtension implements IBlock, Direct
 
         public String[] getSignIds() {
             return signIds;
-        }
-
-        private static BlockEntityType<? extends BlockEntityExtension> getType(int length, boolean isOdd) {
-            switch (length) {
-                case 2:
-                    return isOdd ? BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_2_ODD.get() : BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_2_EVEN.get();
-                case 3:
-                    return isOdd ? BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_3_ODD.get() : BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_3_EVEN.get();
-                case 4:
-                    return isOdd ? BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_4_ODD.get() : BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_4_EVEN.get();
-                case 5:
-                    return isOdd ? BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_5_ODD.get() : BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_5_EVEN.get();
-                case 6:
-                    return isOdd ? BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_6_ODD.get() : BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_6_EVEN.get();
-                case 7:
-                    return isOdd ? BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_7_ODD.get() : BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_7_EVEN.get();
-                default:
-                    return BlockEntityTypes.PAT_RS01_RAILWAY_SIGN_2_EVEN.get();
-            }
         }
     }
 }

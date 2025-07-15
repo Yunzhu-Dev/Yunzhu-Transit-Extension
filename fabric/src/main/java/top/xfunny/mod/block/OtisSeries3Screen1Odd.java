@@ -18,7 +18,7 @@ public class OtisSeries3Screen1Odd extends LiftPanelBase {
     @Nonnull
     @Override
     public VoxelShape getOutlineShape2(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return IBlock.getVoxelShapeByDirection(4.25, 9, 0, 11.75, 14, 0.1, IBlock.getStatePropertySafe(state, FACING));
+        return IBlock.getVoxelShapeByDirection(6.825, 7.325, 0, 9.175, 10.1, 0.35, IBlock.getStatePropertySafe(state, FACING));
     }
 
     @Nonnull

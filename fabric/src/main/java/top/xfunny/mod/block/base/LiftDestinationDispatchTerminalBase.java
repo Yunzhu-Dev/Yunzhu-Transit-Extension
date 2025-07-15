@@ -2,12 +2,14 @@ package top.xfunny.mod.block.base;
 
 import org.mtr.core.data.Lift;
 import org.mtr.core.data.LiftDirection;
+import org.mtr.core.data.LiftInstruction;
 import org.mtr.core.data.Position;
 import org.mtr.core.operation.PressLift;
 import org.mtr.core.tool.Vector;
 import org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectObjectImmutablePair;
 import org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import org.mtr.libraries.kotlin.Triple;
 import org.mtr.mapping.holder.*;
 import org.mtr.mapping.mapper.*;
 import org.mtr.mod.InitClient;
@@ -15,6 +17,7 @@ import org.mtr.mod.block.IBlock;
 import org.mtr.mod.client.MinecraftClientData;
 import org.mtr.mod.item.ItemLiftRefresher;
 import org.mtr.mod.packet.PacketPressLiftButton;
+import top.xfunny.mixin.MixinLiftSchema;
 import top.xfunny.mod.ButtonRegistry;
 import top.xfunny.mod.Init;
 import top.xfunny.mod.LiftFloorRegistry;
@@ -105,14 +108,11 @@ public abstract class LiftDestinationDispatchTerminalBase extends BlockExtension
         private static final String KEY_TRACK_FLOOR_POS = "track_floor_pos";
         private static final String KEY_LIFT_BUTTON_POSITIONS = "lift_button_position";
         private static final String KEY_SCREEN_ID = "screen_id";
-
-        private DefaultButtonsKeyMapping keyMapping = new DefaultButtonsKeyMapping();
-
-
         public final ObjectOpenHashSet<BlockPos> liftButtonPositions = new ObjectOpenHashSet<>();
         private final LinkedHashSet<BlockPos> trackPositions = new LinkedHashSet<>();
         public LiftDirection liftDirection = NONE;
         public BlockPos selfPos;
+        private DefaultButtonsKeyMapping keyMapping = new DefaultButtonsKeyMapping();
         private String screenId;
 
         private char liftIdentifier;
@@ -262,8 +262,6 @@ public abstract class LiftDestinationDispatchTerminalBase extends BlockExtension
                 char currentChar = trackPositionAndChar1.right();
                 hasButtonsClient(currentTrackPosition, (floor, lift) -> {
                     destinationPosition[0] = locateFloor(world, lift, destination);
-                    final Vector position = lift.getPosition((floorPosition1, floorPosition2) -> ItemLiftRefresher.findPath(new World(world.data), floorPosition1, floorPosition2));
-                    BlockPos liftPos = new BlockPos((int) position.x, (int) position.y, (int) position.z);
 
                     //判断每一个电梯的方向
                     ObjectObjectImmutablePair<LiftDirection, ObjectObjectImmutablePair<String, String>> liftDetails =
@@ -291,38 +289,77 @@ public abstract class LiftDestinationDispatchTerminalBase extends BlockExtension
                                 trackPositionsAndChars2.add(new ObjectObjectImmutablePair<>(currentTrackPosition, currentChar));
                             }
                         }
-
-                        Init.LOGGER.info("liftDirection: " + liftDirection + " ,confirmLiftDirection: " + confirmLiftDirection);
                     }
-
                 });
             });
 
-            //step4:确定最接近电梯的电梯
+            if (trackPositionsAndChars2.isEmpty()) {
+                ArrayList<Triple<Integer, Character, BlockPos>> distanceGroup = new ArrayList<>();
+                trackPositionsAndChars1.forEach(trackPositionAndChar1 -> {
+                    BlockPos currentTrackPosition = trackPositionAndChar1.left();
+                    char currentChar = trackPositionAndChar1.right();
+                    hasButtonsClient(currentTrackPosition, (floor, lift) -> {
+                        destinationPosition[0] = locateFloor(world, lift, destination);
+                        int currentFloorNumber = lift.getFloorIndex(Init.blockPosToPosition(currentTrackPosition));
+
+                        // 查找上一个任务结束后距离乘客层最近的电梯
+                        ObjectArrayList<LiftInstruction> instructions = ((MixinLiftSchema) lift).getInstructions();
+                        LiftInstruction lastInstruction = instructions.isEmpty() ? null : instructions.get(instructions.size() - 1);
+                        int lastFloorNumber = lastInstruction.getFloor();
+                        int distance = Math.abs(currentFloorNumber - lastFloorNumber);
+                        distanceGroup.add(new Triple<>(distance, currentChar, currentTrackPosition));
+                    });
+                });
+
+                final int[] minDistance1 = {Integer.MAX_VALUE};
+                final char[] char1 = {'?'};
+                final BlockPos[] confirmTrackPosition1 = new BlockPos[1];
+
+                distanceGroup.forEach(distanceAndChar -> {
+                    if (distanceAndChar.getFirst() <= minDistance1[0]) {
+                        minDistance1[0] = distanceAndChar.getFirst();
+                        char1[0] = distanceAndChar.getSecond();
+                        confirmTrackPosition1[0] = distanceAndChar.getThird();
+                    }
+                });
+
+                trackPositionsAndChars2.add(new ObjectObjectImmutablePair<>(confirmTrackPosition1[0], char1[0]));
+            }
+
+            //step4:确定最接近乘客的电梯
             trackPositionsAndChars2.forEach(trackPositionAndChar2 -> {
                 BlockPos currentTrackPosition = trackPositionAndChar2.left();
                 char currentChar = trackPositionAndChar2.right();
 
-                hasButtonsClient(currentTrackPosition, (floor, lift) -> {
-                    final Vector position = lift.getPosition((floorPosition1, floorPosition2) -> ItemLiftRefresher.findPath(new World(world.data), floorPosition1, floorPosition2));
-                    BlockPos liftPos = new BlockPos((int) position.x, (int) position.y, (int) position.z);
+                if(currentTrackPosition != null){
+                    hasButtonsClient(currentTrackPosition, (floor, lift) -> {
+                        final Vector position = lift.getPosition((floorPosition1, floorPosition2) -> ItemLiftRefresher.findPath(new World(world.data), floorPosition1, floorPosition2));
+                        BlockPos liftPos = new BlockPos((int) position.x, (int) position.y, (int) position.z);
 
-                    int distance = currentTrackPosition.getManhattanDistance(Vector3i.cast(liftPos));
-                    if (distance < minDistance[0]) {
-                        minDistance[0] = distance;
-                        minChar[0] = currentChar;
-                        liftIdentifier = currentChar;
-                        confirmTrackPosition[0] = currentTrackPosition;
-                        destinationPosition[0] = locateFloor(world, lift, destination);
-                    }
-                });
+                        int distance = currentTrackPosition.getManhattanDistance(Vector3i.cast(liftPos));
+
+                        if (distance < minDistance[0]) {
+                            minDistance[0] = distance;
+                            minChar[0] = currentChar;
+                            liftIdentifier = currentChar;
+                            confirmTrackPosition[0] = currentTrackPosition;
+                            destinationPosition[0] = locateFloor(world, lift, destination);
+                        }
+                    });
+                }
             });
 
             //step5:呼叫电梯
             if (confirmTrackPosition[0] != null) {
-                final PressLift pressLift = new PressLift();
-                pressLift.add(Init.blockPosToPosition(confirmTrackPosition[0]), data.liftDirection);
-                InitClient.REGISTRY_CLIENT.sendPacketToServer(new PacketPressLiftButton(pressLift));
+                hasButtonsClient(confirmTrackPosition[0], (floor, lift) -> {
+                    //避免重复开门
+                    if (lift.getDoorValue() == 0) {
+                        final PressLift pressLift = new PressLift();
+                        pressLift.add(Init.blockPosToPosition(confirmTrackPosition[0]), data.liftDirection);
+                        InitClient.REGISTRY_CLIENT.sendPacketToServer(new PacketPressLiftButton(pressLift));
+                    }
+                });
+
 
                 scheduler.schedule(() -> {
                     liftButtonPositions.forEach(lanternPos -> {// 传递乘客方向至到站灯

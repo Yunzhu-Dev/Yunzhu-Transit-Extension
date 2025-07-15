@@ -2,7 +2,8 @@
 	"format_version": "1.21.6",
 	"credit": "Made with Blockbench",
 	"textures": {
-		"1": "yte:block/schindler_linea_panel_1_black"
+		"1": "yte:block/schindler_linea_panel_1_black",
+		"particle": "yte:block/schindler_linea_panel_1_black"
 	},
 	"elements": [
 		{

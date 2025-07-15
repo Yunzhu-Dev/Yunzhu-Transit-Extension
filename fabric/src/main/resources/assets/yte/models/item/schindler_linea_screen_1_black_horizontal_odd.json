@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "yte:item/schindler_linea_screen_1_black_horizontal_odd"
+  }
+}

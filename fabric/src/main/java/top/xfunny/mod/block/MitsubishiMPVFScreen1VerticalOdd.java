@@ -18,7 +18,7 @@ public class MitsubishiMPVFScreen1VerticalOdd extends LiftButtonsBase {
     @Nonnull
     @Override
     public VoxelShape getOutlineShape2(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return IBlock.getVoxelShapeByDirection(2.6, 1.35, 0, 9.3, 8.15, 0.1, IBlock.getStatePropertySafe(state, FACING));
+        return IBlock.getVoxelShapeByDirection(6.7, 1.35, 0, 9.3, 8.15, 0.1, IBlock.getStatePropertySafe(state, FACING));
 
     }
 
