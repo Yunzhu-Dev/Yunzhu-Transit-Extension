@@ -9,7 +9,6 @@ import top.xfunny.mod.BlockEntityTypes;
 import top.xfunny.mod.Blocks;
 import top.xfunny.mod.Init;
 import top.xfunny.mod.Items;
-import top.xfunny.mod.lift.LiftDoorControlState;
 import top.xfunny.mod.client.render.*;
 import top.xfunny.mod.client.resource.FontList;
 import top.xfunny.mod.client.sound.SoundPlaybackManager;
@@ -29,7 +28,6 @@ public final class InitClient {
         // 重置 YTE 客户端数据
         YteMinecraftClientData.reset();
         YteLiftConfigStore.clear();
-        LiftDoorControlState.clearClientState();
 
         initializeConfig();
 
@@ -402,7 +400,6 @@ public final class InitClient {
             MinecraftClientData.reset();
             YteMinecraftClientData.reset();
             YteLiftConfigStore.clear();
-            LiftDoorControlState.clearClientState();
             lastMillis = System.currentTimeMillis();
             gameMillis = 0;
 

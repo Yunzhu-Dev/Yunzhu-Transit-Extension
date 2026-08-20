@@ -4,6 +4,7 @@ import org.mtr.core.data.*;
 import org.mtr.core.data.Lift;
 import org.mtr.core.simulation.Simulator;
 import org.mtr.core.tool.Utilities;
+import org.mtr.mapping.holder.MinecraftClient;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Unique;
@@ -19,31 +20,18 @@ import top.xfunny.mod.lift.LiftFloorCancelState;
 import top.xfunny.mod.lift.DisplayDirectionMode;
 import top.xfunny.mod.lift.LiftDisplayState;
 import top.xfunny.mod.lift.LiftMotionProfile;
+import top.xfunny.mod.util.LiftStateManager;
+
+import java.util.logging.Logger;
 
 @Mixin(value = Lift.class, remap = false)
 public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, MixinNameColorDataBaseSchema, LiftDisplayDirection {
-
-    @Unique
-    private static final long YTE_LIFT_STOPPING_TIME = Vehicle.DOOR_MOVE_TIME + 2500;
 
     @Unique
     private static final long YTE_BRAKE_HOLD_TIME = 200;
 
     @Unique
     private static final long YTE_ARRIVAL_DIRECTION_DELAY = 100;
-
-    @Unique
-    private static final long YTE_DOOR_CLOSED_DELAY = 500;
-
-    @Unique
-    private static final long YTE_SINGLE_DOOR_MOVE_TIME = Vehicle.DOOR_MOVE_TIME / 2;
-
-    /** 门完全打开时对应的 stoppingCoolDown（= 停站时间 - 单次开门时间） */
-    @Unique
-    private static final long YTE_DOOR_FULL_OPEN_COOL_DOWN = YTE_LIFT_STOPPING_TIME - YTE_SINGLE_DOOR_MOVE_TIME;
-
-    @Unique
-    private static final long YTE_DOOR_CLOSE_PROTECTION_TIME = 300;
 
     @Unique
     private int yte$motionTargetFloor = Integer.MIN_VALUE;
@@ -58,16 +46,28 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
     private static final long YTE_TWO_STAGE_COARSE_HOLD_TIME = 1000;
 
     /**
-     * MTR's door curve becomes negative when the cooldown is extended beyond its
-     * native stopping time. Clamp that short brake-hold section to fully closed.
+     * Per-lift door curve: opening / fully open / closing / closed + RUN
+     * window, parameterized by the lift's door config instead of MTR's fixed
+     * 500/2100/4100/5700 hardcoded curve. Defaults reproduce MTR's values.
      */
-    @Inject(method = "getDoorValue", at = @At("RETURN"), cancellable = true)
-    private void yte$clampBrakeHoldDoorValue(CallbackInfoReturnable<Float> cir) {
+    @Inject(method = "getDoorValue", at = @At("HEAD"), cancellable = true)
+    private void yte$doorCurve(CallbackInfoReturnable<Float> cir) {
         final Lift lift = (Lift) (Object) this;
-        final float doorValue = Math.max(cir.getReturnValue(), 0F);
-        cir.setReturnValue(isClientside()
-                ? LiftDoorControlState.preserveClientOpenDoorValue(lift.getId(), doorValue)
-                : doorValue);
+        final YteLiftConfigStore.DoorParams p = YteLiftConfigStore.getDoorParams(lift.getId());
+        final long coolDown = getStoppingCoolDown();
+        final double doorValue;
+        if (coolDown >= p.total()) {
+            doorValue = 0;
+        } else if (coolDown > p.fullOpenCoolDown()) {
+            doorValue = p.curve.apply((double) (p.total() - coolDown) / p.openMs);
+        } else if (coolDown > p.closeStartCoolDown()) {
+            doorValue = 1;
+        } else if (coolDown > p.runDelay) {
+            doorValue = p.curve.apply((double) (coolDown - p.runDelay) / p.closeMs);
+        } else {
+            doorValue = 0;
+        }
+        cir.setReturnValue((float) doorValue);
     }
 
     /**
@@ -87,6 +87,10 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
      */
     @Overwrite
     public void tick(long millisElapsed) {
+        if (isClientside() && MinecraftClient.getInstance().isPaused()) {
+            return;
+        }
+
         final long id = ((Lift) (Object) this).getId();
         final boolean movingDown = getSpeed() < 0 || getSpeed() == 0 && !getInstructions().isEmpty()
                 && invokeGetProgress(getInstructions().get(0).getFloor()) < getRailProgress();
@@ -98,10 +102,13 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
         final LiftMotionProfile motionProfile = YteLiftConfigStore.getMotionProfile(id);
 
         if (!isClientside()) {
-            final LiftDoorControlState.Command doorCommand = LiftDoorControlState.consume(id);
-            if (doorCommand != null) {
-                yte$applyDoorCommand(doorCommand);
+            final LiftDoorControlState.DoorQueue doorQueue = LiftDoorControlState.getOrCreate(id);
+            if (doorQueue.pendingCommand != null) {
+                yte$processDoorCommand(doorQueue, doorQueue.pendingCommand);
+                doorQueue.pendingCommand = null;
             }
+            yte$updateDoorState(doorQueue);
+            yte$tickCloseTimer(doorQueue, millisElapsed);
 
             final Integer cancelledFloor = LiftFloorCancelState.consume(id);
             if (cancelledFloor != null && getSpeed() == 0 && yte$isExactlyAtFloor()
@@ -113,24 +120,9 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
                 }
             }
 
-            if (LiftDoorControlState.isHoldActive(id)) {
-                final boolean stoppedAtFloor = getSpeed() == 0 && yte$isExactlyAtFloor();
-                if (!YteLiftConfigStore.isDoorHoldEnabled(id) || LiftDoorControlState.isHoldExpired(id)) {
-                    LiftDoorControlState.endHold(id);
-                    Init.sendLiftHoldState(id, false);
-                    final float doorValue = ((Lift) (Object) this).getDoorValue();
-                    if (stoppedAtFloor && doorValue >= 0.999F) {
-                        setStoppingCoolDown(YTE_DOOR_CLOSED_DELAY + YTE_SINGLE_DOOR_MOVE_TIME);
-                        setNeedsUpdate(true);
-                    }
-                } else if (stoppedAtFloor) {
-                    final float doorValue = ((Lift) (Object) this).getDoorValue();
-                    final long fullOpenCoolDown = YTE_LIFT_STOPPING_TIME - YTE_SINGLE_DOOR_MOVE_TIME;
-                    if (doorValue >= 0.999F && getStoppingCoolDown() < fullOpenCoolDown) {
-                        setStoppingCoolDown(fullOpenCoolDown);
-                        setNeedsUpdate(true);
-                    }
-                }
+            // 电梯出发即发出 RUN 消息
+            if (getSpeed() != 0) {
+                doorQueue.pendingCommand = LiftDoorControlState.Command.RUN;
             }
         }
 
@@ -145,10 +137,15 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
                     setNeedsUpdate(true);
                 }
             }
+        } else if (!isClientside() && LiftDoorControlState.getOrCreate(id).maintenanceLocked) {
+            // 联锁：某层门被三角钥匙手动打开 → 轿厢禁止运行，保持速度 0
+            setSpeed(0);
+            setNeedsUpdate(true);
         } else {
             if (adoLevelling) {
                 // 平层/预开门阶段：门开到全开后保持，避免徐行过慢时 cooldown 耗尽、停稳后二次开门
-                setStoppingCoolDown(Math.max(getStoppingCoolDown() - millisElapsed, YTE_DOOR_FULL_OPEN_COOL_DOWN));
+                setStoppingCoolDown(Math.max(getStoppingCoolDown() - millisElapsed,
+                        YteLiftConfigStore.getDoorParams(id).fullOpenCoolDown()));
             }
 
             if (getInstructions().isEmpty()) {
@@ -190,20 +187,23 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
 
                 final double updatedMovementThisTick = Math.abs(getSpeed() * millisElapsed);
                 if (adoDistance > 0 && !isClientside() && !adoLevelling && getSpeed() != 0 && distanceToTarget <= adoDistance + updatedMovementThisTick) {
-                    setStoppingCoolDown(YTE_LIFT_STOPPING_TIME);
-                    Init.sendLiftAdoStart(id, YTE_LIFT_STOPPING_TIME);
+                    setStoppingCoolDown(YteLiftConfigStore.getDoorParams(id).total());
+                    Init.sendLiftAdoStart(id, YteLiftConfigStore.getDoorParams(id).total());
                 }
 
                 if (Math.abs(getRailProgress() - nextInstructionProgress) <= Math.abs(getSpeed() * millisElapsed)) {
                     setRailProgress(nextInstructionProgress);
                     setSpeed(0);
+                    // 客户端镜像同步移除指令，否则镜像会用自己的 coolDown==0 分支反复重开门
+                    getInstructions().remove(0);
+                    yte$motionTargetFloor = Integer.MIN_VALUE;
+                    yte$twoStageFineLevelling = false;
+                    yte$twoStageCoarseHoldRemaining = 0;
                     if (!isClientside()) {
-                        getInstructions().remove(0);
-                        yte$motionTargetFloor = Integer.MIN_VALUE;
-                        yte$twoStageFineLevelling = false;
-                        yte$twoStageCoarseHoldRemaining = 0;
+                        LiftDoorControlState.getOrCreate(id).runIssued = false;
                         if (getStoppingCoolDown() == 0) {
-                            setStoppingCoolDown(YTE_LIFT_STOPPING_TIME + (adoDistance <= 0 ? YTE_BRAKE_HOLD_TIME : 0));
+                            setStoppingCoolDown(YteLiftConfigStore.getDoorParams(id).total()
+                                    + (adoDistance <= 0 ? YTE_BRAKE_HOLD_TIME : 0));
                         }
                         setNeedsUpdate(true);
                     }
@@ -230,62 +230,119 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
     }
 
     @Unique
-    private void yte$applyDoorCommand(LiftDoorControlState.Command command) {
+    private void yte$processDoorCommand(LiftDoorControlState.DoorQueue queue, LiftDoorControlState.Command command) {
+        final Lift lift = (Lift) (Object) this;
+        final long id = lift.getId();
+
+        if (command == LiftDoorControlState.Command.RUN) {
+            queue.runIssued = true;
+            return;
+        }
+
         if (getSpeed() != 0 || !yte$isExactlyAtFloor()) {
             return;
         }
 
-        final Lift lift = (Lift) (Object) this;
-        final long id = lift.getId();
+        final YteLiftConfigStore.DoorParams p = YteLiftConfigStore.getDoorParams(id);
         final long coolDown = getStoppingCoolDown();
-        final long fullOpenCoolDown = YTE_LIFT_STOPPING_TIME - YTE_SINGLE_DOOR_MOVE_TIME;
-        final long closeStartCoolDown = YTE_DOOR_CLOSED_DELAY + YTE_SINGLE_DOOR_MOVE_TIME;
-        final boolean startingIdleDoorCycle = command == LiftDoorControlState.Command.OPEN
-                && getInstructions().isEmpty()
-                && coolDown < YTE_DOOR_CLOSED_DELAY
-                && lift.getDoorValue() <= 0;
-        boolean openCommandApplied = false;
+        final float doorValue = Utilities.clamp(lift.getDoorValue(), 0, 1);
+
+        if (command == LiftDoorControlState.Command.CLOSE) {
+            if (doorValue == 1.0F) {
+                queue.closeRemainingMs = LiftDoorControlState.INFINITE_OPEN;
+                setStoppingCoolDown(p.closeStartCoolDown());
+                setNeedsUpdate(true);
+            }
+            return;
+        }
 
         if (command == LiftDoorControlState.Command.HOLD_OPEN
-                && YteLiftConfigStore.isDoorHoldEnabled(id)) {
-            LiftDoorControlState.beginHold(id);
-            Init.sendLiftHoldState(id, true);
-            final float doorValue = Utilities.clamp(lift.getDoorValue(), 0, 1);
-            if (doorValue >= 1) {
-                setStoppingCoolDown(fullOpenCoolDown);
-                openCommandApplied = true;
-            } else if (doorValue > 0 && coolDown <= closeStartCoolDown) {
-                setStoppingCoolDown(YTE_LIFT_STOPPING_TIME - Math.round(doorValue * YTE_SINGLE_DOOR_MOVE_TIME));
-                openCommandApplied = true;
-            } else if (doorValue <= 0 && coolDown <= YTE_DOOR_CLOSED_DELAY) {
-                setStoppingCoolDown(YTE_LIFT_STOPPING_TIME);
-                openCommandApplied = true;
-            }
-        } else if (command == LiftDoorControlState.Command.OPEN) {
-            final float doorValue = Utilities.clamp(lift.getDoorValue(), 0, 1);
-            if (doorValue >= 1) {
-                setStoppingCoolDown(fullOpenCoolDown);
-                openCommandApplied = true;
-            } else if (doorValue > 0 && coolDown <= closeStartCoolDown) {
-                setStoppingCoolDown(YTE_LIFT_STOPPING_TIME - Math.round(doorValue * YTE_SINGLE_DOOR_MOVE_TIME));
-                openCommandApplied = true;
-            } else if (doorValue <= 0 && coolDown <= YTE_DOOR_CLOSED_DELAY) {
-                setStoppingCoolDown(YTE_LIFT_STOPPING_TIME);
-                openCommandApplied = true;
-            }
-        } else if (command == LiftDoorControlState.Command.CLOSE) {
-            LiftDoorControlState.endHold(id);
-            Init.sendLiftHoldState(id, false);
-            if (lift.getDoorValue() >= 0.999F) {
-                setStoppingCoolDown(closeStartCoolDown);
-            }
+                && (doorValue <= 0 || !YteLiftConfigStore.isDoorHoldEnabled(id))) {
+            return;
         }
 
-        if (openCommandApplied) {
-            Init.sendLiftDoorOpen(lift.getId(), getStoppingCoolDown(), startingIdleDoorCycle);
+        // OPEN / HOLD
+        final boolean startingIdleDoorCycle = command == LiftDoorControlState.Command.OPEN
+                && getInstructions().isEmpty()
+                && coolDown < p.runDelay
+                && doorValue <= 0;
+        if (doorValue <= 0 && coolDown <= p.runDelay) {
+            setStoppingCoolDown(p.total());
+            queue.closeRemainingMs = yte$closeTimerValue(id);
+            Init.sendLiftDoorOpen(id, getStoppingCoolDown(), startingIdleDoorCycle);
+            setNeedsUpdate(true);
+        } else if (doorValue >= 1) {
+            setStoppingCoolDown(p.fullOpenCoolDown());
+            queue.closeRemainingMs = yte$closeTimerValue(id);
+            Init.sendLiftDoorOpen(id, getStoppingCoolDown(), false);
+            setNeedsUpdate(true);
+        } else if (coolDown <= p.closeStartCoolDown()) {
+            // 关门中
+            setStoppingCoolDown(p.total() - Math.round(p.curve.invert(doorValue) * p.openMs));
+            queue.closeRemainingMs = yte$closeTimerValue(id);
+            Init.sendLiftDoorOpen(id, getStoppingCoolDown(), false);
+            setNeedsUpdate(true);
+        } else {
+            // 开门中
+            queue.closeRemainingMs = yte$closeTimerValue(id);
+        }
+    }
+
+    /** -1（消防/专用模式）表示无限开门；否则为配置的开门保持时长。 */
+    @Unique
+    private static long yte$closeTimerValue(long id) {
+        // ponytail: fire mode is client-side state until it is synced to the
+        // server; the config dwellMs == -1 path is the server-visible one.
+        return LiftStateManager.isFireMode(id)
+                ? LiftDoorControlState.INFINITE_OPEN
+                : YteLiftConfigStore.getDoorDwellMs(id);
+    }
+
+    /** 由 coolDown 推导门状态；转入 FULLY_OPEN / CLOSED 即「门已完全打开/关闭」事件。 */
+    @Unique
+    private void yte$updateDoorState(LiftDoorControlState.DoorQueue queue) {
+        final Lift lift = (Lift) (Object) this;
+        final YteLiftConfigStore.DoorParams p = YteLiftConfigStore.getDoorParams(lift.getId());
+        final long coolDown = getStoppingCoolDown();
+        final LiftDoorControlState.DoorState state;
+        if (coolDown >= p.total() || coolDown <= p.runDelay) {
+            state = LiftDoorControlState.DoorState.CLOSED;
+        } else if (coolDown > p.fullOpenCoolDown()) {
+            state = LiftDoorControlState.DoorState.OPENING;
+        } else if (coolDown > p.closeStartCoolDown()) {
+            state = LiftDoorControlState.DoorState.FULLY_OPEN;
+        } else {
+            state = LiftDoorControlState.DoorState.CLOSING;
         }
 
-        setNeedsUpdate(true);
+        if (state != queue.doorState) {
+            queue.doorState = state;
+            if (state == LiftDoorControlState.DoorState.FULLY_OPEN) {
+                queue.closeRemainingMs = yte$closeTimerValue(lift.getId());
+            }
+        }
+    }
+
+    @Unique
+    private void yte$tickCloseTimer(LiftDoorControlState.DoorQueue queue, long millisElapsed) {
+        if (queue.doorState != LiftDoorControlState.DoorState.FULLY_OPEN) {
+            return;
+        }
+        final YteLiftConfigStore.DoorParams p = YteLiftConfigStore.getDoorParams(((Lift) (Object) this).getId());
+        if (queue.closeRemainingMs == LiftDoorControlState.INFINITE_OPEN) {
+            // 无限开门：把冷却钉在全开位置
+            if (getStoppingCoolDown() < p.fullOpenCoolDown()) {
+                setStoppingCoolDown(p.fullOpenCoolDown());
+                setNeedsUpdate(true);
+            }
+            return;
+        }
+        queue.closeRemainingMs -= millisElapsed;
+        if (queue.closeRemainingMs <= 0) {
+            queue.closeRemainingMs = LiftDoorControlState.INFINITE_OPEN;
+            setStoppingCoolDown(p.closeStartCoolDown());
+            setNeedsUpdate(true);
+        }
     }
 
     @Unique

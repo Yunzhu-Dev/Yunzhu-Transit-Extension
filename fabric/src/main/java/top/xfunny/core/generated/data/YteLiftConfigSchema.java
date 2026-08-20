@@ -20,6 +20,11 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
     protected String doorButtonLightMode;
     protected String floorCancelMode;
     protected boolean floorCancelWhileMoving;
+    protected long doorOpenMs;
+    protected long doorCloseMs;
+    protected long doorDwellMs;
+    protected long doorRunDelayMs;
+    protected String doorCurve;
 
     private static final String KEY_LIFT_ID = "lift_id";
     private static final String KEY_SPEED = "speed";
@@ -35,6 +40,11 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
     private static final String KEY_DOOR_BUTTON_LIGHT_MODE = "door_button_light_mode";
     private static final String KEY_FLOOR_CANCEL_MODE = "floor_cancel_mode";
     private static final String KEY_FLOOR_CANCEL_WHILE_MOVING = "floor_cancel_while_moving";
+    private static final String KEY_DOOR_OPEN_MS = "door_open_ms";
+    private static final String KEY_DOOR_CLOSE_MS = "door_close_ms";
+    private static final String KEY_DOOR_DWELL_MS = "door_dwell_ms";
+    private static final String KEY_DOOR_RUN_DELAY_MS = "door_run_delay_ms";
+    private static final String KEY_DOOR_CURVE = "door_curve";
 
     public static final double DEFAULT_SPEED = 10.0;
     public static final double DEFAULT_ACCELERATION = 4.0;
@@ -55,6 +65,20 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
     public static final String DEFAULT_MOTION_PROFILE = "STANDARD";
     public static final String DEFAULT_DOOR_BUTTON_LIGHT_MODE = "MOMENTARY";
     public static final String DEFAULT_FLOOR_CANCEL_MODE = "DOUBLE_CLICK";
+    public static final long DEFAULT_DOOR_OPEN_MS = 1600;
+    public static final long DEFAULT_DOOR_CLOSE_MS = 1600;
+    public static final long DEFAULT_DOOR_DWELL_MS = 2000;
+    public static final long DEFAULT_DOOR_RUN_DELAY_MS = 500;
+    public static final String DEFAULT_DOOR_CURVE = "LINEAR";
+    public static final long MIN_DOOR_OPEN_MS = 100;
+    public static final long MAX_DOOR_OPEN_MS = 10000;
+    public static final long MIN_DOOR_CLOSE_MS = 100;
+    public static final long MAX_DOOR_CLOSE_MS = 10000;
+    /** -1 表示无限开门（消防/专用模式） */
+    public static final long MIN_DOOR_DWELL_MS = -1;
+    public static final long MAX_DOOR_DWELL_MS = 60000;
+    public static final long MIN_DOOR_RUN_DELAY_MS = 0;
+    public static final long MAX_DOOR_RUN_DELAY_MS = 10000;
 
     protected YteLiftConfigSchema(long liftId, double speed, double acceleration, double adoDistance, double levellingDistance, double levellingSpeed) {
         this(liftId, speed, speed, acceleration, acceleration, true, adoDistance, levellingDistance, levellingSpeed,
@@ -86,6 +110,18 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
             boolean directionParametersLinked, double adoDistance, double levellingDistance, double levellingSpeed,
             String motionProfile, boolean doorHoldEnabled, String doorButtonLightMode, String floorCancelMode,
             boolean floorCancelWhileMoving) {
+        this(liftId, speed, downSpeed, acceleration, downAcceleration, directionParametersLinked,
+                adoDistance, levellingDistance, levellingSpeed, motionProfile, doorHoldEnabled,
+                doorButtonLightMode, floorCancelMode, floorCancelWhileMoving,
+                DEFAULT_DOOR_OPEN_MS, DEFAULT_DOOR_CLOSE_MS, DEFAULT_DOOR_DWELL_MS,
+                DEFAULT_DOOR_RUN_DELAY_MS, DEFAULT_DOOR_CURVE);
+    }
+
+    protected YteLiftConfigSchema(long liftId, double speed, double downSpeed, double acceleration, double downAcceleration,
+            boolean directionParametersLinked, double adoDistance, double levellingDistance, double levellingSpeed,
+            String motionProfile, boolean doorHoldEnabled, String doorButtonLightMode, String floorCancelMode,
+            boolean floorCancelWhileMoving, long doorOpenMs, long doorCloseMs, long doorDwellMs, long doorRunDelayMs,
+            String doorCurve) {
         this.liftId = liftId;
         this.speed = speed;
         this.acceleration = acceleration;
@@ -100,6 +136,11 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         this.doorButtonLightMode = doorButtonLightMode;
         this.floorCancelMode = floorCancelMode;
         this.floorCancelWhileMoving = floorCancelWhileMoving;
+        this.doorOpenMs = doorOpenMs;
+        this.doorCloseMs = doorCloseMs;
+        this.doorDwellMs = doorDwellMs;
+        this.doorRunDelayMs = doorRunDelayMs;
+        this.doorCurve = doorCurve;
     }
 
     protected YteLiftConfigSchema(ReaderBase readerBase) {
@@ -116,6 +157,11 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         doorButtonLightMode = DEFAULT_DOOR_BUTTON_LIGHT_MODE;
         floorCancelMode = DEFAULT_FLOOR_CANCEL_MODE;
         floorCancelWhileMoving = false;
+        doorOpenMs = DEFAULT_DOOR_OPEN_MS;
+        doorCloseMs = DEFAULT_DOOR_CLOSE_MS;
+        doorDwellMs = DEFAULT_DOOR_DWELL_MS;
+        doorRunDelayMs = DEFAULT_DOOR_RUN_DELAY_MS;
+        doorCurve = DEFAULT_DOOR_CURVE;
         updateData(readerBase);
     }
 
@@ -135,6 +181,11 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         doorButtonLightMode = readerBase.getString(KEY_DOOR_BUTTON_LIGHT_MODE, DEFAULT_DOOR_BUTTON_LIGHT_MODE);
         floorCancelMode = readerBase.getString(KEY_FLOOR_CANCEL_MODE, DEFAULT_FLOOR_CANCEL_MODE);
         floorCancelWhileMoving = readerBase.getBoolean(KEY_FLOOR_CANCEL_WHILE_MOVING, false);
+        doorOpenMs = readerBase.getLong(KEY_DOOR_OPEN_MS, DEFAULT_DOOR_OPEN_MS);
+        doorCloseMs = readerBase.getLong(KEY_DOOR_CLOSE_MS, DEFAULT_DOOR_CLOSE_MS);
+        doorDwellMs = readerBase.getLong(KEY_DOOR_DWELL_MS, DEFAULT_DOOR_DWELL_MS);
+        doorRunDelayMs = readerBase.getLong(KEY_DOOR_RUN_DELAY_MS, DEFAULT_DOOR_RUN_DELAY_MS);
+        doorCurve = readerBase.getString(KEY_DOOR_CURVE, DEFAULT_DOOR_CURVE);
     }
 
     @Override
@@ -153,6 +204,11 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         writerBase.writeString(KEY_DOOR_BUTTON_LIGHT_MODE, doorButtonLightMode);
         writerBase.writeString(KEY_FLOOR_CANCEL_MODE, floorCancelMode);
         writerBase.writeBoolean(KEY_FLOOR_CANCEL_WHILE_MOVING, floorCancelWhileMoving);
+        writerBase.writeLong(KEY_DOOR_OPEN_MS, doorOpenMs);
+        writerBase.writeLong(KEY_DOOR_CLOSE_MS, doorCloseMs);
+        writerBase.writeLong(KEY_DOOR_DWELL_MS, doorDwellMs);
+        writerBase.writeLong(KEY_DOOR_RUN_DELAY_MS, doorRunDelayMs);
+        writerBase.writeString(KEY_DOOR_CURVE, doorCurve);
     }
 
     @Override
@@ -169,7 +225,11 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
                 && downAcceleration >= MIN_ACCELERATION && downAcceleration <= MAX_ACCELERATION
                 && adoDistance >= MIN_ADO_DISTANCE && adoDistance <= MAX_ADO_DISTANCE
                 && levellingDistance >= MIN_LEVELLING_DISTANCE && levellingDistance <= MAX_LEVELLING_DISTANCE
-                && levellingSpeed >= MIN_LEVELLING_SPEED && levellingSpeed <= MAX_LEVELLING_SPEED;
+                && levellingSpeed >= MIN_LEVELLING_SPEED && levellingSpeed <= MAX_LEVELLING_SPEED
+                && doorOpenMs >= MIN_DOOR_OPEN_MS && doorOpenMs <= MAX_DOOR_OPEN_MS
+                && doorCloseMs >= MIN_DOOR_CLOSE_MS && doorCloseMs <= MAX_DOOR_CLOSE_MS
+                && doorDwellMs >= MIN_DOOR_DWELL_MS && doorDwellMs <= MAX_DOOR_DWELL_MS
+                && doorRunDelayMs >= MIN_DOOR_RUN_DELAY_MS && doorRunDelayMs <= MAX_DOOR_RUN_DELAY_MS;
     }
 
     public long getId() {

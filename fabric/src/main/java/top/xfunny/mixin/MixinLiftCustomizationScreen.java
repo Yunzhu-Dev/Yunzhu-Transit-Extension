@@ -27,6 +27,7 @@ import top.xfunny.mod.client.InitClient;
 import top.xfunny.mod.client.YteMinecraftClientData;
 import top.xfunny.mod.config.YteLiftConfigStore;
 import top.xfunny.mod.packet.YtePacketUpdateData;
+import top.xfunny.mod.lift.DoorMotionCurve;
 import top.xfunny.mod.lift.LiftDoorButtonLightMode;
 import top.xfunny.mod.lift.LiftFloorCancelMode;
 import top.xfunny.mod.lift.LiftMotionProfile;
@@ -73,6 +74,11 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique private TextFieldWidgetExtension yte$adoDistanceField;
     @Unique private TextFieldWidgetExtension yte$levellingDistanceField;
     @Unique private TextFieldWidgetExtension yte$levellingSpeedField;
+    @Unique private TextFieldWidgetExtension yte$doorOpenMsField;
+    @Unique private TextFieldWidgetExtension yte$doorCloseMsField;
+    @Unique private TextFieldWidgetExtension yte$doorDwellMsField;
+    @Unique private TextFieldWidgetExtension yte$doorRunDelayMsField;
+    @Unique private ButtonWidgetExtension yte$doorCurveButton;
 
     @Unique
     private static final int SPEED_SLIDER_MAX = 40;
@@ -105,6 +111,16 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique private double yte$lastSentAdoDistance = -1;
     @Unique private double yte$lastSentLevellingDistance = -1;
     @Unique private double yte$lastSentLevellingSpeed = -1;
+    @Unique private long yte$doorOpenMs;
+    @Unique private long yte$doorCloseMs;
+    @Unique private long yte$doorDwellMs;
+    @Unique private long yte$doorRunDelayMs;
+    @Unique private DoorMotionCurve yte$doorCurve = DoorMotionCurve.LINEAR;
+    @Unique private long yte$lastSentDoorOpenMs;
+    @Unique private long yte$lastSentDoorCloseMs;
+    @Unique private long yte$lastSentDoorDwellMs;
+    @Unique private long yte$lastSentDoorRunDelayMs;
+    @Unique private DoorMotionCurve yte$lastSentDoorCurve = DoorMotionCurve.LINEAR;
     @Unique private final double[] yte$easyModeValues = new double[7];
     @Unique private final int[] yte$easyModeSliderAnchors = new int[7];
     @Unique private final boolean[] yte$easyModeSliderTouched = new boolean[7];
@@ -118,6 +134,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique private int yte$doorHoldButtonContentY;
     @Unique private int yte$doorButtonLightModeButtonContentY;
     @Unique private int yte$floorCancelModeButtonContentY;
+    @Unique private int yte$doorCurveButtonContentY;
     @Unique private boolean yte$scrollingTextButtonsSuppressed;
 
     @Inject(method = "<init>", at = @At("TAIL"))
@@ -137,6 +154,11 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         final double currentAdoDistance = config != null ? config.getAdoDistance() : YteLiftConfig.DEFAULT_ADO_DISTANCE;
         final double currentLevellingDistance = config != null ? config.getLevellingDistance() : YteLiftConfig.DEFAULT_LEVELLING_DISTANCE;
         final double currentLevellingSpeed = config != null ? config.getLevellingSpeed() : YteLiftConfig.DEFAULT_LEVELLING_SPEED;
+        yte$doorOpenMs = config == null ? YteLiftConfig.DEFAULT_DOOR_OPEN_MS : config.getDoorOpenMs();
+        yte$doorCloseMs = config == null ? YteLiftConfig.DEFAULT_DOOR_CLOSE_MS : config.getDoorCloseMs();
+        yte$doorDwellMs = config == null ? YteLiftConfig.DEFAULT_DOOR_DWELL_MS : config.getDoorDwellMs();
+        yte$doorRunDelayMs = config == null ? YteLiftConfig.DEFAULT_DOOR_RUN_DELAY_MS : config.getDoorRunDelayMs();
+        yte$doorCurve = config == null ? DoorMotionCurve.LINEAR : config.getDoorCurve();
 
         // 不显示内置值文字，由 render 手绘
         yte$sliderSpeed = new WidgetShorterSlider(0, 60, SPEED_SLIDER_MAX,
@@ -179,6 +201,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                 TextHelper.literal(""), button -> yte$toggleDoorButtonLightMode());
         yte$floorCancelModeButton = new ButtonWidgetExtension(0, 0, 0, IGui.SQUARE_SIZE,
                 TextHelper.literal(""), button -> yte$toggleFloorCancelMode());
+        yte$doorCurveButton = new ButtonWidgetExtension(0, 0, 0, IGui.SQUARE_SIZE,
+                TextHelper.literal(""), button -> yte$toggleDoorCurve());
 
         yte$speedField = yte$createNumberField(currentSpeed);
         yte$accelerationField = yte$createNumberField(currentAccel);
@@ -187,6 +211,10 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$adoDistanceField = yte$createNumberField(currentAdoDistance);
         yte$levellingDistanceField = yte$createNumberField(currentLevellingDistance);
         yte$levellingSpeedField = yte$createNumberField(currentLevellingSpeed);
+        yte$doorOpenMsField = yte$createNumberField(yte$doorOpenMs);
+        yte$doorCloseMsField = yte$createNumberField(yte$doorCloseMs);
+        yte$doorDwellMsField = yte$createNumberField(yte$doorDwellMs);
+        yte$doorRunDelayMsField = yte$createNumberField(yte$doorRunDelayMs);
 
         yte$lastSentSpeed = currentSpeed;
         yte$lastSentAccel = currentAccel;
@@ -200,6 +228,11 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$lastSentDoorHoldEnabled = yte$doorHoldEnabled;
         yte$lastSentDoorButtonLightMode = yte$doorButtonLightMode;
         yte$lastSentFloorCancelMode = yte$floorCancelMode;
+        yte$lastSentDoorOpenMs = yte$doorOpenMs;
+        yte$lastSentDoorCloseMs = yte$doorCloseMs;
+        yte$lastSentDoorDwellMs = yte$doorDwellMs;
+        yte$lastSentDoorRunDelayMs = yte$doorRunDelayMs;
+        yte$lastSentDoorCurve = yte$doorCurve;
     }
 
     @Inject(method = "init2", at = @At("TAIL"))
@@ -246,12 +279,21 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         addChild(new ClickableWidget(yte$adoDistanceField));
         addChild(new ClickableWidget(yte$levellingDistanceField));
         addChild(new ClickableWidget(yte$levellingSpeedField));
+        addChild(new ClickableWidget(yte$doorCurveButton));
+        addChild(new ClickableWidget(yte$doorOpenMsField));
+        addChild(new ClickableWidget(yte$doorCloseMsField));
+        addChild(new ClickableWidget(yte$doorDwellMsField));
+        addChild(new ClickableWidget(yte$doorRunDelayMsField));
 
         // Text fields are recreated by the screen initialization lifecycle.
         // Restore their visible text after they have been attached to the screen.
         yte$layoutDirectionWidgets();
         yte$syncFieldsFromValues(yte$lastSentSpeed, yte$lastSentDownSpeed, yte$lastSentAccel, yte$lastSentDownAccel, yte$lastSentAdoDistance,
                 yte$lastSentLevellingDistance, yte$lastSentLevellingSpeed);
+        yte$doorOpenMsField.setText2(Long.toString(yte$lastSentDoorOpenMs));
+        yte$doorCloseMsField.setText2(Long.toString(yte$lastSentDoorCloseMs));
+        yte$doorDwellMsField.setText2(Long.toString(yte$lastSentDoorDwellMs));
+        yte$doorRunDelayMsField.setText2(Long.toString(yte$lastSentDoorRunDelayMs));
         yte$updateModeWidgets();
     }
 
@@ -268,12 +310,14 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$doorHoldButtonContentY = yte$doorHoldButton.getY2();
         yte$doorButtonLightModeButtonContentY = yte$doorButtonLightModeButton.getY2();
         yte$floorCancelModeButtonContentY = yte$floorCancelModeButton.getY2();
+        yte$doorCurveButtonContentY = yte$doorCurveButton.getY2();
         buttonLiftStyle.setVisibleMapped(false);
         yte$directionLinkButton.setVisibleMapped(false);
         yte$motionProfileButton.setVisibleMapped(false);
         yte$doorHoldButton.setVisibleMapped(false);
         yte$doorButtonLightModeButton.setVisibleMapped(false);
         yte$floorCancelModeButton.setVisibleMapped(false);
+        yte$doorCurveButton.setVisibleMapped(false);
         yte$scrollingTextButtonsSuppressed = true;
         graphicsHolder.push();
         graphicsHolder.translate(0, -yte$scrollOffset, 0);
@@ -327,6 +371,19 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                 ? yte$parseNumber(yte$levellingSpeedField, yte$lastSentLevellingSpeed, YteLiftConfig.MAX_LEVELLING_SPEED)
                 : yte$getEasyModeValue(6, yte$sliderLevellingSpeed, valueToLevellingSpeed(yte$sliderLevellingSpeed.getIntValue()));
 
+        final long doorOpenMs = yte$professionalMode
+                ? yte$parseLong(yte$doorOpenMsField, yte$lastSentDoorOpenMs, YteLiftConfig.MIN_DOOR_OPEN_MS, YteLiftConfig.MAX_DOOR_OPEN_MS)
+                : yte$lastSentDoorOpenMs;
+        final long doorCloseMs = yte$professionalMode
+                ? yte$parseLong(yte$doorCloseMsField, yte$lastSentDoorCloseMs, YteLiftConfig.MIN_DOOR_CLOSE_MS, YteLiftConfig.MAX_DOOR_CLOSE_MS)
+                : yte$lastSentDoorCloseMs;
+        final long doorDwellMs = yte$professionalMode
+                ? yte$parseLong(yte$doorDwellMsField, yte$lastSentDoorDwellMs, YteLiftConfig.MIN_DOOR_DWELL_MS, YteLiftConfig.MAX_DOOR_DWELL_MS)
+                : yte$lastSentDoorDwellMs;
+        final long doorRunDelayMs = yte$professionalMode
+                ? yte$parseLong(yte$doorRunDelayMsField, yte$lastSentDoorRunDelayMs, YteLiftConfig.MIN_DOOR_RUN_DELAY_MS, YteLiftConfig.MAX_DOOR_RUN_DELAY_MS)
+                : yte$lastSentDoorRunDelayMs;
+
         if (yte$directionParametersLinked) {
             yte$drawModeLabel(graphicsHolder, "gui.yte.lift_speed", "gui.yte.lift_speed_value", upSpeed, 17);
             yte$drawModeLabel(graphicsHolder, "gui.yte.lift_acceleration", "gui.yte.lift_acceleration_value", upAccel, 19);
@@ -340,6 +397,11 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$drawModeLabel(graphicsHolder, "gui.yte.lift_ado_distance", "gui.yte.lift_ado_distance_value", adoDistance, extraStartRow);
         yte$drawModeLabel(graphicsHolder, "gui.yte.lift_levelling_distance", "gui.yte.lift_levelling_distance_value", levellingDistance, extraStartRow + 2);
         yte$drawModeLabel(graphicsHolder, "gui.yte.lift_levelling_speed", "gui.yte.lift_levelling_speed_value", levellingSpeed, extraStartRow + 4);
+        final int doorLabelRow = extraStartRow + 6;
+        yte$drawModeLabel(graphicsHolder, "gui.yte.lift_door_open_ms", "gui.yte.lift_door_open_ms_value", doorOpenMs, doorLabelRow);
+        yte$drawModeLabel(graphicsHolder, "gui.yte.lift_door_close_ms", "gui.yte.lift_door_close_ms_value", doorCloseMs, doorLabelRow + 2);
+        yte$drawModeLabel(graphicsHolder, "gui.yte.lift_door_dwell_ms", "gui.yte.lift_door_dwell_ms_value", doorDwellMs, doorLabelRow + 4);
+        yte$drawModeLabel(graphicsHolder, "gui.yte.lift_door_run_delay_ms", "gui.yte.lift_door_run_delay_ms_value", doorRunDelayMs, doorLabelRow + 6);
 
         if (upSpeed != yte$lastSentSpeed || downSpeed != yte$lastSentDownSpeed
                 || upAccel != yte$lastSentAccel || downAccel != yte$lastSentDownAccel
@@ -349,7 +411,10 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                 || levellingSpeed != yte$lastSentLevellingSpeed
                 || yte$doorHoldEnabled != yte$lastSentDoorHoldEnabled
                 || yte$doorButtonLightMode != yte$lastSentDoorButtonLightMode
-                || yte$floorCancelMode != yte$lastSentFloorCancelMode) {
+                || yte$floorCancelMode != yte$lastSentFloorCancelMode
+                || doorOpenMs != yte$lastSentDoorOpenMs || doorCloseMs != yte$lastSentDoorCloseMs
+                || doorDwellMs != yte$lastSentDoorDwellMs || doorRunDelayMs != yte$lastSentDoorRunDelayMs
+                || yte$doorCurve != yte$lastSentDoorCurve) {
             yte$lastSentSpeed = upSpeed;
             yte$lastSentDownSpeed = downSpeed;
             yte$lastSentAccel = upAccel;
@@ -362,14 +427,21 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
             yte$lastSentDoorHoldEnabled = yte$doorHoldEnabled;
             yte$lastSentDoorButtonLightMode = yte$doorButtonLightMode;
             yte$lastSentFloorCancelMode = yte$floorCancelMode;
+            yte$lastSentDoorOpenMs = doorOpenMs;
+            yte$lastSentDoorCloseMs = doorCloseMs;
+            yte$lastSentDoorDwellMs = doorDwellMs;
+            yte$lastSentDoorRunDelayMs = doorRunDelayMs;
+            yte$lastSentDoorCurve = yte$doorCurve;
 
             final long liftId = lift.getId();
             final YteLiftConfig config = new YteLiftConfig(liftId, upSpeed, downSpeed, upAccel, downAccel,
                     yte$directionParametersLinked, adoDistance, levellingDistance, levellingSpeed, yte$motionProfile,
-                    yte$doorHoldEnabled, yte$doorButtonLightMode, yte$floorCancelMode, false);
+                    yte$doorHoldEnabled, yte$doorButtonLightMode, yte$floorCancelMode, false,
+                    doorOpenMs, doorCloseMs, doorDwellMs, doorRunDelayMs, yte$doorCurve);
             YteLiftConfigStore.put(liftId, upSpeed, downSpeed, upAccel, downAccel,
                     adoDistance, levellingDistance, levellingSpeed, yte$motionProfile, yte$doorHoldEnabled,
                     yte$doorButtonLightMode, yte$floorCancelMode, false);
+            YteLiftConfigStore.putDoorParams(liftId, doorOpenMs, doorCloseMs, doorDwellMs, doorRunDelayMs, yte$doorCurve);
 
             final YteUpdateDataRequest request = new YteUpdateDataRequest(
                     config, YteMinecraftClientData.getInstance());
@@ -395,6 +467,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                     yte$doorButtonLightModeButtonContentY, mouseX, screenMouseY, delta);
             yte$renderScrollSafeButton(graphicsHolder, yte$floorCancelModeButton,
                     yte$floorCancelModeButtonContentY, mouseX, screenMouseY, delta);
+            yte$renderScrollSafeButton(graphicsHolder, yte$doorCurveButton,
+                    yte$doorCurveButtonContentY, mouseX, screenMouseY, delta);
             yte$scrollingTextButtonsSuppressed = false;
         }
         yte$drawScrollbar(graphicsHolder);
@@ -500,6 +574,14 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$positionField(yte$levellingDistanceField, extraControlRow + 2);
         yte$positionSlider(yte$sliderLevellingSpeed, extraControlRow + 4);
         yte$positionField(yte$levellingSpeedField, extraControlRow + 4);
+        final int doorRow = extraControlRow + 6;
+        yte$positionField(yte$doorOpenMsField, doorRow);
+        yte$positionField(yte$doorCloseMsField, doorRow + 2);
+        yte$positionField(yte$doorDwellMsField, doorRow + 4);
+        yte$positionField(yte$doorRunDelayMsField, doorRow + 6);
+        yte$doorCurveButton.setX2(0);
+        yte$doorCurveButton.setY2(IGui.SQUARE_SIZE * (doorRow + 8));
+        yte$doorCurveButton.setWidth2(width2);
         yte$scrollOffset = Math.min(yte$scrollOffset, yte$getMaxScroll());
     }
 
@@ -549,6 +631,12 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique
     private void yte$toggleFloorCancelMode() {
         yte$floorCancelMode = yte$floorCancelMode.next();
+        yte$updateModeWidgets();
+    }
+
+    @Unique
+    private void yte$toggleDoorCurve() {
+        yte$doorCurve = yte$doorCurve.next();
         yte$updateModeWidgets();
     }
 
@@ -653,6 +741,11 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$adoDistanceField.setVisibleMapped(yte$professionalMode);
         yte$levellingDistanceField.setVisibleMapped(yte$professionalMode);
         yte$levellingSpeedField.setVisibleMapped(yte$professionalMode);
+        yte$doorOpenMsField.setVisibleMapped(yte$professionalMode);
+        yte$doorCloseMsField.setVisibleMapped(yte$professionalMode);
+        yte$doorDwellMsField.setVisibleMapped(yte$professionalMode);
+        yte$doorRunDelayMsField.setVisibleMapped(yte$professionalMode);
+        yte$doorCurveButton.setVisibleMapped(yte$professionalMode);
 
         yte$directionLinkButton.setMessage2(new Text(TextHelper.translatable(yte$directionParametersLinked
                 ? "gui.yte.lift_direction_link_on"
@@ -666,6 +759,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                 yte$doorButtonLightMode.getTranslationKey()).data));
         yte$floorCancelModeButton.setMessage2(new Text(TextHelper.translatable(
                 yte$floorCancelMode.getTranslationKey()).data));
+        yte$doorCurveButton.setMessage2(new Text(TextHelper.translatable(
+                yte$doorCurve.getTranslationKey()).data));
     }
 
     @Unique
@@ -693,6 +788,16 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         try {
             final double value = Double.parseDouble(field.getText2().trim().replace(',', '.'));
             return Double.isFinite(value) ? Math.max(minimum, Math.min(maximum, value)) : fallback;
+        } catch (NumberFormatException ignored) {
+            return fallback;
+        }
+    }
+
+    @Unique
+    private static long yte$parseLong(TextFieldWidgetExtension field, long fallback, long minimum, long maximum) {
+        try {
+            final long value = Long.parseLong(field.getText2().trim().replace(',', '.'));
+            return Math.max(minimum, Math.min(maximum, value));
         } catch (NumberFormatException ignored) {
             return fallback;
         }
@@ -730,7 +835,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
 
     @Unique
     private int yte$getContentRows() {
-        return yte$directionParametersLinked ? 27 : 31;
+        return yte$directionParametersLinked ? 37 : 41;
     }
 
     @Unique

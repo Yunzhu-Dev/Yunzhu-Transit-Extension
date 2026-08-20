@@ -1,5 +1,6 @@
 package top.xfunny.mod.config;
 
+import top.xfunny.mod.lift.DoorMotionCurve;
 import top.xfunny.mod.lift.LiftDoorButtonLightMode;
 import top.xfunny.mod.lift.LiftFloorCancelMode;
 import top.xfunny.mod.lift.LiftMotionProfile;
@@ -25,12 +26,21 @@ public final class YteLiftConfigStore {
     private static final Map<Long, LiftDoorButtonLightMode> doorButtonLightModeMap = new ConcurrentHashMap<>();
     private static final Map<Long, LiftFloorCancelMode> floorCancelModeMap = new ConcurrentHashMap<>();
     private static final Map<Long, Boolean> floorCancelWhileMovingMap = new ConcurrentHashMap<>();
+    private static final Map<Long, Long> doorOpenMsMap = new ConcurrentHashMap<>();
+    private static final Map<Long, Long> doorCloseMsMap = new ConcurrentHashMap<>();
+    private static final Map<Long, Long> doorDwellMsMap = new ConcurrentHashMap<>();
+    private static final Map<Long, Long> doorRunDelayMsMap = new ConcurrentHashMap<>();
+    private static final Map<Long, DoorMotionCurve> doorCurveMap = new ConcurrentHashMap<>();
 
     private static final double DEFAULT_SPEED = 10.0;
     private static final double DEFAULT_ACCELERATION = 4.0;
     private static final double DEFAULT_ADO_DISTANCE = 0;
     private static final double DEFAULT_LEVELLING_DISTANCE = 0.3;
     private static final double DEFAULT_LEVELLING_SPEED = 0.2;
+    private static final long DEFAULT_DOOR_OPEN_MS = 1600;
+    private static final long DEFAULT_DOOR_CLOSE_MS = 1600;
+    private static final long DEFAULT_DOOR_DWELL_MS = 2000;
+    private static final long DEFAULT_DOOR_RUN_DELAY_MS = 500;
 
     private YteLiftConfigStore() {}
 
@@ -118,6 +128,63 @@ public final class YteLiftConfigStore {
         return floorCancelWhileMovingMap.getOrDefault(liftId, false);
     }
 
+    /**
+     * Door timing per lift, bundled for the door curve and the message queue.
+     * A raw dwell of -1 (infinite open) keeps the default dwell length for the
+     * curve math so the FULLY_OPEN band stays non-empty; the infinite-open
+     * semantics are handled by the queue's INFINITE_OPEN close timer pinning.
+     */
+    public static final class DoorParams {
+        public final long openMs;
+        public final long closeMs;
+        public final long dwellMs;
+        public final long runDelay;
+        public final DoorMotionCurve curve;
+
+        private DoorParams(long openMs, long closeMs, long dwellMs, long runDelay, DoorMotionCurve curve) {
+            this.openMs = openMs;
+            this.closeMs = closeMs;
+            this.dwellMs = dwellMs == -1 ? DEFAULT_DOOR_DWELL_MS : Math.max(dwellMs, 0);
+            this.runDelay = runDelay;
+            this.curve = curve;
+        }
+
+        public long total() {
+            return openMs + dwellMs + closeMs + runDelay;
+        }
+
+        public long fullOpenCoolDown() {
+            return dwellMs + closeMs + runDelay;
+        }
+
+        public long closeStartCoolDown() {
+            return closeMs + runDelay;
+        }
+    }
+
+    public static DoorParams getDoorParams(long liftId) {
+        return new DoorParams(
+                doorOpenMsMap.getOrDefault(liftId, DEFAULT_DOOR_OPEN_MS),
+                doorCloseMsMap.getOrDefault(liftId, DEFAULT_DOOR_CLOSE_MS),
+                doorDwellMsMap.getOrDefault(liftId, DEFAULT_DOOR_DWELL_MS),
+                doorRunDelayMsMap.getOrDefault(liftId, DEFAULT_DOOR_RUN_DELAY_MS),
+                doorCurveMap.getOrDefault(liftId, DoorMotionCurve.LINEAR));
+    }
+
+    /** Raw dwell in ms; -1 means the door stays open indefinitely. */
+    public static long getDoorDwellMs(long liftId) {
+        return doorDwellMsMap.getOrDefault(liftId, DEFAULT_DOOR_DWELL_MS);
+    }
+
+    public static void putDoorParams(long liftId, long openMs, long closeMs, long dwellMs, long runDelay,
+            DoorMotionCurve curve) {
+        doorOpenMsMap.put(liftId, openMs);
+        doorCloseMsMap.put(liftId, closeMs);
+        doorDwellMsMap.put(liftId, dwellMs);
+        doorRunDelayMsMap.put(liftId, runDelay);
+        doorCurveMap.put(liftId, curve);
+    }
+
     public static void remove(long liftId) {
         speedMap.remove(liftId);
         accelerationMap.remove(liftId);
@@ -131,6 +198,11 @@ public final class YteLiftConfigStore {
         doorButtonLightModeMap.remove(liftId);
         floorCancelModeMap.remove(liftId);
         floorCancelWhileMovingMap.remove(liftId);
+        doorOpenMsMap.remove(liftId);
+        doorCloseMsMap.remove(liftId);
+        doorDwellMsMap.remove(liftId);
+        doorRunDelayMsMap.remove(liftId);
+        doorCurveMap.remove(liftId);
     }
 
     public static void clear() {
@@ -146,5 +218,10 @@ public final class YteLiftConfigStore {
         doorButtonLightModeMap.clear();
         floorCancelModeMap.clear();
         floorCancelWhileMovingMap.clear();
+        doorOpenMsMap.clear();
+        doorCloseMsMap.clear();
+        doorDwellMsMap.clear();
+        doorRunDelayMsMap.clear();
+        doorCurveMap.clear();
     }
 }

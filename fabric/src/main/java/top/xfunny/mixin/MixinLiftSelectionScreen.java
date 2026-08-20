@@ -31,7 +31,6 @@ import top.xfunny.mod.client.screen.widget.LiftSelectionButtonWidget;
 import top.xfunny.mod.config.YteLiftConfigStore;
 import top.xfunny.mod.packet.PacketLiftDoorControl;
 import top.xfunny.mod.packet.PacketLiftFloorCancel;
-import top.xfunny.mod.packet.PacketLiftHoldState;
 import top.xfunny.mod.util.GetLiftDetails;
 
 @Mixin(value = LiftSelectionScreen.class, remap = false)
@@ -53,6 +52,7 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
     @Unique private boolean yte$lastHoldEnabled;
     @Unique private LiftDoorControlState.Command yte$pressedDoorCommand;
     @Unique private long yte$nextDoorRepeatTime;
+    @Unique private boolean yte$holdCommandActive;
     @Unique private long yte$holdOpenLightUntil;
     @Unique private long yte$openDoorLightUntil;
     @Unique private long yte$closeDoorLightUntil;
@@ -121,7 +121,7 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
         if (selectedFloor == currentFloor
                 && schema.getSpeed() == 0
                 && schema.getInstructions().isEmpty()
-                && schema.getStoppingCoolDown() <= 500
+                && schema.getStoppingCoolDown() <= YteLiftConfigStore.getDoorParams(liftId).runDelay
                 && lift.getDoorValue() == 0) {
             LiftDisplayDirectionState.get(liftId).resetForCarSameFloorOpen();
         }
@@ -145,7 +145,6 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
 
         yte$lastHoldEnabled = YteLiftConfigStore.isDoorHoldEnabled(liftId);
         yte$updateDoorButtonLayout(buttonY);
-        InitClient.REGISTRY_CLIENT.sendPacketToServer(PacketLiftHoldState.query(liftId));
     }
 
     @Inject(method = "tick2", at = @At("TAIL"))
@@ -287,7 +286,8 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
     @Unique
     private void yte$updateDoorButtonLights(long currentTime) {
         final LiftDoorButtonLightMode lightMode = YteLiftConfigStore.getDoorButtonLightMode(liftId);
-        yte$holdOpenButton.setLit(LiftDoorControlState.isClientHoldActive(liftId) || lightMode.isLit(
+        // HOLD 键：按下发送 HOLD 指令即点亮，直到发送其他门指令（OPEN/CLOSE）才熄灭
+        yte$holdOpenButton.setLit(yte$holdCommandActive || lightMode.isLit(
                 yte$pressedDoorCommand == LiftDoorControlState.Command.HOLD_OPEN,
                 currentTime < yte$holdOpenLightUntil, false));
         yte$openDoorButton.setLit(lightMode.isLit(
@@ -368,11 +368,17 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
 
     @Unique
     private void yte$sendDoorCommand(LiftDoorControlState.Command command) {
-        if (command == LiftDoorControlState.Command.CLOSE) {
-            yte$holdOpenLightUntil = 0;
+        if (command == LiftDoorControlState.Command.HOLD_OPEN) {
+            yte$holdCommandActive = true;
+        } else {
+            yte$holdCommandActive = false;
+            if (command == LiftDoorControlState.Command.CLOSE) {
+                yte$holdOpenLightUntil = 0;
+                yte$applyClientCloseCommand();
+            }
         }
         if (command == LiftDoorControlState.Command.OPEN || command == LiftDoorControlState.Command.HOLD_OPEN) {
-            yte$applyClientOpenCommand();
+            yte$applyClientOpenCommand(command);
         }
         InitClient.REGISTRY_CLIENT.sendPacketToServer(new PacketLiftDoorControl(liftId, command));
         // Minecraft keeps the last clicked active button keyboard-focused,
@@ -382,35 +388,46 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
     }
 
     @Unique
-    private void yte$applyClientOpenCommand() {
+    private void yte$applyClientCloseCommand() {
+        // MTR 的 Client.update 是异步队列，CLOSE 又没有 S→C 包，客户端收不到关门指令，
+        // 会按旧 coolDown 把 2000ms 保持播完才关门；这里与服务端同门控地本地立即进入关门相位
+        final Lift lift = MinecraftClientData.getLift(liftId);
+        if (lift == null || !yte$isStoppedAtFloor(lift)) {
+            return;
+        }
+        final float doorValue = Math.max(0, Math.min(lift.getDoorValue(), 1));
+        if (doorValue >= 0.999F) {
+            ((MixinLiftSchema) lift).setStoppingCoolDown(
+                    YteLiftConfigStore.getDoorParams(liftId).closeStartCoolDown());
+        }
+    }
+
+    @Unique
+    private void yte$applyClientOpenCommand(LiftDoorControlState.Command command) {
         final Lift lift = MinecraftClientData.getLift(liftId);
         if (lift == null || !yte$isStoppedAtFloor(lift)) {
             return;
         }
 
         final MixinLiftSchema schema = (MixinLiftSchema) lift;
+        final YteLiftConfigStore.DoorParams doorParams = YteLiftConfigStore.getDoorParams(liftId);
         final long coolDown = schema.getStoppingCoolDown();
-        final long singleDoorMoveTime = org.mtr.core.data.Vehicle.DOOR_MOVE_TIME / 2;
-        final long stoppingTime = org.mtr.core.data.Vehicle.DOOR_MOVE_TIME + 2500;
-        final long fullOpenCoolDown = stoppingTime - singleDoorMoveTime;
-        final long closeStartCoolDown = 500 + singleDoorMoveTime;
         final float doorValue = Math.max(0, Math.min(lift.getDoorValue(), 1));
 
+        // HOLD 在门已关时无可重置，忽略
+        if (command == LiftDoorControlState.Command.HOLD_OPEN && doorValue <= 0) {
+            return;
+        }
+
         if (doorValue >= 1) {
-            schema.setStoppingCoolDown(fullOpenCoolDown);
-            LiftDoorControlState.beginClientOpenPrediction(liftId, doorValue);
-        } else if (doorValue > 0 && coolDown <= closeStartCoolDown) {
-            // Reverse from the exact locally rendered position immediately;
-            // waiting for the server round trip causes a visible forward jump.
-            schema.setStoppingCoolDown(stoppingTime - Math.round(doorValue * singleDoorMoveTime));
-            LiftDoorControlState.beginClientOpenPrediction(liftId, doorValue);
-        } else if (doorValue <= 0 && coolDown <= 500) {
-            schema.setStoppingCoolDown(stoppingTime);
-            LiftDoorControlState.beginClientOpenPrediction(liftId, doorValue);
+            schema.setStoppingCoolDown(doorParams.fullOpenCoolDown());
+        } else if (doorValue <= 0 && coolDown <= doorParams.runDelay) {
+            schema.setStoppingCoolDown(doorParams.total());
             if (schema.getInstructions().isEmpty()) {
                 LiftDisplayDirectionState.get(liftId).resetForIdleDoorCycle();
             }
         }
+        // 关门中（v ∈ (0,1) 且 coolDown ≤ closeStart）：不做本地反向，等服务端反向同步，避免前后跳动
     }
 
     @Unique

@@ -95,7 +95,10 @@ public class YteSimulator extends YteData implements Utilities {
         });
 
         if (!orphans.isEmpty()) {
-            orphans.forEach(liftConfigs::remove);
+            orphans.forEach(config -> {
+                liftConfigs.remove(config);
+                top.xfunny.mod.lift.LiftDoorControlState.remove(config.getId());
+            });
             sync();
             save();
             YteCoreLogger.debug("YteSimulator cleaned {} orphan lift configs for {}",

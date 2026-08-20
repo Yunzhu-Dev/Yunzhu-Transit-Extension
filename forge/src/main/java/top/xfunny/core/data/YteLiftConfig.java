@@ -2,9 +2,10 @@ package top.xfunny.core.data;
 
 import org.mtr.core.serializer.ReaderBase;
 import top.xfunny.core.generated.data.YteLiftConfigSchema;
-import top.xfunny.mod.LiftDoorButtonLightMode;
-import top.xfunny.mod.LiftFloorCancelMode;
-import top.xfunny.mod.LiftMotionProfile;
+import top.xfunny.mod.lift.DoorMotionCurve;
+import top.xfunny.mod.lift.LiftDoorButtonLightMode;
+import top.xfunny.mod.lift.LiftFloorCancelMode;
+import top.xfunny.mod.lift.LiftMotionProfile;
 
 public class YteLiftConfig extends YteLiftConfigSchema {
 
@@ -44,6 +45,17 @@ public class YteLiftConfig extends YteLiftConfigSchema {
         super(liftId, upSpeed, downSpeed, upAcceleration, downAcceleration, directionParametersLinked,
                 adoDistance, levellingDistance, levellingSpeed, motionProfile.name(), doorHoldEnabled,
                 doorButtonLightMode.name(), floorCancelMode.name(), floorCancelWhileMoving);
+    }
+
+    public YteLiftConfig(long liftId, double upSpeed, double downSpeed, double upAcceleration, double downAcceleration,
+            boolean directionParametersLinked, double adoDistance, double levellingDistance, double levellingSpeed,
+            LiftMotionProfile motionProfile, boolean doorHoldEnabled, LiftDoorButtonLightMode doorButtonLightMode,
+            LiftFloorCancelMode floorCancelMode, boolean floorCancelWhileMoving, long doorOpenMs, long doorCloseMs,
+            long doorDwellMs, long doorRunDelayMs, DoorMotionCurve doorCurve) {
+        super(liftId, upSpeed, downSpeed, upAcceleration, downAcceleration, directionParametersLinked,
+                adoDistance, levellingDistance, levellingSpeed, motionProfile.name(), doorHoldEnabled,
+                doorButtonLightMode.name(), floorCancelMode.name(), floorCancelWhileMoving,
+                doorOpenMs, doorCloseMs, doorDwellMs, doorRunDelayMs, doorCurve.name());
     }
 
     public YteLiftConfig(ReaderBase readerBase) {
@@ -88,6 +100,16 @@ public class YteLiftConfig extends YteLiftConfigSchema {
 
     public boolean isFloorCancelWhileMovingAllowed() { return floorCancelWhileMoving; }
 
+    public long getDoorOpenMs() { return doorOpenMs; }
+
+    public long getDoorCloseMs() { return doorCloseMs; }
+
+    public long getDoorDwellMs() { return doorDwellMs; }
+
+    public long getDoorRunDelayMs() { return doorRunDelayMs; }
+
+    public DoorMotionCurve getDoorCurve() { return DoorMotionCurve.fromSerializedName(doorCurve); }
+
     public void setSpeed(double speed) {
         this.speed = clamp(speed, MIN_SPEED, MAX_SPEED);
     }
@@ -116,7 +138,21 @@ public class YteLiftConfig extends YteLiftConfigSchema {
         this.floorCancelWhileMoving = floorCancelWhileMoving;
     }
 
+    public void setDoorOpenMs(long doorOpenMs) { this.doorOpenMs = clampLong(doorOpenMs, MIN_DOOR_OPEN_MS, MAX_DOOR_OPEN_MS); }
+
+    public void setDoorCloseMs(long doorCloseMs) { this.doorCloseMs = clampLong(doorCloseMs, MIN_DOOR_CLOSE_MS, MAX_DOOR_CLOSE_MS); }
+
+    public void setDoorDwellMs(long doorDwellMs) { this.doorDwellMs = clampLong(doorDwellMs, MIN_DOOR_DWELL_MS, MAX_DOOR_DWELL_MS); }
+
+    public void setDoorRunDelayMs(long doorRunDelayMs) { this.doorRunDelayMs = clampLong(doorRunDelayMs, MIN_DOOR_RUN_DELAY_MS, MAX_DOOR_RUN_DELAY_MS); }
+
+    public void setDoorCurve(DoorMotionCurve doorCurve) { this.doorCurve = doorCurve.name(); }
+
     private static double clamp(double value, double min, double max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    private static long clampLong(long value, long min, long max) {
         return Math.max(min, Math.min(max, value));
     }
 }

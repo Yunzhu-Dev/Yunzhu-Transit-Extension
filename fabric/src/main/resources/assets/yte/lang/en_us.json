@@ -443,6 +443,17 @@
   "gui.yte.lift_door_button_light_automatic": "Door button light: Follow door operation",
   "gui.yte.lift_floor_cancel_double_click": "Cancel selected floor: Double-click",
   "gui.yte.lift_floor_cancel_long_press": "Cancel selected floor: Long press",
+  "gui.yte.lift_door_open_ms": "Door open time (ms)",
+  "gui.yte.lift_door_open_ms_value": "Door open: %s ms",
+  "gui.yte.lift_door_close_ms": "Door close time (ms)",
+  "gui.yte.lift_door_close_ms_value": "Door close: %s ms",
+  "gui.yte.lift_door_dwell_ms": "Door hold time (ms, -1 = infinite)",
+  "gui.yte.lift_door_dwell_ms_value": "Door hold: %s ms",
+  "gui.yte.lift_door_run_delay_ms": "Door run delay (ms)",
+  "gui.yte.lift_door_run_delay_ms_value": "Run delay: %s ms",
+  "gui.yte.door_curve_linear": "Door curve: Linear",
+  "gui.yte.door_curve_smoothstep": "Door curve: Smoothstep",
+  "gui.yte.door_curve_ease_in_out_quad": "Door curve: Ease in-out quad",
   "gui.yte.lift_hold_open": "HOLD",
   "block.yte.lift_track_magnetic_vane": "Lift Express-Zone Magnetic Vane"
 }

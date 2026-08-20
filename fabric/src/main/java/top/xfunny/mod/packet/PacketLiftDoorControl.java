@@ -6,7 +6,6 @@ import org.mtr.mapping.registry.PacketHandler;
 import org.mtr.mapping.tool.PacketBufferReceiver;
 import org.mtr.mapping.tool.PacketBufferSender;
 import org.mtr.core.data.Lift;
-import org.mtr.core.data.Vehicle;
 import org.mtr.mod.client.MinecraftClientData;
 import top.xfunny.mixin.MixinLiftSchema;
 import top.xfunny.mod.lift.LiftDisplayDirectionState;
@@ -66,8 +65,7 @@ public final class PacketLiftDoorControl extends PacketHandler {
         final Lift lift = MinecraftClientData.getLift(liftId);
         if (lift != null) {
             if (stoppingCoolDown >= 0) {
-                ((MixinLiftSchema) lift).setStoppingCoolDown(LiftDoorControlState.reconcileClientOpenCoolDown(
-                        liftId, stoppingCoolDown, Vehicle.DOOR_MOVE_TIME + 2500, Vehicle.DOOR_MOVE_TIME / 2));
+                ((MixinLiftSchema) lift).setStoppingCoolDown(stoppingCoolDown);
             }
             if (resetIdleDirection) {
                 LiftDisplayDirectionState.get(liftId).resetForIdleDoorCycle();

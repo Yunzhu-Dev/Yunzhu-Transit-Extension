@@ -12,34 +12,56 @@ import org.mtr.mod.block.BlockPSDAPGDoorBase;
 import org.mtr.mod.block.IBlock;
 import org.mtr.mod.client.MinecraftClientData;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import top.xfunny.mod.block.HitachiB85Door1;
 import top.xfunny.mod.block.KoneMDoor1;
 import top.xfunny.mod.block.MitsubishiNexWayDoor1;
 import top.xfunny.mod.block.OtisE411USDoor1;
 import top.xfunny.mod.block.SchindlerQKS9Door1;
+import top.xfunny.mod.lift.LiftDoorMaintenance;
 
 @Mixin(value = BlockPSDAPGDoorBase.BlockEntityBase.class, remap = false)
-public abstract class MixinLiftDoorBlockEntity extends BlockEntityExtension {
+public abstract class MixinLiftDoorBlockEntity extends BlockEntityExtension implements LiftDoorMaintenance {
+
+    @Unique
+    private boolean yte$maintenanceOpen;
 
     protected MixinLiftDoorBlockEntity(BlockEntityType<?> blockEntityType, BlockPos blockPos, BlockState blockState) {
         super(blockEntityType, blockPos, blockState);
     }
 
-    @Inject(method = "setDoorValue", at = @At("HEAD"), cancellable = true)
-    private void yte$onlyOpenAtTargetLiftFloor(double doorValue, CallbackInfo ci) {
-        if (doorValue <= 0 || !yte$isLiftDoor()) {
+    @Override
+    public void yte$setMaintenanceOpen(boolean open) {
+        // ponytail: MTR's door block entity has no NBT hooks, so this flag is
+        // in-memory only; the C→S packet re-applies it after chunk reloads.
+        yte$maintenanceOpen = open;
+        markDirty2();
+    }
+
+    /**
+     * 层门实时读取轿厢门值：渲染与碰撞（tick 阶段）读取同一份新鲜值，消除
+     * canOpenDoors 渲染帧写入造成的碰撞 1 帧延迟；同时把「仅本层开门」门控
+     * 移到读取侧，写入侧无需再拦截。
+     */
+    @Inject(method = "getDoorValue", at = @At("RETURN"), cancellable = true)
+    private void yte$liftDoorLiveValue(CallbackInfoReturnable<Double> cir) {
+        if (!yte$isLiftDoor()) {
             return;
         }
+        cir.setReturnValue(yte$maintenanceOpen ? 1.0 : yte$nearbyLiftDoorValue());
+    }
 
+    @Unique
+    private double yte$nearbyLiftDoorValue() {
         BlockPos doorPos = getPos2();
         if (IBlock.getStatePropertySafe(getCachedState2(), IBlock.HALF) == IBlock.DoubleBlockHalf.UPPER) {
             doorPos = doorPos.down(1);
         }
 
-        boolean foundNearbyOpeningLift = false;
+        double doorValue = 0;
         for (Lift lift : MinecraftClientData.getInstance().lifts) {
             if (!lift.hasCoolDown() || lift.getDoorValue() <= 0) {
                 continue;
@@ -64,22 +86,16 @@ public abstract class MixinLiftDoorBlockEntity extends BlockEntityExtension {
             final long targetX = targetFloor.getPosition().getX();
             final long targetY = targetFloor.getPosition().getY();
             final long targetZ = targetFloor.getPosition().getZ();
-
             final double alignY = targetY + lift.getOffsetY();
-
             final double horizontalRange = Math.max(lift.getWidth(), lift.getDepth()) / 2 + 3;
             if (Math.abs(doorPos.getX() - targetX) <= horizontalRange
-                    && Math.abs(doorPos.getZ() - targetZ) <= horizontalRange) {
-                foundNearbyOpeningLift = true;
-                if (doorPos.getY() + 1 >= alignY - 2 && doorPos.getY() <= alignY + 2) {
-                    return;
-                }
+                    && Math.abs(doorPos.getZ() - targetZ) <= horizontalRange
+                    && doorPos.getY() + 1 >= alignY - 2 && doorPos.getY() <= alignY + 2) {
+                // 与 canOpenDoors 一致：井道门开度按轿厢值的 0.75 封顶
+                doorValue = Math.max(doorValue, Math.min(lift.getDoorValue(), 0.75));
             }
         }
-
-        if (foundNearbyOpeningLift) {
-            ci.cancel();
-        }
+        return doorValue;
     }
 
     private boolean yte$isLiftDoor() {
