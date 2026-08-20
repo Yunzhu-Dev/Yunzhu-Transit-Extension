@@ -1,4 +1,4 @@
-package top.xfunny.mod;
+package top.xfunny.mod.lift;
 
 import org.mtr.core.data.LiftDirection;
 import org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;

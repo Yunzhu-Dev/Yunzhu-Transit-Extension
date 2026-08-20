@@ -1,4 +1,4 @@
-package top.xfunny.mod;
+package top.xfunny.mod.lift;
 
 public enum LiftFloorCancelMode {
     DOUBLE_CLICK("gui.yte.lift_floor_cancel_double_click"),

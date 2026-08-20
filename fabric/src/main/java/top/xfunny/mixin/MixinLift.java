@@ -12,13 +12,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import top.xfunny.mod.config.YteLiftConfigStore;
 import top.xfunny.mod.Init;
-import top.xfunny.mod.LiftDisplayDirection;
-import top.xfunny.mod.LiftDisplayDirectionState;
-import top.xfunny.mod.LiftDoorControlState;
-import top.xfunny.mod.LiftFloorCancelState;
-import top.xfunny.mod.DisplayDirectionMode;
-import top.xfunny.mod.LiftDisplayState;
-import top.xfunny.mod.LiftMotionProfile;
+import top.xfunny.mod.lift.LiftDisplayDirection;
+import top.xfunny.mod.lift.LiftDisplayDirectionState;
+import top.xfunny.mod.lift.LiftDoorControlState;
+import top.xfunny.mod.lift.LiftFloorCancelState;
+import top.xfunny.mod.lift.DisplayDirectionMode;
+import top.xfunny.mod.lift.LiftDisplayState;
+import top.xfunny.mod.lift.LiftMotionProfile;
 
 @Mixin(value = Lift.class, remap = false)
 public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, MixinNameColorDataBaseSchema, LiftDisplayDirection {

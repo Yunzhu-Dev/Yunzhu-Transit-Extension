@@ -6,7 +6,7 @@ import org.mtr.mod.block.BlockLiftPanelBase;
 import org.mtr.mod.block.BlockLiftTrackFloor;
 import org.mtr.mod.item.ItemBlockClickingBase;
 import top.xfunny.mod.ButtonRegistry;
-import top.xfunny.mod.LiftFloorRegistry;
+import top.xfunny.mod.lift.LiftFloorRegistry;
 import top.xfunny.mod.block.base.LiftButtonsBase;
 import top.xfunny.mod.block.base.LiftDestinationDispatchTerminalBase;
 

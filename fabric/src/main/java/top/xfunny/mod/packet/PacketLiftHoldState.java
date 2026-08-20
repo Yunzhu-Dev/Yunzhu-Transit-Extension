@@ -6,7 +6,7 @@ import org.mtr.mapping.registry.PacketHandler;
 import org.mtr.mapping.tool.PacketBufferReceiver;
 import org.mtr.mapping.tool.PacketBufferSender;
 import top.xfunny.mod.Init;
-import top.xfunny.mod.LiftDoorControlState;
+import top.xfunny.mod.lift.LiftDoorControlState;
 
 public final class PacketLiftHoldState extends PacketHandler {
 

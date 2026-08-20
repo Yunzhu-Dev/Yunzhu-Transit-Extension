@@ -2,9 +2,9 @@ package top.xfunny.core.data;
 
 import org.mtr.core.serializer.ReaderBase;
 import top.xfunny.core.generated.data.YteLiftConfigSchema;
-import top.xfunny.mod.LiftDoorButtonLightMode;
-import top.xfunny.mod.LiftFloorCancelMode;
-import top.xfunny.mod.LiftMotionProfile;
+import top.xfunny.mod.lift.LiftDoorButtonLightMode;
+import top.xfunny.mod.lift.LiftFloorCancelMode;
+import top.xfunny.mod.lift.LiftMotionProfile;
 
 public class YteLiftConfig extends YteLiftConfigSchema {
 

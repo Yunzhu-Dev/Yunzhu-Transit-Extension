@@ -9,8 +9,8 @@ import org.mtr.core.data.Lift;
 import org.mtr.core.data.Vehicle;
 import org.mtr.mod.client.MinecraftClientData;
 import top.xfunny.mixin.MixinLiftSchema;
-import top.xfunny.mod.LiftDisplayDirectionState;
-import top.xfunny.mod.LiftDoorControlState;
+import top.xfunny.mod.lift.LiftDisplayDirectionState;
+import top.xfunny.mod.lift.LiftDoorControlState;
 
 public final class PacketLiftDoorControl extends PacketHandler {
 

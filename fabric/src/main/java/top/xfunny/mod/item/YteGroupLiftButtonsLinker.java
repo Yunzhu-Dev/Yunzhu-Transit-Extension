@@ -10,7 +10,7 @@ import org.mtr.mod.block.BlockLiftTrackBase;
 import org.mtr.mod.block.BlockLiftTrackFloor;
 import top.xfunny.mod.ButtonRegistry;
 import top.xfunny.mod.Init;
-import top.xfunny.mod.LiftFloorRegistry;
+import top.xfunny.mod.lift.LiftFloorRegistry;
 import top.xfunny.mod.block.base.LiftButtonsBase;
 import top.xfunny.mod.block.base.LiftDestinationDispatchTerminalBase;
 import top.xfunny.mod.block.base.LiftPanelBase;

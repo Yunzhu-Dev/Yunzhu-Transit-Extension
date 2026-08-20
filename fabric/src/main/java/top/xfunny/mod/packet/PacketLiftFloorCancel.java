@@ -5,7 +5,7 @@ import org.mtr.mapping.holder.ServerPlayerEntity;
 import org.mtr.mapping.registry.PacketHandler;
 import org.mtr.mapping.tool.PacketBufferReceiver;
 import org.mtr.mapping.tool.PacketBufferSender;
-import top.xfunny.mod.LiftFloorCancelState;
+import top.xfunny.mod.lift.LiftFloorCancelState;
 
 public final class PacketLiftFloorCancel extends PacketHandler {
 

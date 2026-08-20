@@ -6,7 +6,7 @@ import org.mtr.mapping.mapper.*;
 import org.mtr.mod.block.IBlock;
 import org.mtr.mod.client.MinecraftClientData;
 import top.xfunny.mod.Init;
-import top.xfunny.mod.LiftFloorRegistry;
+import top.xfunny.mod.lift.LiftFloorRegistry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

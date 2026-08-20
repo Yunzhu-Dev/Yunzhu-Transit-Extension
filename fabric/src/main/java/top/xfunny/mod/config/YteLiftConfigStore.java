@@ -1,8 +1,8 @@
 package top.xfunny.mod.config;
 
-import top.xfunny.mod.LiftDoorButtonLightMode;
-import top.xfunny.mod.LiftFloorCancelMode;
-import top.xfunny.mod.LiftMotionProfile;
+import top.xfunny.mod.lift.LiftDoorButtonLightMode;
+import top.xfunny.mod.lift.LiftFloorCancelMode;
+import top.xfunny.mod.lift.LiftMotionProfile;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

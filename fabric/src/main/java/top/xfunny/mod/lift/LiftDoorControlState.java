@@ -1,4 +1,4 @@
-package top.xfunny.mod;
+package top.xfunny.mod.lift;
 
 import java.util.Map;
 import java.util.Set;

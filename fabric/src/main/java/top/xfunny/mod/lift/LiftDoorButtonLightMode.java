@@ -1,4 +1,4 @@
-package top.xfunny.mod;
+package top.xfunny.mod.lift;
 
 public enum LiftDoorButtonLightMode {
     MOMENTARY("gui.yte.lift_door_button_light_momentary", true),

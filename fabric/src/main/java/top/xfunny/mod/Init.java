@@ -15,6 +15,7 @@ import org.mtr.mapping.holder.WorldSavePath;
 import org.mtr.mapping.mapper.MinecraftServerHelper;
 import org.mtr.mapping.registry.Registry;
 import top.xfunny.core.YteMain;
+import top.xfunny.mod.lift.LiftDoorControlState;
 import top.xfunny.mod.packet.*;
 
 import javax.annotation.Nullable;
@@ -141,7 +142,7 @@ public final class Init implements Utilities {
         if (minecraftServer != null) {
             MinecraftServerHelper.iteratePlayers(minecraftServer, player ->
                     REGISTRY.sendPacketToClient(player,
-                            new PacketLiftDoorControl(liftId, top.xfunny.mod.LiftDoorControlState.Command.OPEN,
+                            new PacketLiftDoorControl(liftId, LiftDoorControlState.Command.OPEN,
                                     stoppingCoolDown, resetIdleDirection)));
         }
     }

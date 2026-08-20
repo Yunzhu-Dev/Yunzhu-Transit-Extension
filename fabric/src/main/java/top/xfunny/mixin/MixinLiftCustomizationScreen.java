@@ -27,9 +27,9 @@ import top.xfunny.mod.client.InitClient;
 import top.xfunny.mod.client.YteMinecraftClientData;
 import top.xfunny.mod.config.YteLiftConfigStore;
 import top.xfunny.mod.packet.YtePacketUpdateData;
-import top.xfunny.mod.LiftDoorButtonLightMode;
-import top.xfunny.mod.LiftFloorCancelMode;
-import top.xfunny.mod.LiftMotionProfile;
+import top.xfunny.mod.lift.LiftDoorButtonLightMode;
+import top.xfunny.mod.lift.LiftFloorCancelMode;
+import top.xfunny.mod.lift.LiftMotionProfile;
 
 import java.util.Locale;
 
