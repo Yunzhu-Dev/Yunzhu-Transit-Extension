@@ -433,6 +433,11 @@
   "gui.yte.lift_levelling_speed_value": "平層速度：%s m/s",
   "gui.yte.lift_door_hold_on": "HOLD（門保持延長）：開",
   "gui.yte.lift_door_hold_off": "HOLD（門保持延長）：關",
+  "gui.yte.lift_door_button_light_momentary": "開關門按鈕燈光：按下時亮起",
+  "gui.yte.lift_door_button_light_timed": "開關門按鈕燈光：鬆開後延時 1 秒熄滅",
+  "gui.yte.lift_door_button_light_automatic": "開關門按鈕燈光：跟隨門動作",
+  "gui.yte.lift_floor_cancel_double_click": "取消已選樓層：雙擊",
+  "gui.yte.lift_floor_cancel_long_press": "取消已選樓層：長按",
   "gui.yte.lift_hold_open": "延時關門",
   "block.yte.lift_track_magnetic_vane": "電梯快速區間隔磁板"
 }

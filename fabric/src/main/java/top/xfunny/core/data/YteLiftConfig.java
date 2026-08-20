@@ -2,7 +2,9 @@ package top.xfunny.core.data;
 
 import org.mtr.core.serializer.ReaderBase;
 import top.xfunny.core.generated.data.YteLiftConfigSchema;
-import top.xfunny.mod.LiftMotionProfile;
+import top.xfunny.mod.lift.LiftDoorButtonLightMode;
+import top.xfunny.mod.lift.LiftFloorCancelMode;
+import top.xfunny.mod.lift.LiftMotionProfile;
 
 public class YteLiftConfig extends YteLiftConfigSchema {
 
@@ -30,8 +32,18 @@ public class YteLiftConfig extends YteLiftConfigSchema {
     public YteLiftConfig(long liftId, double upSpeed, double downSpeed, double upAcceleration, double downAcceleration,
             boolean directionParametersLinked, double adoDistance, double levellingDistance, double levellingSpeed,
             LiftMotionProfile motionProfile, boolean doorHoldEnabled) {
+        this(liftId, upSpeed, downSpeed, upAcceleration, downAcceleration, directionParametersLinked,
+                adoDistance, levellingDistance, levellingSpeed, motionProfile, doorHoldEnabled,
+                LiftDoorButtonLightMode.MOMENTARY, LiftFloorCancelMode.DOUBLE_CLICK, false);
+    }
+
+    public YteLiftConfig(long liftId, double upSpeed, double downSpeed, double upAcceleration, double downAcceleration,
+            boolean directionParametersLinked, double adoDistance, double levellingDistance, double levellingSpeed,
+            LiftMotionProfile motionProfile, boolean doorHoldEnabled, LiftDoorButtonLightMode doorButtonLightMode,
+            LiftFloorCancelMode floorCancelMode, boolean floorCancelWhileMoving) {
         super(liftId, upSpeed, downSpeed, upAcceleration, downAcceleration, directionParametersLinked,
-                adoDistance, levellingDistance, levellingSpeed, motionProfile.name(), doorHoldEnabled);
+                adoDistance, levellingDistance, levellingSpeed, motionProfile.name(), doorHoldEnabled,
+                doorButtonLightMode.name(), floorCancelMode.name(), floorCancelWhileMoving);
     }
 
     public YteLiftConfig(ReaderBase readerBase) {
@@ -66,6 +78,16 @@ public class YteLiftConfig extends YteLiftConfigSchema {
 
     public boolean isDoorHoldEnabled() { return doorHoldEnabled; }
 
+    public LiftDoorButtonLightMode getDoorButtonLightMode() {
+        return LiftDoorButtonLightMode.fromSerializedName(doorButtonLightMode);
+    }
+
+    public LiftFloorCancelMode getFloorCancelMode() {
+        return LiftFloorCancelMode.fromSerializedName(floorCancelMode);
+    }
+
+    public boolean isFloorCancelWhileMovingAllowed() { return floorCancelWhileMoving; }
+
     public void setSpeed(double speed) {
         this.speed = clamp(speed, MIN_SPEED, MAX_SPEED);
     }
@@ -81,6 +103,18 @@ public class YteLiftConfig extends YteLiftConfigSchema {
     public void setLevellingSpeed(double levellingSpeed) { this.levellingSpeed = clamp(levellingSpeed, MIN_LEVELLING_SPEED, MAX_LEVELLING_SPEED); }
 
     public void setDoorHoldEnabled(boolean doorHoldEnabled) { this.doorHoldEnabled = doorHoldEnabled; }
+
+    public void setDoorButtonLightMode(LiftDoorButtonLightMode doorButtonLightMode) {
+        this.doorButtonLightMode = doorButtonLightMode.name();
+    }
+
+    public void setFloorCancelMode(LiftFloorCancelMode floorCancelMode) {
+        this.floorCancelMode = floorCancelMode.name();
+    }
+
+    public void setFloorCancelWhileMovingAllowed(boolean floorCancelWhileMoving) {
+        this.floorCancelWhileMoving = floorCancelWhileMoving;
+    }
 
     private static double clamp(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));

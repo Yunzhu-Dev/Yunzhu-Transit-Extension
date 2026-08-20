@@ -1,4 +1,4 @@
-package top.xfunny.mod;
+package top.xfunny.mod.lift;
 
 import java.util.Map;
 import java.util.Set;
@@ -19,6 +19,7 @@ public final class LiftDoorControlState {
     private static final Map<Long, ClientOpenPrediction> CLIENT_OPEN_PREDICTIONS = new ConcurrentHashMap<>();
     private static final Set<Long> ACTIVE_HOLDS = ConcurrentHashMap.newKeySet();
     private static final Map<Long, Long> HOLD_START_TIMES = new ConcurrentHashMap<>();
+    private static final Map<Long, Long> CLIENT_HOLD_EXPIRATION_TIMES = new ConcurrentHashMap<>();
 
     private LiftDoorControlState() {
     }
@@ -48,6 +49,37 @@ public final class LiftDoorControlState {
     public static boolean isHoldExpired(long liftId) {
         final Long startTime = HOLD_START_TIMES.get(liftId);
         return startTime != null && System.currentTimeMillis() - startTime >= HOLD_TIMEOUT;
+    }
+
+    public static long getHoldRemainingMillis(long liftId) {
+        final Long startTime = HOLD_START_TIMES.get(liftId);
+        return startTime == null ? 0 : Math.max(HOLD_TIMEOUT - (System.currentTimeMillis() - startTime), 0);
+    }
+
+    public static void updateClientHold(long liftId, boolean active, long remainingMillis) {
+        if (active && remainingMillis > 0) {
+            CLIENT_HOLD_EXPIRATION_TIMES.put(liftId,
+                    System.currentTimeMillis() + Math.min(remainingMillis, HOLD_TIMEOUT));
+        } else {
+            CLIENT_HOLD_EXPIRATION_TIMES.remove(liftId);
+        }
+    }
+
+    public static boolean isClientHoldActive(long liftId) {
+        final Long expirationTime = CLIENT_HOLD_EXPIRATION_TIMES.get(liftId);
+        if (expirationTime == null) {
+            return false;
+        }
+        if (System.currentTimeMillis() >= expirationTime) {
+            CLIENT_HOLD_EXPIRATION_TIMES.remove(liftId, expirationTime);
+            return false;
+        }
+        return true;
+    }
+
+    public static void clearClientState() {
+        CLIENT_OPEN_PREDICTIONS.clear();
+        CLIENT_HOLD_EXPIRATION_TIMES.clear();
     }
 
     public static void beginClientOpenPrediction(long liftId, float doorValue) {

@@ -433,6 +433,11 @@
   "gui.yte.lift_levelling_speed_value": "平层徐行速度：%s m/s",
   "gui.yte.lift_door_hold_on": "HOLD（门保持延长）：开",
   "gui.yte.lift_door_hold_off": "HOLD（门保持延长）：关",
+  "gui.yte.lift_door_button_light_momentary": "开关门按钮灯光：按下时亮起",
+  "gui.yte.lift_door_button_light_timed": "开关门按钮灯光：松开后延时 1 秒熄灭",
+  "gui.yte.lift_door_button_light_automatic": "开关门按钮灯光：跟随门动作",
+  "gui.yte.lift_floor_cancel_double_click": "取消已选楼层：双击",
+  "gui.yte.lift_floor_cancel_long_press": "取消已选楼层：长按",
   "gui.yte.lift_hold_open": "延时关门",
   "block.yte.lift_track_magnetic_vane": "电梯快速区间隔磁板"
 }

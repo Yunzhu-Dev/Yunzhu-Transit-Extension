@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import top.xfunny.mod.block.LiftTrackMagneticVane;
-import top.xfunny.mod.LiftDisplayDirection;
+import top.xfunny.mod.lift.LiftDisplayDirection;
 import top.xfunny.mod.util.LiftTrackMagneticVaneDisplayHelper;
 
 @Mixin(value = RenderLifts.class, remap = false)

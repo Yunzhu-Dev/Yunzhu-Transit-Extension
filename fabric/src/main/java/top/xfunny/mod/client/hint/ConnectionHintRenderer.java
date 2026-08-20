@@ -8,7 +8,7 @@ import org.mtr.mapping.mapper.GraphicsHolder;
 import org.mtr.mapping.mapper.PlayerHelper;
 import org.mtr.mod.block.IBlock;
 import top.xfunny.mod.ButtonRegistry;
-import top.xfunny.mod.LiftFloorRegistry;
+import top.xfunny.mod.lift.LiftFloorRegistry;
 import org.mtr.mapping.mapper.TextHelper;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;

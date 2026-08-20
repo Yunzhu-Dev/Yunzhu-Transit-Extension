@@ -17,6 +17,9 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
     protected double levellingDistance;
     protected double levellingSpeed;
     protected boolean doorHoldEnabled;
+    protected String doorButtonLightMode;
+    protected String floorCancelMode;
+    protected boolean floorCancelWhileMoving;
 
     private static final String KEY_LIFT_ID = "lift_id";
     private static final String KEY_SPEED = "speed";
@@ -29,6 +32,9 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
     private static final String KEY_LEVELLING_DISTANCE = "levelling_distance";
     private static final String KEY_LEVELLING_SPEED = "levelling_speed";
     private static final String KEY_DOOR_HOLD_ENABLED = "door_hold_enabled";
+    private static final String KEY_DOOR_BUTTON_LIGHT_MODE = "door_button_light_mode";
+    private static final String KEY_FLOOR_CANCEL_MODE = "floor_cancel_mode";
+    private static final String KEY_FLOOR_CANCEL_WHILE_MOVING = "floor_cancel_while_moving";
 
     public static final double DEFAULT_SPEED = 10.0;
     public static final double DEFAULT_ACCELERATION = 4.0;
@@ -47,6 +53,8 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
     public static final double MAX_LEVELLING_SPEED = 5;
     public static final double STEP = 0.5;
     public static final String DEFAULT_MOTION_PROFILE = "STANDARD";
+    public static final String DEFAULT_DOOR_BUTTON_LIGHT_MODE = "MOMENTARY";
+    public static final String DEFAULT_FLOOR_CANCEL_MODE = "DOUBLE_CLICK";
 
     protected YteLiftConfigSchema(long liftId, double speed, double acceleration, double adoDistance, double levellingDistance, double levellingSpeed) {
         this(liftId, speed, speed, acceleration, acceleration, true, adoDistance, levellingDistance, levellingSpeed,
@@ -69,6 +77,15 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
     protected YteLiftConfigSchema(long liftId, double speed, double downSpeed, double acceleration, double downAcceleration,
             boolean directionParametersLinked, double adoDistance, double levellingDistance, double levellingSpeed,
             String motionProfile, boolean doorHoldEnabled) {
+        this(liftId, speed, downSpeed, acceleration, downAcceleration, directionParametersLinked,
+                adoDistance, levellingDistance, levellingSpeed, motionProfile, doorHoldEnabled,
+                DEFAULT_DOOR_BUTTON_LIGHT_MODE, DEFAULT_FLOOR_CANCEL_MODE, false);
+    }
+
+    protected YteLiftConfigSchema(long liftId, double speed, double downSpeed, double acceleration, double downAcceleration,
+            boolean directionParametersLinked, double adoDistance, double levellingDistance, double levellingSpeed,
+            String motionProfile, boolean doorHoldEnabled, String doorButtonLightMode, String floorCancelMode,
+            boolean floorCancelWhileMoving) {
         this.liftId = liftId;
         this.speed = speed;
         this.acceleration = acceleration;
@@ -80,6 +97,9 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         this.levellingDistance = levellingDistance;
         this.levellingSpeed = levellingSpeed;
         this.doorHoldEnabled = doorHoldEnabled;
+        this.doorButtonLightMode = doorButtonLightMode;
+        this.floorCancelMode = floorCancelMode;
+        this.floorCancelWhileMoving = floorCancelWhileMoving;
     }
 
     protected YteLiftConfigSchema(ReaderBase readerBase) {
@@ -93,6 +113,9 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         levellingDistance = DEFAULT_LEVELLING_DISTANCE;
         levellingSpeed = DEFAULT_LEVELLING_SPEED;
         doorHoldEnabled = false;
+        doorButtonLightMode = DEFAULT_DOOR_BUTTON_LIGHT_MODE;
+        floorCancelMode = DEFAULT_FLOOR_CANCEL_MODE;
+        floorCancelWhileMoving = false;
         updateData(readerBase);
     }
 
@@ -109,6 +132,9 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         readerBase.unpackDouble(KEY_LEVELLING_DISTANCE, value -> levellingDistance = value);
         readerBase.unpackDouble(KEY_LEVELLING_SPEED, value -> levellingSpeed = value);
         doorHoldEnabled = readerBase.getBoolean(KEY_DOOR_HOLD_ENABLED, false);
+        doorButtonLightMode = readerBase.getString(KEY_DOOR_BUTTON_LIGHT_MODE, DEFAULT_DOOR_BUTTON_LIGHT_MODE);
+        floorCancelMode = readerBase.getString(KEY_FLOOR_CANCEL_MODE, DEFAULT_FLOOR_CANCEL_MODE);
+        floorCancelWhileMoving = readerBase.getBoolean(KEY_FLOOR_CANCEL_WHILE_MOVING, false);
     }
 
     @Override
@@ -124,6 +150,9 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         writerBase.writeDouble(KEY_LEVELLING_DISTANCE, levellingDistance);
         writerBase.writeDouble(KEY_LEVELLING_SPEED, levellingSpeed);
         writerBase.writeBoolean(KEY_DOOR_HOLD_ENABLED, doorHoldEnabled);
+        writerBase.writeString(KEY_DOOR_BUTTON_LIGHT_MODE, doorButtonLightMode);
+        writerBase.writeString(KEY_FLOOR_CANCEL_MODE, floorCancelMode);
+        writerBase.writeBoolean(KEY_FLOOR_CANCEL_WHILE_MOVING, floorCancelWhileMoving);
     }
 
     @Override

@@ -1,6 +1,8 @@
 package top.xfunny.mod.config;
 
-import top.xfunny.mod.LiftMotionProfile;
+import top.xfunny.mod.lift.LiftDoorButtonLightMode;
+import top.xfunny.mod.lift.LiftFloorCancelMode;
+import top.xfunny.mod.lift.LiftMotionProfile;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,6 +22,9 @@ public final class YteLiftConfigStore {
     private static final Map<Long, Double> levellingSpeedMap = new ConcurrentHashMap<>();
     private static final Map<Long, LiftMotionProfile> motionProfileMap = new ConcurrentHashMap<>();
     private static final Map<Long, Boolean> doorHoldEnabledMap = new ConcurrentHashMap<>();
+    private static final Map<Long, LiftDoorButtonLightMode> doorButtonLightModeMap = new ConcurrentHashMap<>();
+    private static final Map<Long, LiftFloorCancelMode> floorCancelModeMap = new ConcurrentHashMap<>();
+    private static final Map<Long, Boolean> floorCancelWhileMovingMap = new ConcurrentHashMap<>();
 
     private static final double DEFAULT_SPEED = 10.0;
     private static final double DEFAULT_ACCELERATION = 4.0;
@@ -48,6 +53,15 @@ public final class YteLiftConfigStore {
     public static void put(long liftId, double upSpeed, double downSpeed, double upAcceleration, double downAcceleration,
             double adoDistance, double levellingDistance, double levellingSpeed, LiftMotionProfile motionProfile,
             boolean doorHoldEnabled) {
+        put(liftId, upSpeed, downSpeed, upAcceleration, downAcceleration, adoDistance, levellingDistance,
+                levellingSpeed, motionProfile, doorHoldEnabled, LiftDoorButtonLightMode.MOMENTARY,
+                LiftFloorCancelMode.DOUBLE_CLICK, false);
+    }
+
+    public static void put(long liftId, double upSpeed, double downSpeed, double upAcceleration, double downAcceleration,
+            double adoDistance, double levellingDistance, double levellingSpeed, LiftMotionProfile motionProfile,
+            boolean doorHoldEnabled, LiftDoorButtonLightMode doorButtonLightMode, LiftFloorCancelMode floorCancelMode,
+            boolean floorCancelWhileMoving) {
         speedMap.put(liftId, upSpeed);
         downSpeedMap.put(liftId, downSpeed);
         accelerationMap.put(liftId, upAcceleration);
@@ -57,6 +71,9 @@ public final class YteLiftConfigStore {
         levellingSpeedMap.put(liftId, levellingSpeed);
         motionProfileMap.put(liftId, motionProfile);
         doorHoldEnabledMap.put(liftId, doorHoldEnabled);
+        doorButtonLightModeMap.put(liftId, doorButtonLightMode);
+        floorCancelModeMap.put(liftId, floorCancelMode);
+        floorCancelWhileMovingMap.put(liftId, floorCancelWhileMoving);
     }
 
     public static double getSpeed(long liftId) {
@@ -89,6 +106,18 @@ public final class YteLiftConfigStore {
         return doorHoldEnabledMap.getOrDefault(liftId, false);
     }
 
+    public static LiftDoorButtonLightMode getDoorButtonLightMode(long liftId) {
+        return doorButtonLightModeMap.getOrDefault(liftId, LiftDoorButtonLightMode.MOMENTARY);
+    }
+
+    public static LiftFloorCancelMode getFloorCancelMode(long liftId) {
+        return floorCancelModeMap.getOrDefault(liftId, LiftFloorCancelMode.DOUBLE_CLICK);
+    }
+
+    public static boolean isFloorCancelWhileMovingAllowed(long liftId) {
+        return floorCancelWhileMovingMap.getOrDefault(liftId, false);
+    }
+
     public static void remove(long liftId) {
         speedMap.remove(liftId);
         accelerationMap.remove(liftId);
@@ -99,6 +128,9 @@ public final class YteLiftConfigStore {
         levellingSpeedMap.remove(liftId);
         motionProfileMap.remove(liftId);
         doorHoldEnabledMap.remove(liftId);
+        doorButtonLightModeMap.remove(liftId);
+        floorCancelModeMap.remove(liftId);
+        floorCancelWhileMovingMap.remove(liftId);
     }
 
     public static void clear() {
@@ -111,5 +143,8 @@ public final class YteLiftConfigStore {
         levellingSpeedMap.clear();
         motionProfileMap.clear();
         doorHoldEnabledMap.clear();
+        doorButtonLightModeMap.clear();
+        floorCancelModeMap.clear();
+        floorCancelWhileMovingMap.clear();
     }
 }

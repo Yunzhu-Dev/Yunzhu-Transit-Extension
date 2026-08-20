@@ -433,6 +433,11 @@
   "gui.yte.lift_levelling_speed_value": "着床時の速度: %s m/s",
   "gui.yte.lift_door_hold_on": "HOLD (door open extension): On",
   "gui.yte.lift_door_hold_off": "HOLD (door open extension): Off",
+  "gui.yte.lift_door_button_light_momentary": "ドアボタン点灯：押している間",
+  "gui.yte.lift_door_button_light_timed": "ドアボタン点灯：離してから1秒間",
+  "gui.yte.lift_door_button_light_automatic": "ドアボタン点灯：ドア動作に連動",
+  "gui.yte.lift_floor_cancel_double_click": "選択階の取消：ダブルクリック",
+  "gui.yte.lift_floor_cancel_long_press": "選択階の取消：長押し",
   "gui.yte.lift_hold_open": "HOLD",
   "block.yte.lift_track_magnetic_vane": "通過階用遮光板"
 }

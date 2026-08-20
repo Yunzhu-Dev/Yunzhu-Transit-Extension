@@ -15,6 +15,9 @@ import org.mtr.mod.packet.PacketPressLiftButton;
 import top.xfunny.mod.*;
 import top.xfunny.mod.Items;
 import top.xfunny.mod.keymapping.DefaultButtonsKeyMapping;
+import top.xfunny.mod.lift.LiftDisplayDirectionState;
+import top.xfunny.mod.lift.LiftFloorRegistry;
+import top.xfunny.mod.lift.LiftLanternController;
 import top.xfunny.mod.util.TransformPositionX;
 import top.xfunny.mixin.MixinLiftSchema;
 

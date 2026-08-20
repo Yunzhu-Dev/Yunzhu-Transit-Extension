@@ -438,6 +438,11 @@
   "gui.yte.lift_levelling_speed_value": "Levelling speed: %s m/s",
   "gui.yte.lift_door_hold_on": "HOLD (door open extension): On",
   "gui.yte.lift_door_hold_off": "HOLD (door open extension): Off",
+  "gui.yte.lift_door_button_light_momentary": "Door button light: While pressed",
+  "gui.yte.lift_door_button_light_timed": "Door button light: 1 second after release",
+  "gui.yte.lift_door_button_light_automatic": "Door button light: Follow door operation",
+  "gui.yte.lift_floor_cancel_double_click": "Cancel selected floor: Double-click",
+  "gui.yte.lift_floor_cancel_long_press": "Cancel selected floor: Long press",
   "gui.yte.lift_hold_open": "HOLD",
   "block.yte.lift_track_magnetic_vane": "Lift Express-Zone Magnetic Vane"
 }
