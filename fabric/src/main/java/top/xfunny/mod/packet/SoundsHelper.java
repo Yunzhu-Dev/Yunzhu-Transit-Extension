@@ -319,7 +319,7 @@ public final class SoundsHelper {
                         blockPos,
                         SoundEvents.HITACHI_WLMW_BUTTON_1.get(),
                         SoundCategory.BLOCKS,
-                        1.0F,
+                        0.8F,
                         1.0F
                 );
                 break;
