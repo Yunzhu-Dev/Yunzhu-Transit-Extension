@@ -230,5 +230,21 @@
         "pitch": 1.0
       }
     ]
+  },
+  "hitachi_wlmw_button_1": {
+    "sounds": [
+      {
+        "name": "yte:hitachi_wlmw_button_1",
+        "pitch": 1.0
+      }
+    ]
+  },
+  "tke_stepc_button_1": {
+    "sounds": [
+      {
+        "name": "yte:tke_stepc_button_1",
+        "pitch": 1.0
+      }
+    ]
   }
 }
