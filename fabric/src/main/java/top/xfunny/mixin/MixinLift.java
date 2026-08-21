@@ -67,7 +67,11 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
         } else {
             doorValue = 0;
         }
-        cir.setReturnValue((float) doorValue);
+        // 客户端渲染值做一阶平滑，关门↔开门反转时呈减速→加速过渡，同步跳变也被吸收；
+        // 服务端保持原始曲线值（门控判定依赖精确相位）
+        cir.setReturnValue(isClientside()
+                ? LiftDoorControlState.smoothDoorValue(lift.getId(), (float) doorValue)
+                : (float) doorValue);
     }
 
     /**
@@ -135,6 +139,30 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
                     setStoppingCoolDown(1);
                 } else {
                     setNeedsUpdate(true);
+                }
+            }
+
+            // 同层外呼在门循环中到达：立即消费指令并（反向）重开，不等门关死
+            if (getSpeed() == 0 && !getInstructions().isEmpty()
+                    && Math.abs(invokeGetProgress(getInstructions().get(0).getFloor()) - getRailProgress()) < 0.000001) {
+                getInstructions().remove(0);
+                if (!isClientside()) {
+                    final YteLiftConfigStore.DoorParams p = YteLiftConfigStore.getDoorParams(id);
+                    final float doorValue = Utilities.clamp(((Lift) (Object) this).getDoorValue(), 0, 1);
+                    final long coolDown = getStoppingCoolDown();
+                    if (coolDown <= p.runDelay) {
+                        // 门关：开门
+                        setStoppingCoolDown(p.total());
+                    } else if (coolDown <= p.closeStartCoolDown() && doorValue < 1) {
+                        // 关门中：反向续开
+                        setStoppingCoolDown(p.total() - Math.round(p.curve.invert(doorValue) * p.openMs));
+                    }
+                    // 开门中/全开：保持开门即可
+                    final LiftDoorControlState.DoorQueue doorQueue = LiftDoorControlState.getOrCreate(id);
+                    doorQueue.closeRemainingMs = yte$closeTimerValue(id);
+                    doorQueue.pendingClose = false;
+                    setNeedsUpdate(true);
+                    Init.sendLiftDoorOpen(id, getStoppingCoolDown(), true);
                 }
             }
         } else if (!isClientside() && LiftDoorControlState.getOrCreate(id).maintenanceLocked) {
@@ -248,10 +276,15 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
         final float doorValue = Utilities.clamp(lift.getDoorValue(), 0, 1);
 
         if (command == LiftDoorControlState.Command.CLOSE) {
-            if (doorValue == 1.0F) {
+            // 全开相位（closeStart < cd ≤ fullOpen）按下：立即进入关门段，跳过保持时长；
+            // 开门动画中（cd > fullOpen）按下：记入 pendingClose，门全开瞬间立即关门（不中途关）；
+            // 关门中/门关：忽略
+            if (coolDown > p.closeStartCoolDown() && coolDown <= p.fullOpenCoolDown()) {
                 queue.closeRemainingMs = LiftDoorControlState.INFINITE_OPEN;
                 setStoppingCoolDown(p.closeStartCoolDown());
                 setNeedsUpdate(true);
+            } else if (coolDown > p.fullOpenCoolDown()) {
+                queue.pendingClose = true;
             }
             return;
         }
@@ -261,7 +294,8 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
             return;
         }
 
-        // OPEN / HOLD
+        // OPEN / HOLD：用户改主意，取消待关门
+        queue.pendingClose = false;
         final boolean startingIdleDoorCycle = command == LiftDoorControlState.Command.OPEN
                 && getInstructions().isEmpty()
                 && coolDown < p.runDelay
@@ -318,7 +352,14 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
         if (state != queue.doorState) {
             queue.doorState = state;
             if (state == LiftDoorControlState.DoorState.FULLY_OPEN) {
+                // 「门已完全打开」事件：启动关门计时器；若有待关门请求则立即关门，跳过保持时长
                 queue.closeRemainingMs = yte$closeTimerValue(lift.getId());
+                if (queue.pendingClose) {
+                    queue.pendingClose = false;
+                    queue.closeRemainingMs = LiftDoorControlState.INFINITE_OPEN;
+                    setStoppingCoolDown(p.closeStartCoolDown());
+                    setNeedsUpdate(true);
+                }
             }
         }
     }

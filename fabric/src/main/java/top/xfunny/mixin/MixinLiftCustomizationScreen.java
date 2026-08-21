@@ -79,6 +79,10 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique private TextFieldWidgetExtension yte$doorDwellMsField;
     @Unique private TextFieldWidgetExtension yte$doorRunDelayMsField;
     @Unique private ButtonWidgetExtension yte$doorCurveButton;
+    @Unique private WidgetShorterSlider yte$sliderDoorOpenMs;
+    @Unique private WidgetShorterSlider yte$sliderDoorCloseMs;
+    @Unique private WidgetShorterSlider yte$sliderDoorDwellMs;
+    @Unique private WidgetShorterSlider yte$sliderDoorRunDelayMs;
 
     @Unique
     private static final int SPEED_SLIDER_MAX = 40;
@@ -89,6 +93,17 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique private static final int ADO_DISTANCE_SLIDER_MAX = 30;
     @Unique private static final int LEVELLING_DISTANCE_SLIDER_MAX = 20;
     @Unique private static final int LEVELLING_SPEED_SLIDER_MAX = 20;
+    /** 开门/关门动画 1000–10000ms；保持时长 2000–20000ms；启动延迟 0–5000ms；步进 100。 */
+    @Unique private static final long DOOR_ANIM_MIN = 1000;
+    @Unique private static final long DOOR_MS_MIN = 2000;
+    @Unique private static final long DOOR_MS_STEP = 100;
+    @Unique private static final long DOOR_OPEN_CLOSE_MAX = 10000;
+    @Unique private static final long DOOR_DWELL_MAX = 20000;
+    @Unique private static final long DOOR_RUN_DELAY_MIN = 0;
+    @Unique private static final long DOOR_RUN_DELAY_MAX = 5000;
+    @Unique private static final int DOOR_OPEN_CLOSE_SLIDER_MAX = (int) ((DOOR_OPEN_CLOSE_MAX - DOOR_ANIM_MIN) / DOOR_MS_STEP);
+    @Unique private static final int DOOR_DWELL_SLIDER_MAX = (int) ((DOOR_DWELL_MAX - DOOR_MS_MIN) / DOOR_MS_STEP);
+    @Unique private static final int DOOR_RUN_DELAY_SLIDER_MAX = (int) ((DOOR_RUN_DELAY_MAX - DOOR_RUN_DELAY_MIN) / DOOR_MS_STEP);
     @Unique private static boolean yte$professionalMode;
 
     @Unique
@@ -216,6 +231,15 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$doorDwellMsField = yte$createNumberField(yte$doorDwellMs);
         yte$doorRunDelayMsField = yte$createNumberField(yte$doorRunDelayMs);
 
+        yte$sliderDoorOpenMs = new WidgetShorterSlider(0, 60, DOOR_OPEN_CLOSE_SLIDER_MAX, value -> "", null);
+        yte$sliderDoorOpenMs.setValue(doorMsToValue(yte$doorOpenMs, DOOR_ANIM_MIN, DOOR_OPEN_CLOSE_MAX));
+        yte$sliderDoorCloseMs = new WidgetShorterSlider(0, 60, DOOR_OPEN_CLOSE_SLIDER_MAX, value -> "", null);
+        yte$sliderDoorCloseMs.setValue(doorMsToValue(yte$doorCloseMs, DOOR_ANIM_MIN, DOOR_OPEN_CLOSE_MAX));
+        yte$sliderDoorDwellMs = new WidgetShorterSlider(0, 60, DOOR_DWELL_SLIDER_MAX, value -> "", null);
+        yte$sliderDoorDwellMs.setValue(doorMsToValue(yte$doorDwellMs, DOOR_MS_MIN, DOOR_DWELL_MAX));
+        yte$sliderDoorRunDelayMs = new WidgetShorterSlider(0, 60, DOOR_RUN_DELAY_SLIDER_MAX, value -> "", null);
+        yte$sliderDoorRunDelayMs.setValue(doorMsToValue(yte$doorRunDelayMs, DOOR_RUN_DELAY_MIN, DOOR_RUN_DELAY_MAX));
+
         yte$lastSentSpeed = currentSpeed;
         yte$lastSentAccel = currentAccel;
         yte$lastSentDownSpeed = currentDownSpeed;
@@ -284,6 +308,10 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         addChild(new ClickableWidget(yte$doorCloseMsField));
         addChild(new ClickableWidget(yte$doorDwellMsField));
         addChild(new ClickableWidget(yte$doorRunDelayMsField));
+        addChild(new ClickableWidget(yte$sliderDoorOpenMs));
+        addChild(new ClickableWidget(yte$sliderDoorCloseMs));
+        addChild(new ClickableWidget(yte$sliderDoorDwellMs));
+        addChild(new ClickableWidget(yte$sliderDoorRunDelayMs));
 
         // Text fields are recreated by the screen initialization lifecycle.
         // Restore their visible text after they have been attached to the screen.
@@ -372,17 +400,18 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                 : yte$getEasyModeValue(6, yte$sliderLevellingSpeed, valueToLevellingSpeed(yte$sliderLevellingSpeed.getIntValue()));
 
         final long doorOpenMs = yte$professionalMode
-                ? yte$parseLong(yte$doorOpenMsField, yte$lastSentDoorOpenMs, YteLiftConfig.MIN_DOOR_OPEN_MS, YteLiftConfig.MAX_DOOR_OPEN_MS)
-                : yte$lastSentDoorOpenMs;
+                ? yte$parseDoorMs(yte$doorOpenMsField, yte$lastSentDoorOpenMs, DOOR_ANIM_MIN, DOOR_OPEN_CLOSE_MAX, false)
+                : valueToDoorMs(yte$sliderDoorOpenMs.getIntValue(), DOOR_ANIM_MIN);
         final long doorCloseMs = yte$professionalMode
-                ? yte$parseLong(yte$doorCloseMsField, yte$lastSentDoorCloseMs, YteLiftConfig.MIN_DOOR_CLOSE_MS, YteLiftConfig.MAX_DOOR_CLOSE_MS)
-                : yte$lastSentDoorCloseMs;
+                ? yte$parseDoorMs(yte$doorCloseMsField, yte$lastSentDoorCloseMs, DOOR_ANIM_MIN, DOOR_OPEN_CLOSE_MAX, false)
+                : valueToDoorMs(yte$sliderDoorCloseMs.getIntValue(), DOOR_ANIM_MIN);
+        // TODO: 上线前移除 -1（无限开门）特殊值，与其余门参数统一范围
         final long doorDwellMs = yte$professionalMode
-                ? yte$parseLong(yte$doorDwellMsField, yte$lastSentDoorDwellMs, YteLiftConfig.MIN_DOOR_DWELL_MS, YteLiftConfig.MAX_DOOR_DWELL_MS)
-                : yte$lastSentDoorDwellMs;
+                ? yte$parseDoorMs(yte$doorDwellMsField, yte$lastSentDoorDwellMs, DOOR_MS_MIN, DOOR_DWELL_MAX, true)
+                : valueToDoorMs(yte$sliderDoorDwellMs.getIntValue(), DOOR_MS_MIN);
         final long doorRunDelayMs = yte$professionalMode
-                ? yte$parseLong(yte$doorRunDelayMsField, yte$lastSentDoorRunDelayMs, YteLiftConfig.MIN_DOOR_RUN_DELAY_MS, YteLiftConfig.MAX_DOOR_RUN_DELAY_MS)
-                : yte$lastSentDoorRunDelayMs;
+                ? yte$parseDoorMs(yte$doorRunDelayMsField, yte$lastSentDoorRunDelayMs, DOOR_RUN_DELAY_MIN, DOOR_RUN_DELAY_MAX, false)
+                : valueToDoorMs(yte$sliderDoorRunDelayMs.getIntValue(), DOOR_RUN_DELAY_MIN);
 
         if (yte$directionParametersLinked) {
             yte$drawModeLabel(graphicsHolder, "gui.yte.lift_speed", "gui.yte.lift_speed_value", upSpeed, 17);
@@ -398,10 +427,10 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$drawModeLabel(graphicsHolder, "gui.yte.lift_levelling_distance", "gui.yte.lift_levelling_distance_value", levellingDistance, extraStartRow + 2);
         yte$drawModeLabel(graphicsHolder, "gui.yte.lift_levelling_speed", "gui.yte.lift_levelling_speed_value", levellingSpeed, extraStartRow + 4);
         final int doorLabelRow = extraStartRow + 6;
-        yte$drawModeLabel(graphicsHolder, "gui.yte.lift_door_open_ms", "gui.yte.lift_door_open_ms_value", doorOpenMs, doorLabelRow);
-        yte$drawModeLabel(graphicsHolder, "gui.yte.lift_door_close_ms", "gui.yte.lift_door_close_ms_value", doorCloseMs, doorLabelRow + 2);
-        yte$drawModeLabel(graphicsHolder, "gui.yte.lift_door_dwell_ms", "gui.yte.lift_door_dwell_ms_value", doorDwellMs, doorLabelRow + 4);
-        yte$drawModeLabel(graphicsHolder, "gui.yte.lift_door_run_delay_ms", "gui.yte.lift_door_run_delay_ms_value", doorRunDelayMs, doorLabelRow + 6);
+        yte$drawModeLabelSeconds(graphicsHolder, "gui.yte.lift_door_open_ms", "gui.yte.lift_door_open_s_value", doorOpenMs, doorLabelRow);
+        yte$drawModeLabelSeconds(graphicsHolder, "gui.yte.lift_door_close_ms", "gui.yte.lift_door_close_s_value", doorCloseMs, doorLabelRow + 2);
+        yte$drawModeLabelSeconds(graphicsHolder, "gui.yte.lift_door_dwell_ms", "gui.yte.lift_door_dwell_s_value", doorDwellMs, doorLabelRow + 4);
+        yte$drawModeLabelSeconds(graphicsHolder, "gui.yte.lift_door_run_delay_ms", "gui.yte.lift_door_run_delay_s_value", doorRunDelayMs, doorLabelRow + 6);
 
         if (upSpeed != yte$lastSentSpeed || downSpeed != yte$lastSentDownSpeed
                 || upAccel != yte$lastSentAccel || downAccel != yte$lastSentDownAccel
@@ -575,9 +604,13 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$positionSlider(yte$sliderLevellingSpeed, extraControlRow + 4);
         yte$positionField(yte$levellingSpeedField, extraControlRow + 4);
         final int doorRow = extraControlRow + 6;
+        yte$positionSlider(yte$sliderDoorOpenMs, doorRow);
         yte$positionField(yte$doorOpenMsField, doorRow);
+        yte$positionSlider(yte$sliderDoorCloseMs, doorRow + 2);
         yte$positionField(yte$doorCloseMsField, doorRow + 2);
+        yte$positionSlider(yte$sliderDoorDwellMs, doorRow + 4);
         yte$positionField(yte$doorDwellMsField, doorRow + 4);
+        yte$positionSlider(yte$sliderDoorRunDelayMs, doorRow + 6);
         yte$positionField(yte$doorRunDelayMsField, doorRow + 6);
         yte$doorCurveButton.setX2(0);
         yte$doorCurveButton.setY2(IGui.SQUARE_SIZE * (doorRow + 8));
@@ -664,6 +697,17 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                     yte$getEasyModeValue(4, yte$sliderAdoDistance, valueToAdoDistance(yte$sliderAdoDistance.getIntValue())),
                     yte$getEasyModeValue(5, yte$sliderLevellingDistance, valueToLevellingDistance(yte$sliderLevellingDistance.getIntValue())),
                     yte$getEasyModeValue(6, yte$sliderLevellingSpeed, valueToLevellingSpeed(yte$sliderLevellingSpeed.getIntValue())));
+            yte$doorOpenMsField.setText2(Long.toString(valueToDoorMs(yte$sliderDoorOpenMs.getIntValue(), DOOR_ANIM_MIN)));
+            yte$doorCloseMsField.setText2(Long.toString(valueToDoorMs(yte$sliderDoorCloseMs.getIntValue(), DOOR_ANIM_MIN)));
+            yte$doorDwellMsField.setText2(Long.toString(valueToDoorMs(yte$sliderDoorDwellMs.getIntValue(), DOOR_MS_MIN)));
+            yte$doorRunDelayMsField.setText2(Long.toString(valueToDoorMs(yte$sliderDoorRunDelayMs.getIntValue(), DOOR_RUN_DELAY_MIN)));
+        }
+        if (yte$professionalMode) {
+            // 专业模式 → 简易模式：输入框值回填滑块（-1 无法用滑块表示，回落到下限）
+            yte$sliderDoorOpenMs.setValue(doorMsToValue(yte$parseDoorMs(yte$doorOpenMsField, yte$lastSentDoorOpenMs, DOOR_ANIM_MIN, DOOR_OPEN_CLOSE_MAX, false), DOOR_ANIM_MIN, DOOR_OPEN_CLOSE_MAX));
+            yte$sliderDoorCloseMs.setValue(doorMsToValue(yte$parseDoorMs(yte$doorCloseMsField, yte$lastSentDoorCloseMs, DOOR_ANIM_MIN, DOOR_OPEN_CLOSE_MAX, false), DOOR_ANIM_MIN, DOOR_OPEN_CLOSE_MAX));
+            yte$sliderDoorDwellMs.setValue(doorMsToValue(yte$parseDoorMs(yte$doorDwellMsField, yte$lastSentDoorDwellMs, DOOR_MS_MIN, DOOR_DWELL_MAX, false), DOOR_MS_MIN, DOOR_DWELL_MAX));
+            yte$sliderDoorRunDelayMs.setValue(doorMsToValue(yte$parseDoorMs(yte$doorRunDelayMsField, yte$lastSentDoorRunDelayMs, DOOR_RUN_DELAY_MIN, DOOR_RUN_DELAY_MAX, false), DOOR_RUN_DELAY_MIN, DOOR_RUN_DELAY_MAX));
         }
         yte$professionalMode = !yte$professionalMode;
         yte$updateModeWidgets();
@@ -733,6 +777,10 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$sliderAdoDistance.setVisibleMapped(!yte$professionalMode);
         yte$sliderLevellingDistance.setVisibleMapped(!yte$professionalMode);
         yte$sliderLevellingSpeed.setVisibleMapped(!yte$professionalMode);
+        yte$sliderDoorOpenMs.setVisibleMapped(!yte$professionalMode);
+        yte$sliderDoorCloseMs.setVisibleMapped(!yte$professionalMode);
+        yte$sliderDoorDwellMs.setVisibleMapped(!yte$professionalMode);
+        yte$sliderDoorRunDelayMs.setVisibleMapped(!yte$professionalMode);
 
         yte$speedField.setVisibleMapped(yte$professionalMode);
         yte$accelerationField.setVisibleMapped(yte$professionalMode);
@@ -778,6 +826,15 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                 IGui.ARGB_WHITE, false, GraphicsHolder.getDefaultLight());
     }
 
+    /** 门时长标签：简易模式以秒显示（毫秒 ÷ 1000，一位小数），专业模式仅显示输入框标签。 */
+    @Unique
+    private void yte$drawModeLabelSeconds(GraphicsHolder graphicsHolder, String inputKey, String valueKey, long millis, int row) {
+        graphicsHolder.drawText(TextHelper.translatable(yte$professionalMode ? inputKey : valueKey,
+                        String.format(Locale.ROOT, "%.1f", millis / 1000.0)), 0,
+                IGui.SQUARE_SIZE * row + IGui.TEXT_PADDING,
+                IGui.ARGB_WHITE, false, GraphicsHolder.getDefaultLight());
+    }
+
     @Unique
     private static double yte$parseNumber(TextFieldWidgetExtension field, double fallback, double maximum) {
         return yte$parseNumber(field, fallback, 0, maximum);
@@ -794,13 +851,26 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     }
 
     @Unique
-    private static long yte$parseLong(TextFieldWidgetExtension field, long fallback, long minimum, long maximum) {
+    private static long yte$parseDoorMs(TextFieldWidgetExtension field, long fallback, long minimum, long maximum, boolean allowMinusOne) {
         try {
             final long value = Long.parseLong(field.getText2().trim().replace(',', '.'));
+            if (allowMinusOne && value == -1) {
+                return -1;
+            }
             return Math.max(minimum, Math.min(maximum, value));
         } catch (NumberFormatException ignored) {
             return fallback;
         }
+    }
+
+    @Unique
+    private static long valueToDoorMs(int sliderValue, long minimum) {
+        return minimum + (long) sliderValue * DOOR_MS_STEP;
+    }
+
+    @Unique
+    private static int doorMsToValue(long ms, long minimum, long maximum) {
+        return (int) ((Math.max(minimum, Math.min(maximum, ms)) - minimum) / DOOR_MS_STEP);
     }
 
     @Unique

@@ -389,8 +389,8 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
 
     @Unique
     private void yte$applyClientCloseCommand() {
-        // MTR 的 Client.update 是异步队列，CLOSE 又没有 S→C 包，客户端收不到关门指令，
-        // 会按旧 coolDown 把 2000ms 保持播完才关门；这里与服务端同门控地本地立即进入关门相位
+        // MTR 的 Client.update 是异步队列，CLOSE 又没有 S→C 包，客户端收不到关门指令；
+        // 与服务端同门控（仅全开生效）地本地立即进入关门段
         final Lift lift = MinecraftClientData.getLift(liftId);
         if (lift == null || !yte$isStoppedAtFloor(lift)) {
             return;

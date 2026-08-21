@@ -70,15 +70,15 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
     public static final long DEFAULT_DOOR_DWELL_MS = 2000;
     public static final long DEFAULT_DOOR_RUN_DELAY_MS = 500;
     public static final String DEFAULT_DOOR_CURVE = "LINEAR";
-    public static final long MIN_DOOR_OPEN_MS = 100;
+    public static final long MIN_DOOR_OPEN_MS = 1000;
     public static final long MAX_DOOR_OPEN_MS = 10000;
-    public static final long MIN_DOOR_CLOSE_MS = 100;
+    public static final long MIN_DOOR_CLOSE_MS = 1000;
     public static final long MAX_DOOR_CLOSE_MS = 10000;
     /** -1 表示无限开门（消防/专用模式） */
     public static final long MIN_DOOR_DWELL_MS = -1;
     public static final long MAX_DOOR_DWELL_MS = 60000;
     public static final long MIN_DOOR_RUN_DELAY_MS = 0;
-    public static final long MAX_DOOR_RUN_DELAY_MS = 10000;
+    public static final long MAX_DOOR_RUN_DELAY_MS = 5000;
 
     protected YteLiftConfigSchema(long liftId, double speed, double acceleration, double adoDistance, double levellingDistance, double levellingSpeed) {
         this(liftId, speed, speed, acceleration, acceleration, true, adoDistance, levellingDistance, levellingSpeed,

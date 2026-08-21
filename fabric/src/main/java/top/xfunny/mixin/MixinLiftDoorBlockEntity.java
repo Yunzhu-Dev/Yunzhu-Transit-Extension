@@ -39,6 +39,35 @@ public abstract class MixinLiftDoorBlockEntity extends BlockEntityExtension impl
         // in-memory only; the C→S packet re-applies it after chunk reloads.
         yte$maintenanceOpen = open;
         markDirty2();
+        // 门共四格实体（左右扇 × 上下格）：全部同步，否则只开半扇
+        final org.mtr.mapping.holder.World world = getWorld2();
+        if (world != null) {
+            BlockPos bottomPos = getPos2();
+            if (IBlock.getStatePropertySafe(getCachedState2(), IBlock.HALF) == IBlock.DoubleBlockHalf.UPPER) {
+                bottomPos = bottomPos.down(1);
+            }
+            final org.mtr.mapping.holder.Direction facing = IBlock.getStatePropertySafe(getCachedState2(), BlockPSDAPGDoorBase.FACING);
+            final boolean sideRight = IBlock.getStatePropertySafe(getCachedState2(), IBlock.SIDE) == IBlock.EnumSide.RIGHT;
+            final org.mtr.mapping.holder.Direction otherDirection = sideRight
+                    ? facing.rotateYCounterclockwise() : facing.rotateYClockwise();
+            final BlockPos[] targets = {
+                    bottomPos, bottomPos.up(1),
+                    bottomPos.offset(otherDirection), bottomPos.offset(otherDirection).up(1)
+            };
+            for (final BlockPos target : targets) {
+                final org.mtr.mapping.holder.BlockEntity entity = world.getBlockEntity(target);
+                if (entity != null && entity.data instanceof MixinLiftDoorBlockEntity) {
+                    ((MixinLiftDoorBlockEntity) entity.data).yte$maintenanceOpen = open;
+                    ((BlockEntityExtension) entity.data).markDirty2();
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean yte$isMaintenanceOpen() {
+        final MixinLiftDoorBlockEntity bottom = yte$getBottomEntity();
+        return bottom != null ? bottom.yte$maintenanceOpen : yte$maintenanceOpen;
     }
 
     /**
@@ -51,7 +80,24 @@ public abstract class MixinLiftDoorBlockEntity extends BlockEntityExtension impl
         if (!yte$isLiftDoor()) {
             return;
         }
-        cir.setReturnValue(yte$maintenanceOpen ? 1.0 : yte$nearbyLiftDoorValue());
+        // 检修开门标志统一读本扇底部实体（四格一致）
+        final MixinLiftDoorBlockEntity bottom = yte$getBottomEntity();
+        cir.setReturnValue(bottom != null && bottom.yte$maintenanceOpen ? 1.0 : yte$nearbyLiftDoorValue());
+    }
+
+    @Unique
+    private MixinLiftDoorBlockEntity yte$getBottomEntity() {
+        final org.mtr.mapping.holder.World world = getWorld2();
+        if (world == null) {
+            return null;
+        }
+        BlockPos pos = getPos2();
+        if (IBlock.getStatePropertySafe(getCachedState2(), IBlock.HALF) == IBlock.DoubleBlockHalf.UPPER) {
+            pos = pos.down(1);
+        }
+        final org.mtr.mapping.holder.BlockEntity entity = world.getBlockEntity(pos);
+        return entity != null && entity.data instanceof MixinLiftDoorBlockEntity
+                ? (MixinLiftDoorBlockEntity) entity.data : null;
     }
 
     @Unique
@@ -91,8 +137,9 @@ public abstract class MixinLiftDoorBlockEntity extends BlockEntityExtension impl
             if (Math.abs(doorPos.getX() - targetX) <= horizontalRange
                     && Math.abs(doorPos.getZ() - targetZ) <= horizontalRange
                     && doorPos.getY() + 1 >= alignY - 2 && doorPos.getY() <= alignY + 2) {
-                // 与 canOpenDoors 一致：井道门开度按轿厢值的 0.75 封顶
-                doorValue = Math.max(doorValue, Math.min(lift.getDoorValue(), 0.75));
+                // 完整曲线映射到 0~0.75：缓入缓出的减速尾段不再被 min() 封顶截掉，
+                // 层门全程跟随轿厢门、最终开度同为 0.75
+                doorValue = Math.max(doorValue, lift.getDoorValue() * 0.75);
             }
         }
         return doorValue;
