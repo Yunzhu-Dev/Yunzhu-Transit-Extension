@@ -27,6 +27,7 @@ import top.xfunny.mod.item.YteLiftButtonsLinker;
 import top.xfunny.mod.keymapping.DefaultButtonsKeyMapping;
 import top.xfunny.mod.util.ClientGetLiftDetails;
 import top.xfunny.mod.util.ReverseRendering;
+import top.xfunny.mod.client.sound.SoundPlaybackManager;
 
 import java.util.Comparator;
 
@@ -130,6 +131,7 @@ public class RenderThyssenKruppMS3EButton1 extends BlockEntityRenderer<ThyssenKr
         buttonUpLight.setDefaultColor(DEFAULT_COLOR);
         buttonUpLight.setHoverColor(HOVER_COLOR);
         buttonUpLight.setPressedColor(PRESSED_COLOR);
+        SoundPlaybackManager.registerButtonSound(buttonUpLight,"tke_stepc_button_1");
 
         ImageView buttonDown = new ImageView();
         buttonDown.setBasicsAttributes(world, blockPos);
@@ -150,6 +152,7 @@ public class RenderThyssenKruppMS3EButton1 extends BlockEntityRenderer<ThyssenKr
         buttonDownLight.setHoverColor(HOVER_COLOR);
         buttonDownLight.setPressedColor(PRESSED_COLOR);
         buttonDownLight.setFlip(false, true);
+        SoundPlaybackManager.registerButtonSound(buttonDownLight,"tke_stepc_button_1");
 
         final LineComponent line = new LineComponent();
         line.setBasicsAttributes(world, blockPos);

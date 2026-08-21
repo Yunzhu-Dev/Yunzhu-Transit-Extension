@@ -303,6 +303,26 @@ public final class SoundsHelper {
                         1.0F
                 );
                 break;
+            case "tke_stepc_button_1":
+                serverPlayerEntity.getEntityWorld().playSound(
+                        null,
+                        blockPos,
+                        SoundEvents.TKE_STEPC_BUTTON_1.get(),
+                        SoundCategory.BLOCKS,
+                        0.8F,
+                        1.0F
+                );
+                break;
+            case "hitachi_wlmw_button_1":
+                serverPlayerEntity.getEntityWorld().playSound(
+                        null,
+                        blockPos,
+                        SoundEvents.HITACHI_WLMW_BUTTON_1.get(),
+                        SoundCategory.BLOCKS,
+                        1.0F,
+                        1.0F
+                );
+                break;
         }
     }
 }
