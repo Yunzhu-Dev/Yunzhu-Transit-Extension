@@ -112,7 +112,7 @@ public class SchindlerZLine3Keypad1 extends LiftDestinationDispatchTerminalBase 
 
     // ======================== 按键处理（状态机） ========================
 
-    private static final Map<String, Integer> NUMBER_KEYS = new HashMap<>() {{
+    private static final Map<String, Integer> NUMBER_KEYS = new HashMap<String, Integer>() {{
         put("number1", 1);
         put("number2", 2);
         put("number3", 3);

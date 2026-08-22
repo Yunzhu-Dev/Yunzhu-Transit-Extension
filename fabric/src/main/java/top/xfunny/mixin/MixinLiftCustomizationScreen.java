@@ -4,12 +4,14 @@ import org.mtr.core.data.Lift;
 import org.mtr.mapping.holder.ClickableWidget;
 import org.mtr.mapping.holder.Text;
 import org.mtr.mapping.mapper.ButtonWidgetExtension;
+import org.mtr.mapping.mapper.CheckboxWidgetExtension;
 import org.mtr.mapping.mapper.GraphicsHolder;
 import org.mtr.mapping.mapper.GuiDrawing;
 import org.mtr.mapping.mapper.TextHelper;
 import org.mtr.mapping.mapper.TextFieldWidgetExtension;
 import org.mtr.mapping.tool.TextCase;
 import org.mtr.mod.data.IGui;
+import org.mtr.mod.generated.lang.TranslationProvider;
 import org.mtr.mod.screen.LiftCustomizationScreen;
 import org.mtr.mod.screen.MTRScreenBase;
 import org.mtr.mod.screen.WidgetShorterSlider;
@@ -19,7 +21,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.xfunny.core.data.YteLiftConfig;
 import top.xfunny.core.operation.YteUpdateDataRequest;
@@ -42,11 +43,67 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
 
     @Shadow
     @Final
-    private int width2;
+    private ButtonWidgetExtension buttonHeightMinus;
+
+    @Shadow
+    @Final
+    private ButtonWidgetExtension buttonHeightAdd;
+
+    @Shadow
+    @Final
+    private ButtonWidgetExtension buttonWidthMinus;
+
+    @Shadow
+    @Final
+    private ButtonWidgetExtension buttonWidthAdd;
+
+    @Shadow
+    @Final
+    private ButtonWidgetExtension buttonDepthMinus;
+
+    @Shadow
+    @Final
+    private ButtonWidgetExtension buttonDepthAdd;
+
+    @Shadow
+    @Final
+    private ButtonWidgetExtension buttonOffsetXMinus;
+
+    @Shadow
+    @Final
+    private ButtonWidgetExtension buttonOffsetXAdd;
+
+    @Shadow
+    @Final
+    private ButtonWidgetExtension buttonOffsetYMinus;
+
+    @Shadow
+    @Final
+    private ButtonWidgetExtension buttonOffsetYAdd;
+
+    @Shadow
+    @Final
+    private ButtonWidgetExtension buttonOffsetZMinus;
+
+    @Shadow
+    @Final
+    private ButtonWidgetExtension buttonOffsetZAdd;
+
+    @Shadow
+    @Final
+    private CheckboxWidgetExtension buttonIsDoubleSided;
 
     @Shadow
     @Final
     private ButtonWidgetExtension buttonLiftStyle;
+
+    @Shadow
+    @Final
+    private ButtonWidgetExtension buttonRotateAnticlockwise;
+
+    @Shadow
+    @Final
+    private ButtonWidgetExtension buttonRotateClockwise;
 
     @Unique
     private WidgetShorterSlider yte$sliderSpeed;
@@ -108,17 +165,20 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique private final double[] yte$easyModeValues = new double[7];
     @Unique private final int[] yte$easyModeSliderAnchors = new int[7];
     @Unique private final boolean[] yte$easyModeSliderTouched = new boolean[7];
-    @Unique private double yte$scrollOffset;
-    @Unique private boolean yte$contentTransformPushed;
-    @Unique private boolean yte$scrollbarDragging;
-    @Unique private double yte$scrollbarDragOffset;
-    @Unique private int yte$liftStyleButtonContentY;
-    @Unique private int yte$directionLinkButtonContentY;
-    @Unique private int yte$motionProfileButtonContentY;
-    @Unique private int yte$doorHoldButtonContentY;
-    @Unique private int yte$doorButtonLightModeButtonContentY;
-    @Unique private int yte$floorCancelModeButtonContentY;
-    @Unique private boolean yte$scrollingTextButtonsSuppressed;
+
+    // 标签页
+    @Unique private static final int TAB_SIZE = 0;
+    @Unique private static final int TAB_MOTION = 1;
+    @Unique private static final int TAB_LEVEL = 2;
+    @Unique private static final int TAB_DOOR = 3;
+    @Unique private static final int TAB_COUNT = 4;
+    @Unique private static final int PANEL_BACKGROUND = 0xD9121212;
+    @Unique private int yte$activeTab = TAB_SIZE;
+    @Unique private int yte$scrollOffset;
+    @Unique private ButtonWidgetExtension yte$tabSizeButton;
+    @Unique private ButtonWidgetExtension yte$tabMotionButton;
+    @Unique private ButtonWidgetExtension yte$tabLevelButton;
+    @Unique private ButtonWidgetExtension yte$tabDoorButton;
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void onConstructed(Lift liftParam, CallbackInfo ci) {
@@ -180,6 +240,15 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$floorCancelModeButton = new ButtonWidgetExtension(0, 0, 0, IGui.SQUARE_SIZE,
                 TextHelper.literal(""), button -> yte$toggleFloorCancelMode());
 
+        yte$tabSizeButton = new ButtonWidgetExtension(0, 0, 0, IGui.SQUARE_SIZE,
+                TextHelper.translatable("gui.yte.lift_tab_size"), button -> yte$onSelectTab(TAB_SIZE));
+        yte$tabMotionButton = new ButtonWidgetExtension(0, 0, 0, IGui.SQUARE_SIZE,
+                TextHelper.translatable("gui.yte.lift_tab_motion"), button -> yte$onSelectTab(TAB_MOTION));
+        yte$tabLevelButton = new ButtonWidgetExtension(0, 0, 0, IGui.SQUARE_SIZE,
+                TextHelper.translatable("gui.yte.lift_tab_level"), button -> yte$onSelectTab(TAB_LEVEL));
+        yte$tabDoorButton = new ButtonWidgetExtension(0, 0, 0, IGui.SQUARE_SIZE,
+                TextHelper.translatable("gui.yte.lift_tab_door"), button -> yte$onSelectTab(TAB_DOOR));
+
         yte$speedField = yte$createNumberField(currentSpeed);
         yte$accelerationField = yte$createNumberField(currentAccel);
         yte$downSpeedField = yte$createNumberField(currentDownSpeed);
@@ -204,26 +273,25 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
 
     @Inject(method = "init2", at = @At("TAIL"))
     private void onInit2(CallbackInfo ci) {
-        // 与原版全宽控件对齐：x=0, width=width2
-        // Keep the custom settings and motion controls in one continuous list.
-        yte$professionalModeButton.setX2(0);
-        yte$professionalModeButton.setY2(IGui.SQUARE_SIZE * 11);
-        yte$professionalModeButton.setWidth2(width2);
-        yte$directionLinkButton.setX2(0);
-        yte$directionLinkButton.setY2(IGui.SQUARE_SIZE * 12);
-        yte$directionLinkButton.setWidth2(width2);
-        yte$motionProfileButton.setX2(0);
-        yte$motionProfileButton.setY2(IGui.SQUARE_SIZE * 13);
-        yte$motionProfileButton.setWidth2(width2);
-        yte$doorHoldButton.setX2(0);
-        yte$doorHoldButton.setY2(IGui.SQUARE_SIZE * 14);
-        yte$doorHoldButton.setWidth2(width2);
-        yte$doorButtonLightModeButton.setX2(0);
-        yte$doorButtonLightModeButton.setY2(IGui.SQUARE_SIZE * 15);
-        yte$doorButtonLightModeButton.setWidth2(width2);
-        yte$floorCancelModeButton.setX2(0);
-        yte$floorCancelModeButton.setY2(IGui.SQUARE_SIZE * 16);
-        yte$floorCancelModeButton.setWidth2(width2);
+        // 顶部标签栏：均分整个面板宽度
+        final int tabWidth = IGui.PANEL_WIDTH / TAB_COUNT;
+        yte$tabSizeButton.setX2(0);
+        yte$tabSizeButton.setY2(0);
+        yte$tabSizeButton.setWidth2(tabWidth);
+        yte$tabMotionButton.setX2(tabWidth);
+        yte$tabMotionButton.setY2(0);
+        yte$tabMotionButton.setWidth2(tabWidth);
+        yte$tabLevelButton.setX2(tabWidth * 2);
+        yte$tabLevelButton.setY2(0);
+        yte$tabLevelButton.setWidth2(tabWidth);
+        yte$tabDoorButton.setX2(tabWidth * 3);
+        yte$tabDoorButton.setY2(0);
+        yte$tabDoorButton.setWidth2(IGui.PANEL_WIDTH - tabWidth * 3);
+
+        addChild(new ClickableWidget(yte$tabSizeButton));
+        addChild(new ClickableWidget(yte$tabMotionButton));
+        addChild(new ClickableWidget(yte$tabLevelButton));
+        addChild(new ClickableWidget(yte$tabDoorButton));
 
         addChild(new ClickableWidget(yte$professionalModeButton));
         addChild(new ClickableWidget(yte$directionLinkButton));
@@ -247,64 +315,210 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         addChild(new ClickableWidget(yte$levellingDistanceField));
         addChild(new ClickableWidget(yte$levellingSpeedField));
 
-        // Text fields are recreated by the screen initialization lifecycle.
-        // Restore their visible text after they have been attached to the screen.
-        yte$layoutDirectionWidgets();
+        // 文本框会在界面初始化生命周期里被重建，挂载后恢复可见文本
         yte$syncFieldsFromValues(yte$lastSentSpeed, yte$lastSentDownSpeed, yte$lastSentAccel, yte$lastSentDownAccel, yte$lastSentAdoDistance,
                 yte$lastSentLevellingDistance, yte$lastSentLevellingSpeed);
+
+        yte$activeTab = TAB_SIZE;
+        yte$onSelectTab(TAB_SIZE);
+    }
+
+    @Override
+    public void render(GraphicsHolder graphicsHolder, int mouseX, int mouseY, float delta) {
+        // 半透明侧边栏背景，保留世界可见，方便边看边调
+        final GuiDrawing guiDrawing = new GuiDrawing(graphicsHolder);
+        guiDrawing.beginDrawingRectangle();
+        guiDrawing.drawRectangle(0, 0, IGui.PANEL_WIDTH, getHeightMapped(), PANEL_BACKGROUND);
+        guiDrawing.finishDrawingRectangle();
+
+        super.render(graphicsHolder, mouseX, mouseY, delta);
+
+        yte$drawScrollbar(graphicsHolder);
+        if (yte$professionalModeButton.getVisibleMapped()) {
+            // 常驻 footer 需盖在内容之上（小屏内容溢出时）
+            yte$professionalModeButton.render(graphicsHolder, mouseX, mouseY, delta);
+        }
+
+        final double[] values = yte$computeCurrentValues();
+        yte$drawTabLabels(graphicsHolder, values);
+        yte$syncValuesToServer(values);
+    }
+
+    @Unique
+    private void yte$onSelectTab(int tab) {
+        yte$activeTab = tab;
+        yte$tabSizeButton.active = tab != TAB_SIZE;
+        yte$tabMotionButton.active = tab != TAB_MOTION;
+        yte$tabLevelButton.active = tab != TAB_LEVEL;
+        yte$tabDoorButton.active = tab != TAB_DOOR;
+        yte$scrollOffset = 0;
+        yte$layoutContent();
         yte$updateModeWidgets();
     }
 
-    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lorg/mtr/mod/screen/MTRScreenBase;render(Lorg/mtr/mapping/mapper/GraphicsHolder;IIF)V", shift = At.Shift.BEFORE))
-    private void yte$beginScrollableContent(GraphicsHolder graphicsHolder, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        yte$drawExtendedBackground(graphicsHolder);
-        // Long button labels use a screen-space horizontal scissor rectangle.
-        // A matrix-only vertical translation moves the button but not that
-        // rectangle, so suppress these text buttons and render them later at a
-        // physically adjusted Y coordinate.
-        yte$liftStyleButtonContentY = buttonLiftStyle.getY2();
-        yte$directionLinkButtonContentY = yte$directionLinkButton.getY2();
-        yte$motionProfileButtonContentY = yte$motionProfileButton.getY2();
-        yte$doorHoldButtonContentY = yte$doorHoldButton.getY2();
-        yte$doorButtonLightModeButtonContentY = yte$doorButtonLightModeButton.getY2();
-        yte$floorCancelModeButtonContentY = yte$floorCancelModeButton.getY2();
-        buttonLiftStyle.setVisibleMapped(false);
-        yte$directionLinkButton.setVisibleMapped(false);
-        yte$motionProfileButton.setVisibleMapped(false);
-        yte$doorHoldButton.setVisibleMapped(false);
-        yte$doorButtonLightModeButton.setVisibleMapped(false);
-        yte$floorCancelModeButton.setVisibleMapped(false);
-        yte$scrollingTextButtonsSuppressed = true;
-        graphicsHolder.push();
-        graphicsHolder.translate(0, -yte$scrollOffset, 0);
-        yte$contentTransformPushed = true;
+    @Unique
+    private void yte$layoutContent() {
+        // 全局 footer：专业模式开关常驻底部（切换输入方式，作用于运行/平层标签）
+        yte$professionalModeButton.setX2(0);
+        yte$professionalModeButton.setY2(getHeightMapped() - IGui.SQUARE_SIZE);
+        yte$professionalModeButton.setWidth2(IGui.PANEL_WIDTH);
+
+        switch (yte$activeTab) {
+            case TAB_SIZE:
+                yte$positionMinusPlus(buttonHeightMinus, buttonHeightAdd, 1);
+                yte$positionMinusPlus(buttonWidthMinus, buttonWidthAdd, 2);
+                yte$positionMinusPlus(buttonDepthMinus, buttonDepthAdd, 3);
+                yte$positionMinusPlus(buttonOffsetXMinus, buttonOffsetXAdd, 4);
+                yte$positionMinusPlus(buttonOffsetYMinus, buttonOffsetYAdd, 5);
+                yte$positionMinusPlus(buttonOffsetZMinus, buttonOffsetZAdd, 6);
+                yte$positionFullWidth(buttonIsDoubleSided, 8);
+                yte$positionFullWidth(buttonLiftStyle, 9);
+                yte$positionFullWidth(buttonRotateAnticlockwise, 10);
+                yte$positionFullWidth(buttonRotateClockwise, 11);
+                break;
+            case TAB_MOTION:
+                yte$positionFullWidth(yte$directionLinkButton, 1);
+                yte$positionFullWidth(yte$motionProfileButton, 2);
+                yte$positionSlider(yte$sliderSpeed, 4);
+                yte$positionField(yte$speedField, 4);
+                yte$positionSlider(yte$sliderAcceleration, 6);
+                yte$positionField(yte$accelerationField, 6);
+                yte$positionSlider(yte$sliderDownSpeed, 8);
+                yte$positionField(yte$downSpeedField, 8);
+                yte$positionSlider(yte$sliderDownAcceleration, 10);
+                yte$positionField(yte$downAccelerationField, 10);
+                break;
+            case TAB_LEVEL:
+                yte$positionSlider(yte$sliderAdoDistance, 2);
+                yte$positionField(yte$adoDistanceField, 2);
+                yte$positionSlider(yte$sliderLevellingDistance, 4);
+                yte$positionField(yte$levellingDistanceField, 4);
+                yte$positionSlider(yte$sliderLevellingSpeed, 6);
+                yte$positionField(yte$levellingSpeedField, 6);
+                break;
+            case TAB_DOOR:
+                yte$positionFullWidth(yte$doorHoldButton, 1);
+                yte$positionFullWidth(yte$doorButtonLightModeButton, 2);
+                yte$positionFullWidth(yte$floorCancelModeButton, 3);
+                break;
+            default:
+                break;
+        }
+
+        yte$clampScroll();
     }
 
     @Unique
-    private void yte$drawExtendedBackground(GraphicsHolder graphicsHolder) {
-        final int extendedRight = yte$getPanelRight();
-        if (extendedRight <= width2) {
+    private int yte$contentY(int row) {
+        return IGui.SQUARE_SIZE * row - yte$scrollOffset;
+    }
+
+    @Unique
+    private int yte$getContentBottom() {
+        return (yte$activeTab == TAB_MOTION || yte$activeTab == TAB_LEVEL)
+                ? getHeightMapped() - IGui.SQUARE_SIZE
+                : getHeightMapped();
+    }
+
+    @Unique
+    private int yte$getMaxVisibleRow() {
+        switch (yte$activeTab) {
+            case TAB_SIZE:
+                return 11;
+            case TAB_MOTION:
+                return yte$directionParametersLinked ? 6 : 10;
+            case TAB_LEVEL:
+                return 6;
+            case TAB_DOOR:
+                return 3;
+            default:
+                return 1;
+        }
+    }
+
+    @Unique
+    private int yte$getMaxScroll() {
+        return Math.max(0, IGui.SQUARE_SIZE * (yte$getMaxVisibleRow() + 1) - yte$getContentBottom());
+    }
+
+    @Unique
+    private void yte$clampScroll() {
+        yte$scrollOffset = Math.max(0, Math.min(yte$scrollOffset, yte$getMaxScroll()));
+    }
+
+    @Unique
+    private void yte$drawScrollbar(GraphicsHolder graphicsHolder) {
+        final int maxScroll = yte$getMaxScroll();
+        if (maxScroll <= 0) {
             return;
         }
+        final int contentTop = IGui.SQUARE_SIZE;
+        final int contentBottom = yte$getContentBottom();
+        final int trackHeight = contentBottom - contentTop;
+        final int thumbHeight = Math.max(16, trackHeight * trackHeight / Math.max(1, trackHeight + maxScroll));
+        final int thumbY = contentTop + (int) Math.round((double) yte$scrollOffset / maxScroll * (trackHeight - thumbHeight));
         final GuiDrawing guiDrawing = new GuiDrawing(graphicsHolder);
         guiDrawing.beginDrawingRectangle();
-        guiDrawing.drawRectangle(width2, 0, extendedRight, getHeightMapped(), 0xFF121212);
+        guiDrawing.drawRectangle(IGui.PANEL_WIDTH - 4, contentTop, IGui.PANEL_WIDTH, contentBottom, 0x33000000);
+        guiDrawing.drawRectangle(IGui.PANEL_WIDTH - 4, thumbY, IGui.PANEL_WIDTH, thumbY + thumbHeight, 0x99AAAAAA);
         guiDrawing.finishDrawingRectangle();
     }
 
+    @Override
+    public boolean mouseScrolled2(double mouseX, double mouseY, double amount) {
+        if (mouseX <= IGui.PANEL_WIDTH) {
+            final int maxScroll = yte$getMaxScroll();
+            if (maxScroll > 0) {
+                yte$scrollOffset = Math.max(0, Math.min(maxScroll, yte$scrollOffset - (int) Math.round(amount * IGui.SQUARE_SIZE)));
+                yte$layoutContent();
+                return true;
+            }
+        }
+        return super.mouseScrolled2(mouseX, mouseY, amount);
+    }
+
     @Unique
-    private int yte$getPanelRight() {
-        return Math.min(getWidthMapped(), width2 + 15);
+    private void yte$drawTabLabels(GraphicsHolder graphicsHolder, double[] values) {
+        switch (yte$activeTab) {
+            case TAB_SIZE:
+                graphicsHolder.drawCenteredText(TranslationProvider.TOOLTIP_MTR_RAIL_ACTION_HEIGHT.getMutableText(lift.getHeight()),
+                        IGui.PANEL_WIDTH / 2, yte$contentY(1) + IGui.TEXT_PADDING, IGui.ARGB_WHITE);
+                graphicsHolder.drawCenteredText(TranslationProvider.TOOLTIP_MTR_RAIL_ACTION_WIDTH.getMutableText(lift.getWidth()),
+                        IGui.PANEL_WIDTH / 2, yte$contentY(2) + IGui.TEXT_PADDING, IGui.ARGB_WHITE);
+                graphicsHolder.drawCenteredText(TranslationProvider.TOOLTIP_MTR_RAIL_ACTION_DEPTH.getMutableText(lift.getDepth()),
+                        IGui.PANEL_WIDTH / 2, yte$contentY(3) + IGui.TEXT_PADDING, IGui.ARGB_WHITE);
+                graphicsHolder.drawCenteredText(TranslationProvider.GUI_MTR_OFFSET_X.getMutableText(lift.getOffsetX()),
+                        IGui.PANEL_WIDTH / 2, yte$contentY(4) + IGui.TEXT_PADDING, IGui.ARGB_WHITE);
+                graphicsHolder.drawCenteredText(TranslationProvider.GUI_MTR_OFFSET_Y.getMutableText(lift.getOffsetY()),
+                        IGui.PANEL_WIDTH / 2, yte$contentY(5) + IGui.TEXT_PADDING, IGui.ARGB_WHITE);
+                graphicsHolder.drawCenteredText(TranslationProvider.GUI_MTR_OFFSET_Z.getMutableText(lift.getOffsetZ()),
+                        IGui.PANEL_WIDTH / 2, yte$contentY(6) + IGui.TEXT_PADDING, IGui.ARGB_WHITE);
+                break;
+            case TAB_MOTION:
+                if (yte$directionParametersLinked) {
+                    yte$drawModeLabel(graphicsHolder, "gui.yte.lift_speed", "gui.yte.lift_speed_value", values[0], 3);
+                    yte$drawModeLabel(graphicsHolder, "gui.yte.lift_acceleration", "gui.yte.lift_acceleration_value", values[2], 5);
+                } else {
+                    yte$drawModeLabel(graphicsHolder, "gui.yte.lift_up_speed", "gui.yte.lift_up_speed_value", values[0], 3);
+                    yte$drawModeLabel(graphicsHolder, "gui.yte.lift_up_acceleration", "gui.yte.lift_up_acceleration_value", values[2], 5);
+                    yte$drawModeLabel(graphicsHolder, "gui.yte.lift_down_speed", "gui.yte.lift_down_speed_value", values[1], 7);
+                    yte$drawModeLabel(graphicsHolder, "gui.yte.lift_down_acceleration", "gui.yte.lift_down_acceleration_value", values[3], 9);
+                }
+                break;
+            case TAB_LEVEL:
+                yte$drawModeLabel(graphicsHolder, "gui.yte.lift_ado_distance", "gui.yte.lift_ado_distance_value", values[4], 1);
+                yte$drawModeLabel(graphicsHolder, "gui.yte.lift_levelling_distance", "gui.yte.lift_levelling_distance_value", values[5], 3);
+                yte$drawModeLabel(graphicsHolder, "gui.yte.lift_levelling_speed", "gui.yte.lift_levelling_speed_value", values[6], 5);
+                break;
+            case TAB_DOOR:
+                break;
+            default:
+                break;
+        }
     }
 
-    @ModifyVariable(method = "render", at = @At("HEAD"), argsOnly = true, ordinal = 1)
-    private int yte$adjustMouseYForScroll(int mouseY) {
-        return mouseY + (int) yte$scrollOffset;
-    }
-
-    @Inject(method = "render", at = @At("TAIL"))
-    private void onRender(GraphicsHolder graphicsHolder, int mouseX, int mouseY, float delta,
-            CallbackInfo ci) {
+    @Unique
+    private double[] yte$computeCurrentValues() {
         final double upSpeed = yte$professionalMode
                 ? yte$parseNumber(yte$speedField, yte$lastSentSpeed, YteLiftConfig.MIN_SPEED, YteLiftConfig.MAX_SPEED)
                 : yte$getEasyModeValue(0, yte$sliderSpeed, valueToSpeed(yte$sliderSpeed.getIntValue()));
@@ -326,20 +540,18 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         final double levellingSpeed = yte$professionalMode
                 ? yte$parseNumber(yte$levellingSpeedField, yte$lastSentLevellingSpeed, YteLiftConfig.MAX_LEVELLING_SPEED)
                 : yte$getEasyModeValue(6, yte$sliderLevellingSpeed, valueToLevellingSpeed(yte$sliderLevellingSpeed.getIntValue()));
+        return new double[]{upSpeed, downSpeed, upAccel, downAccel, adoDistance, levellingDistance, levellingSpeed};
+    }
 
-        if (yte$directionParametersLinked) {
-            yte$drawModeLabel(graphicsHolder, "gui.yte.lift_speed", "gui.yte.lift_speed_value", upSpeed, 17);
-            yte$drawModeLabel(graphicsHolder, "gui.yte.lift_acceleration", "gui.yte.lift_acceleration_value", upAccel, 19);
-        } else {
-            yte$drawModeLabel(graphicsHolder, "gui.yte.lift_up_speed", "gui.yte.lift_up_speed_value", upSpeed, 17);
-            yte$drawModeLabel(graphicsHolder, "gui.yte.lift_down_speed", "gui.yte.lift_down_speed_value", downSpeed, 19);
-            yte$drawModeLabel(graphicsHolder, "gui.yte.lift_up_acceleration", "gui.yte.lift_up_acceleration_value", upAccel, 21);
-            yte$drawModeLabel(graphicsHolder, "gui.yte.lift_down_acceleration", "gui.yte.lift_down_acceleration_value", downAccel, 23);
-        }
-        final int extraStartRow = yte$directionParametersLinked ? 21 : 25;
-        yte$drawModeLabel(graphicsHolder, "gui.yte.lift_ado_distance", "gui.yte.lift_ado_distance_value", adoDistance, extraStartRow);
-        yte$drawModeLabel(graphicsHolder, "gui.yte.lift_levelling_distance", "gui.yte.lift_levelling_distance_value", levellingDistance, extraStartRow + 2);
-        yte$drawModeLabel(graphicsHolder, "gui.yte.lift_levelling_speed", "gui.yte.lift_levelling_speed_value", levellingSpeed, extraStartRow + 4);
+    @Unique
+    private void yte$syncValuesToServer(double[] values) {
+        final double upSpeed = values[0];
+        final double downSpeed = values[1];
+        final double upAccel = values[2];
+        final double downAccel = values[3];
+        final double adoDistance = values[4];
+        final double levellingDistance = values[5];
+        final double levellingSpeed = values[6];
 
         if (upSpeed != yte$lastSentSpeed || downSpeed != yte$lastSentDownSpeed
                 || upAccel != yte$lastSentAccel || downAccel != yte$lastSentDownAccel
@@ -376,82 +588,31 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
             InitClient.REGISTRY_CLIENT.sendPacketToServer(
                     new YtePacketUpdateData(request));
         }
-
-        if (yte$contentTransformPushed) {
-            graphicsHolder.pop();
-            yte$contentTransformPushed = false;
-        }
-        if (yte$scrollingTextButtonsSuppressed) {
-            final int screenMouseY = mouseY - (int) yte$scrollOffset;
-            yte$renderScrollSafeButton(graphicsHolder, buttonLiftStyle, yte$liftStyleButtonContentY,
-                    mouseX, screenMouseY, delta);
-            yte$renderScrollSafeButton(graphicsHolder, yte$directionLinkButton, yte$directionLinkButtonContentY,
-                    mouseX, screenMouseY, delta);
-            yte$renderScrollSafeButton(graphicsHolder, yte$motionProfileButton, yte$motionProfileButtonContentY,
-                    mouseX, screenMouseY, delta);
-            yte$renderScrollSafeButton(graphicsHolder, yte$doorHoldButton, yte$doorHoldButtonContentY,
-                    mouseX, screenMouseY, delta);
-            yte$renderScrollSafeButton(graphicsHolder, yte$doorButtonLightModeButton,
-                    yte$doorButtonLightModeButtonContentY, mouseX, screenMouseY, delta);
-            yte$renderScrollSafeButton(graphicsHolder, yte$floorCancelModeButton,
-                    yte$floorCancelModeButtonContentY, mouseX, screenMouseY, delta);
-            yte$scrollingTextButtonsSuppressed = false;
-        }
-        yte$drawScrollbar(graphicsHolder);
     }
 
     @Unique
-    private void yte$renderScrollSafeButton(GraphicsHolder graphicsHolder, ButtonWidgetExtension button,
-            int contentY, int mouseX, int mouseY, float delta) {
-        final int screenY = contentY - (int) Math.round(yte$scrollOffset);
-        button.setY2(screenY);
-        button.setVisibleMapped(true);
-        if (screenY + IGui.SQUARE_SIZE > 0 && screenY < getHeightMapped()) {
-            button.render(graphicsHolder, mouseX, mouseY, delta);
-        }
-        button.setY2(contentY);
+    private void yte$positionMinusPlus(ButtonWidgetExtension minus, ButtonWidgetExtension plus, int row) {
+        final int y = yte$contentY(row);
+        minus.setX2(0);
+        minus.setY2(y);
+        minus.setWidth2(IGui.SQUARE_SIZE);
+        plus.setX2(IGui.PANEL_WIDTH - IGui.SQUARE_SIZE);
+        plus.setY2(y);
+        plus.setWidth2(IGui.SQUARE_SIZE);
     }
 
-    @Override
-    public boolean mouseScrolled2(double mouseX, double mouseY, double amount) {
-        if (mouseX >= 0 && mouseX <= yte$getPanelRight() && yte$getMaxScroll() > 0) {
-            yte$scrollOffset = Math.max(0, Math.min(yte$getMaxScroll(), yte$scrollOffset - amount * IGui.SQUARE_SIZE));
-            return true;
-        }
-        return super.mouseScrolled2(mouseX, mouseY, amount);
+    @Unique
+    private void yte$positionFullWidth(ButtonWidgetExtension button, int row) {
+        button.setX2(0);
+        button.setY2(yte$contentY(row));
+        button.setWidth2(IGui.PANEL_WIDTH);
     }
 
-    @Override
-    public boolean mouseClicked2(double mouseX, double mouseY, int button) {
-        final int panelRight = yte$getPanelRight();
-        if (button == 0 && yte$getMaxScroll() > 0 && mouseX >= panelRight - 4 && mouseX <= panelRight) {
-            final int thumbY = yte$getScrollbarThumbY();
-            final int thumbHeight = yte$getScrollbarThumbHeight();
-            yte$scrollbarDragging = true;
-            yte$scrollbarDragOffset = mouseY >= thumbY && mouseY <= thumbY + thumbHeight
-                    ? mouseY - thumbY : thumbHeight / 2.0;
-            yte$setScrollFromThumb(mouseY - yte$scrollbarDragOffset);
-            return true;
-        }
-        return super.mouseClicked2(mouseX, mouseY + yte$scrollOffset, button);
-    }
-
-    @Override
-    public boolean mouseDragged2(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if (yte$scrollbarDragging) {
-            yte$setScrollFromThumb(mouseY - yte$scrollbarDragOffset);
-            return true;
-        }
-        return super.mouseDragged2(mouseX, mouseY + yte$scrollOffset, button, deltaX, deltaY);
-    }
-
-    @Override
-    public boolean mouseReleased2(double mouseX, double mouseY, int button) {
-        if (yte$scrollbarDragging) {
-            yte$scrollbarDragging = false;
-            return true;
-        }
-        return super.mouseReleased2(mouseX, mouseY + yte$scrollOffset, button);
+    @Unique
+    private void yte$positionFullWidth(CheckboxWidgetExtension checkbox, int row) {
+        checkbox.setX2(0);
+        checkbox.setY2(yte$contentY(row));
+        checkbox.setWidth2(IGui.PANEL_WIDTH);
     }
 
     @Unique
@@ -464,43 +625,16 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique
     private void yte$positionField(TextFieldWidgetExtension field, int row) {
         field.setX2(0);
-        field.setY2(IGui.SQUARE_SIZE * row);
-        field.setWidth2(width2);
+        field.setY2(yte$contentY(row));
+        field.setWidth2(IGui.PANEL_WIDTH);
     }
 
     @Unique
     private void yte$positionSlider(WidgetShorterSlider slider, int row) {
         slider.setX2(0);
-        slider.setY2(IGui.SQUARE_SIZE * row);
+        slider.setY2(yte$contentY(row));
         slider.setHeight(IGui.SQUARE_SIZE);
-        slider.setWidth2(width2);
-    }
-
-    @Unique
-    private void yte$layoutDirectionWidgets() {
-        yte$positionSlider(yte$sliderSpeed, 18);
-        yte$positionField(yte$speedField, 18);
-
-        if (yte$directionParametersLinked) {
-            yte$positionSlider(yte$sliderAcceleration, 20);
-            yte$positionField(yte$accelerationField, 20);
-        } else {
-            yte$positionSlider(yte$sliderDownSpeed, 20);
-            yte$positionField(yte$downSpeedField, 20);
-            yte$positionSlider(yte$sliderAcceleration, 22);
-            yte$positionField(yte$accelerationField, 22);
-            yte$positionSlider(yte$sliderDownAcceleration, 24);
-            yte$positionField(yte$downAccelerationField, 24);
-        }
-
-        final int extraControlRow = yte$directionParametersLinked ? 22 : 26;
-        yte$positionSlider(yte$sliderAdoDistance, extraControlRow);
-        yte$positionField(yte$adoDistanceField, extraControlRow);
-        yte$positionSlider(yte$sliderLevellingDistance, extraControlRow + 2);
-        yte$positionField(yte$levellingDistanceField, extraControlRow + 2);
-        yte$positionSlider(yte$sliderLevellingSpeed, extraControlRow + 4);
-        yte$positionField(yte$levellingSpeedField, extraControlRow + 4);
-        yte$scrollOffset = Math.min(yte$scrollOffset, yte$getMaxScroll());
+        slider.setWidth2(IGui.PANEL_WIDTH);
     }
 
     @Unique
@@ -524,7 +658,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$easyModeSliderTouched[3] = false;
 
         yte$directionParametersLinked = !yte$directionParametersLinked;
-        yte$layoutDirectionWidgets();
+        yte$layoutContent();
         yte$updateModeWidgets();
     }
 
@@ -634,26 +768,61 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
 
     @Unique
     private void yte$updateModeWidgets() {
+        final boolean sizeTab = yte$activeTab == TAB_SIZE;
+        final boolean motionTab = yte$activeTab == TAB_MOTION;
+        final boolean levelTab = yte$activeTab == TAB_LEVEL;
+        final boolean doorTab = yte$activeTab == TAB_DOOR;
+
+        // 原版控件：尺寸与外观标签
+        buttonHeightMinus.setVisibleMapped(sizeTab);
+        buttonHeightAdd.setVisibleMapped(sizeTab);
+        buttonWidthMinus.setVisibleMapped(sizeTab);
+        buttonWidthAdd.setVisibleMapped(sizeTab);
+        buttonDepthMinus.setVisibleMapped(sizeTab);
+        buttonDepthAdd.setVisibleMapped(sizeTab);
+        buttonOffsetXMinus.setVisibleMapped(sizeTab);
+        buttonOffsetXAdd.setVisibleMapped(sizeTab);
+        buttonOffsetYMinus.setVisibleMapped(sizeTab);
+        buttonOffsetYAdd.setVisibleMapped(sizeTab);
+        buttonOffsetZMinus.setVisibleMapped(sizeTab);
+        buttonOffsetZAdd.setVisibleMapped(sizeTab);
+        buttonIsDoubleSided.setVisibleMapped(sizeTab);
+        buttonLiftStyle.setVisibleMapped(sizeTab);
+        buttonRotateAnticlockwise.setVisibleMapped(sizeTab);
+        buttonRotateClockwise.setVisibleMapped(sizeTab);
+
+        // 专业模式为全局 footer（运行/平层标签下显示），其余模式开关仅属于运行标签
+        yte$professionalModeButton.setVisibleMapped(motionTab || levelTab);
+        yte$directionLinkButton.setVisibleMapped(motionTab);
+        yte$motionProfileButton.setVisibleMapped(motionTab);
+
+        // 门与楼层标签
+        yte$doorHoldButton.setVisibleMapped(doorTab);
+        yte$doorButtonLightModeButton.setVisibleMapped(doorTab);
+        yte$floorCancelModeButton.setVisibleMapped(doorTab);
+
+        // 运行参数：滑块/文本框
+        yte$sliderSpeed.setVisibleMapped(motionTab && !yte$professionalMode);
+        yte$accelerationField.setVisibleMapped(motionTab && yte$professionalMode);
+        yte$speedField.setVisibleMapped(motionTab && yte$professionalMode);
+        yte$sliderAcceleration.setVisibleMapped(motionTab && !yte$professionalMode);
+        yte$sliderDownSpeed.setVisibleMapped(motionTab && !yte$professionalMode && !yte$directionParametersLinked);
+        yte$downSpeedField.setVisibleMapped(motionTab && yte$professionalMode && !yte$directionParametersLinked);
+        yte$sliderDownAcceleration.setVisibleMapped(motionTab && !yte$professionalMode && !yte$directionParametersLinked);
+        yte$downAccelerationField.setVisibleMapped(motionTab && yte$professionalMode && !yte$directionParametersLinked);
+
+        // 平层参数：滑块/文本框
+        yte$sliderAdoDistance.setVisibleMapped(levelTab && !yte$professionalMode);
+        yte$adoDistanceField.setVisibleMapped(levelTab && yte$professionalMode);
+        yte$sliderLevellingDistance.setVisibleMapped(levelTab && !yte$professionalMode);
+        yte$levellingDistanceField.setVisibleMapped(levelTab && yte$professionalMode);
+        yte$sliderLevellingSpeed.setVisibleMapped(levelTab && !yte$professionalMode);
+        yte$levellingSpeedField.setVisibleMapped(levelTab && yte$professionalMode);
+
+        // 按钮文本状态
         yte$professionalModeButton.setMessage2(new Text(TextHelper.translatable(yte$professionalMode
                 ? "gui.yte.lift_professional_mode_on"
                 : "gui.yte.lift_professional_mode_off").data));
-
-        yte$sliderSpeed.setVisibleMapped(!yte$professionalMode);
-        yte$sliderAcceleration.setVisibleMapped(!yte$professionalMode);
-        yte$sliderDownSpeed.setVisibleMapped(!yte$professionalMode && !yte$directionParametersLinked);
-        yte$sliderDownAcceleration.setVisibleMapped(!yte$professionalMode && !yte$directionParametersLinked);
-        yte$sliderAdoDistance.setVisibleMapped(!yte$professionalMode);
-        yte$sliderLevellingDistance.setVisibleMapped(!yte$professionalMode);
-        yte$sliderLevellingSpeed.setVisibleMapped(!yte$professionalMode);
-
-        yte$speedField.setVisibleMapped(yte$professionalMode);
-        yte$accelerationField.setVisibleMapped(yte$professionalMode);
-        yte$downSpeedField.setVisibleMapped(yte$professionalMode && !yte$directionParametersLinked);
-        yte$downAccelerationField.setVisibleMapped(yte$professionalMode && !yte$directionParametersLinked);
-        yte$adoDistanceField.setVisibleMapped(yte$professionalMode);
-        yte$levellingDistanceField.setVisibleMapped(yte$professionalMode);
-        yte$levellingSpeedField.setVisibleMapped(yte$professionalMode);
-
         yte$directionLinkButton.setMessage2(new Text(TextHelper.translatable(yte$directionParametersLinked
                 ? "gui.yte.lift_direction_link_on"
                 : "gui.yte.lift_direction_link_off").data));
@@ -669,17 +838,10 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     }
 
     @Unique
-    private void yte$drawInputLabel(GraphicsHolder graphicsHolder, String key, int row) {
-        graphicsHolder.drawText(TextHelper.translatable(key), 0,
-                IGui.SQUARE_SIZE * row + IGui.TEXT_PADDING,
-                IGui.ARGB_WHITE, false, GraphicsHolder.getDefaultLight());
-    }
-
-    @Unique
     private void yte$drawModeLabel(GraphicsHolder graphicsHolder, String inputKey, String valueKey, double value, int row) {
         graphicsHolder.drawText(TextHelper.translatable(yte$professionalMode ? inputKey : valueKey,
                         String.format(Locale.ROOT, "%.2f", value)), 0,
-                IGui.SQUARE_SIZE * row + IGui.TEXT_PADDING,
+                yte$contentY(row) + IGui.TEXT_PADDING,
                 IGui.ARGB_WHITE, false, GraphicsHolder.getDefaultLight());
     }
 
@@ -695,55 +857,6 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
             return Double.isFinite(value) ? Math.max(minimum, Math.min(maximum, value)) : fallback;
         } catch (NumberFormatException ignored) {
             return fallback;
-        }
-    }
-
-    @Unique
-    private double yte$getMaxScroll() {
-        return Math.max(0, yte$getContentRows() * IGui.SQUARE_SIZE - getHeightMapped());
-    }
-
-    @Unique
-    private void yte$drawScrollbar(GraphicsHolder graphicsHolder) {
-        final double maxScroll = yte$getMaxScroll();
-        if (maxScroll <= 0) {
-            return;
-        }
-        final int screenHeight = getHeightMapped();
-        final int trackWidth = 4;
-        final int panelRight = yte$getPanelRight();
-        final int trackX = Math.max(0, panelRight - trackWidth);
-        final int thumbHeight = yte$getScrollbarThumbHeight();
-        final int thumbY = yte$getScrollbarThumbY();
-        final GuiDrawing guiDrawing = new GuiDrawing(graphicsHolder);
-        guiDrawing.beginDrawingRectangle();
-        guiDrawing.drawRectangle(trackX, 0, panelRight, screenHeight, 0x66000000);
-        guiDrawing.drawRectangle(trackX, thumbY, panelRight, thumbY + thumbHeight, 0xFFAAAAAA);
-        guiDrawing.finishDrawingRectangle();
-    }
-
-    @Unique
-    private int yte$getScrollbarThumbHeight() {
-        final int screenHeight = getHeightMapped();
-        return Math.max(IGui.SQUARE_SIZE, screenHeight * screenHeight / (yte$getContentRows() * IGui.SQUARE_SIZE));
-    }
-
-    @Unique
-    private int yte$getContentRows() {
-        return yte$directionParametersLinked ? 27 : 31;
-    }
-
-    @Unique
-    private int yte$getScrollbarThumbY() {
-        final int availableHeight = getHeightMapped() - yte$getScrollbarThumbHeight();
-        return (int) Math.round(yte$scrollOffset / yte$getMaxScroll() * availableHeight);
-    }
-
-    @Unique
-    private void yte$setScrollFromThumb(double thumbY) {
-        final int availableHeight = getHeightMapped() - yte$getScrollbarThumbHeight();
-        if (availableHeight > 0) {
-            yte$scrollOffset = Math.max(0, Math.min(yte$getMaxScroll(), thumbY / availableHeight * yte$getMaxScroll()));
         }
     }
 

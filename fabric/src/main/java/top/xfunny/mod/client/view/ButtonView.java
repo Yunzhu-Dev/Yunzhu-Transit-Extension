@@ -4,10 +4,8 @@ import org.mtr.mapping.holder.*;
 import org.mtr.mod.Init;
 import org.mtr.mod.block.IBlock;
 import org.mtr.mod.render.QueuedRenderLayer;
-import top.xfunny.mod.client.InitClient;
 import top.xfunny.mod.client.sound.SoundPlaybackManager;
 import top.xfunny.mod.keymapping.DefaultButtonsKeyMapping;
-import top.xfunny.mod.packet.PacketLanternSoundInstruction;
 import top.xfunny.mod.util.TransformPositionX;
 
 import java.util.Map;
@@ -33,9 +31,6 @@ public class ButtonView extends ImageView {
     private final float[] dimension;
     private final float[] uv;
     private boolean wasUseKeyDown = false; // 边缘检测（实例级）
-
-    private String lanternSoundInstruction = null;
-    private String buttonSound = null;
 
     public ButtonView() {
         location = new float[2];
@@ -146,14 +141,6 @@ public class ButtonView extends ImageView {
         if (onStateChangeListener != null) {
             onStateChangeListener.onReset(blockPos);
         }
-    }
-
-    private String makeSoundKey() {
-        if (world == null || blockPos == null || lanternSoundInstruction == null) return null;
-        return blockPos.getX() + "_" +
-                blockPos.getY() + "_" +
-                blockPos.getZ() + "_" +
-                lanternSoundInstruction;
     }
 
 

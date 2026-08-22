@@ -444,5 +444,9 @@
   "gui.yte.lift_floor_cancel_double_click": "Cancel selected floor: Double-click",
   "gui.yte.lift_floor_cancel_long_press": "Cancel selected floor: Long press",
   "gui.yte.lift_hold_open": "HOLD",
+  "gui.yte.lift_tab_size": "Size",
+  "gui.yte.lift_tab_motion": "Motion",
+  "gui.yte.lift_tab_level": "Level",
+  "gui.yte.lift_tab_door": "Doors",
   "block.yte.lift_track_magnetic_vane": "Lift Express-Zone Magnetic Vane"
 }
