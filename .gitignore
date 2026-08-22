@@ -63,3 +63,4 @@ replay_*.log
 .trae
 .augment
 .tabby
+fabric/src/main/java/top/xfunny/mod/Keys.java

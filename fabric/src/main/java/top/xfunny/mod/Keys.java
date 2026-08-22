@@ -2,6 +2,6 @@ package top.xfunny.mod;
 
 public interface Keys {
     String MOD_VERSION = "1.0.2-prerelease.3";
-    String BUILD_TIME = "260821-1857+0800";
+    String BUILD_TIME = "260822-0920+0800";
     String API_URL = "https://api.modrinth.com/v2/project/yunzhu-transit-extension/version";
 }

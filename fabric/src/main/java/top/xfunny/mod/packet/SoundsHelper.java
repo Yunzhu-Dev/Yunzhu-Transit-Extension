@@ -309,7 +309,7 @@ public final class SoundsHelper {
                         blockPos,
                         SoundEvents.TKE_STEPC_BUTTON_1.get(),
                         SoundCategory.BLOCKS,
-                        0.8F,
+                        0.6F,
                         1.0F
                 );
                 break;
@@ -319,7 +319,7 @@ public final class SoundsHelper {
                         blockPos,
                         SoundEvents.HITACHI_WLMW_BUTTON_1.get(),
                         SoundCategory.BLOCKS,
-                        0.6F,
+                        0.4F,
                         1.0F
                 );
                 break;
