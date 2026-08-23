@@ -15,6 +15,7 @@ import org.mtr.mod.client.MinecraftClientData;
 import org.mtr.mod.packet.PacketPressLiftButton;
 import top.xfunny.mod.ButtonRegistry;
 import top.xfunny.mod.Init;
+import top.xfunny.mod.config.YteLiftConfigStore;
 import top.xfunny.mod.lift.LiftFloorRegistry;
 import top.xfunny.mod.lift.LiftLanternController;
 import top.xfunny.mod.keymapping.DefaultButtonsKeyMapping;
@@ -150,7 +151,7 @@ public abstract class LiftDestinationDispatchTerminalBase extends BlockExtension
         /** 被选中电梯相对于本终端的位置 */
         private LiftRelativePosition liftRelativePosition = LiftRelativePosition.UNKNOWN;
 
-        private char liftIdentifier;
+        private String liftIdentifier = "?";
 
         // ====== 统一定时器（子类通过 onTimerFired 处理到期动作） ======
         /** 定时器到期时间戳（毫秒），0 = 无定时器 */
@@ -370,14 +371,10 @@ public abstract class LiftDestinationDispatchTerminalBase extends BlockExtension
             final BlockEntityBase data = (BlockEntityBase) blockEntity.data;
 
             // ---- Step 1: 收集所有候选电梯 ----
-            // (trackPosition, lift, callingFloorIndex, destFloorIndex, destPosition, label)
+            // (trackPosition, lift, callingFloorIndex, destFloorIndex, destPosition)
             ObjectArrayList<LiftCandidate> candidates = new ObjectArrayList<>();
-            final int[] counter = {0};
 
             trackPositions.forEach(trackPosition -> {
-                final char label = (char) ('A' + counter[0]);
-                counter[0]++;
-
                 MinecraftClientData.getInstance().lifts.forEach(lift -> {
                     final int callingFloorIdx = lift.getFloorIndex(Init.blockPosToPosition(trackPosition));
                     if (callingFloorIdx < 0) return;
@@ -386,12 +383,12 @@ public abstract class LiftDestinationDispatchTerminalBase extends BlockExtension
                     if (destPos == null) return;
 
                     final int destFloorIdx = lift.getFloorIndex(destPos);
-                    candidates.add(new LiftCandidate(trackPosition, label, lift, callingFloorIdx, destFloorIdx, destPos));
+                    candidates.add(new LiftCandidate(trackPosition, lift, callingFloorIdx, destFloorIdx, destPos));
                 });
             });
 
             if (candidates.isEmpty()) {
-                liftIdentifier = '?';
+                liftIdentifier = "?";
                 return "?";
             }
 
@@ -409,7 +406,7 @@ public abstract class LiftDestinationDispatchTerminalBase extends BlockExtension
 
             // ---- Step 3: 执行 ----
             if (bestCandidate == null) {
-                liftIdentifier = '?';
+                liftIdentifier = "?";
                 return "?";
             }
 
@@ -418,7 +415,8 @@ public abstract class LiftDestinationDispatchTerminalBase extends BlockExtension
             final LiftDirection neededDirection = determineDirection(
                     bestCandidate.callingFloorIndex, bestCandidate.destFloorIndex);
             this.liftDirection = neededDirection;
-            liftIdentifier = bestCandidate.label;
+            final String liftNumber = YteLiftConfigStore.getLiftNumber(bestCandidate.lift.getId());
+            liftIdentifier = liftNumber.isEmpty() ? "NULL" : liftNumber;
             // 计算电梯相对于终端的位置
             this.liftRelativePosition = computeLiftRelativePosition(world, pos, confirmTrackPosition);
 
@@ -446,7 +444,7 @@ public abstract class LiftDestinationDispatchTerminalBase extends BlockExtension
                 InitClient.REGISTRY_CLIENT.sendPacketToServer(new PacketPressLiftButton(pressLift1));
             }, 2, TimeUnit.SECONDS);
 
-            return String.valueOf(liftIdentifier);
+            return liftIdentifier;
         }
 
         /**
@@ -558,16 +556,14 @@ public abstract class LiftDestinationDispatchTerminalBase extends BlockExtension
          */
         private static class LiftCandidate {
             final BlockPos trackPosition;
-            final char label;
             final Lift lift;
             final int callingFloorIndex;
             final int destFloorIndex;
             final Position destPosition;
 
-            LiftCandidate(BlockPos trackPosition, char label, Lift lift,
+            LiftCandidate(BlockPos trackPosition, Lift lift,
                           int callingFloorIndex, int destFloorIndex, Position destPosition) {
                 this.trackPosition = trackPosition;
-                this.label = label;
                 this.lift = lift;
                 this.callingFloorIndex = callingFloorIndex;
                 this.destFloorIndex = destFloorIndex;
@@ -593,11 +589,6 @@ public abstract class LiftDestinationDispatchTerminalBase extends BlockExtension
             return foundPosition[0];
         }
 
-        public String getLiftIdentifier() {
-            return String.valueOf(liftIdentifier);
-
-        }
-
         /**
          * 获取被选中电梯相对于本终端的位置。
          */
@@ -611,8 +602,8 @@ public abstract class LiftDestinationDispatchTerminalBase extends BlockExtension
          * 例如 FRONT_LEFT + "A" → "&lt;A"
          */
         public String formatLiftAssignment() {
-            if (liftIdentifier == '?') return "??";
-            return liftRelativePosition.format(String.valueOf(liftIdentifier));
+            if (liftIdentifier.equals("?")) return "??";
+            return liftRelativePosition.format(liftIdentifier);
         }
 
         /**

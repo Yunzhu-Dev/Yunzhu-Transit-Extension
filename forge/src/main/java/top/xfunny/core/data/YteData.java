@@ -19,6 +19,7 @@ public abstract class YteData {
                         config.getLevellingDistance(), config.getLevellingSpeed(), config.getMotionProfile(),
                         config.isDoorHoldEnabled(), config.getDoorButtonLightMode(), config.getFloorCancelMode(),
                         config.isFloorCancelWhileMovingAllowed());
+                top.xfunny.mod.config.YteLiftConfigStore.setLiftNumber(config.getId(), config.getLiftNumber());
             });
         } catch (Exception e) {
             YteCoreLogger.error("YteData sync error", e);

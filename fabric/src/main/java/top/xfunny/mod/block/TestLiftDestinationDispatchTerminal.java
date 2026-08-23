@@ -134,7 +134,7 @@ public class TestLiftDestinationDispatchTerminal extends LiftDestinationDispatch
                     case "callLift":
                         data.callLift(world, pos, ArrayListToString.arrayListToString(data1.getInputNumber()));
                         data1.clearInputNumber();
-                        data1.addInputNumber("To Lift:" + data.getLiftIdentifier());
+                        data1.addInputNumber("To Lift: " + data.formatLiftAssignment());
                         // 1 秒后清除结果显示，恢复初始提示
                         data1.startTimer(1000, TestLiftDestinationDispatchTerminal.BlockEntity.ACT_CLEAR_RESULT);
                         break;

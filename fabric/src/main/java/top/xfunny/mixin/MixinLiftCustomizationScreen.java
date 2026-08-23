@@ -130,6 +130,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique private TextFieldWidgetExtension yte$adoDistanceField;
     @Unique private TextFieldWidgetExtension yte$levellingDistanceField;
     @Unique private TextFieldWidgetExtension yte$levellingSpeedField;
+    @Unique private TextFieldWidgetExtension yte$liftNumberField;
 
     @Unique
     private static final int SPEED_SLIDER_MAX = 40;
@@ -159,6 +160,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique private LiftDoorButtonLightMode yte$lastSentDoorButtonLightMode = LiftDoorButtonLightMode.MOMENTARY;
     @Unique private LiftFloorCancelMode yte$floorCancelMode = LiftFloorCancelMode.DOUBLE_CLICK;
     @Unique private LiftFloorCancelMode yte$lastSentFloorCancelMode = LiftFloorCancelMode.DOUBLE_CLICK;
+    @Unique private String yte$liftNumber = "";
+    @Unique private String yte$lastSentLiftNumber = "";
     @Unique private double yte$lastSentAdoDistance = -1;
     @Unique private double yte$lastSentLevellingDistance = -1;
     @Unique private double yte$lastSentLevellingSpeed = -1;
@@ -167,13 +170,13 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique private final boolean[] yte$easyModeSliderTouched = new boolean[7];
 
     // 标签页
-    @Unique private static final int TAB_SIZE = 0;
+    @Unique private static final int TAB_BASE = 0;
     @Unique private static final int TAB_MOTION = 1;
     @Unique private static final int TAB_LEVEL = 2;
     @Unique private static final int TAB_DOOR = 3;
     @Unique private static final int TAB_COUNT = 4;
     @Unique private static final int PANEL_BACKGROUND = 0xD9121212;
-    @Unique private int yte$activeTab = TAB_SIZE;
+    @Unique private int yte$activeTab = TAB_BASE;
     @Unique private int yte$scrollOffset;
     @Unique private ButtonWidgetExtension yte$tabSizeButton;
     @Unique private ButtonWidgetExtension yte$tabMotionButton;
@@ -194,6 +197,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$doorHoldEnabled = config != null && config.isDoorHoldEnabled();
         yte$doorButtonLightMode = config == null ? LiftDoorButtonLightMode.MOMENTARY : config.getDoorButtonLightMode();
         yte$floorCancelMode = config == null ? LiftFloorCancelMode.DOUBLE_CLICK : config.getFloorCancelMode();
+        yte$liftNumber = config == null ? "" : config.getLiftNumber();
         final double currentAdoDistance = config != null ? config.getAdoDistance() : YteLiftConfig.DEFAULT_ADO_DISTANCE;
         final double currentLevellingDistance = config != null ? config.getLevellingDistance() : YteLiftConfig.DEFAULT_LEVELLING_DISTANCE;
         final double currentLevellingSpeed = config != null ? config.getLevellingSpeed() : YteLiftConfig.DEFAULT_LEVELLING_SPEED;
@@ -241,7 +245,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                 TextHelper.literal(""), button -> yte$toggleFloorCancelMode());
 
         yte$tabSizeButton = new ButtonWidgetExtension(0, 0, 0, IGui.SQUARE_SIZE,
-                TextHelper.translatable("gui.yte.lift_tab_size"), button -> yte$onSelectTab(TAB_SIZE));
+                TextHelper.translatable("gui.yte.lift_tab_base"), button -> yte$onSelectTab(TAB_BASE));
         yte$tabMotionButton = new ButtonWidgetExtension(0, 0, 0, IGui.SQUARE_SIZE,
                 TextHelper.translatable("gui.yte.lift_tab_motion"), button -> yte$onSelectTab(TAB_MOTION));
         yte$tabLevelButton = new ButtonWidgetExtension(0, 0, 0, IGui.SQUARE_SIZE,
@@ -256,6 +260,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$adoDistanceField = yte$createNumberField(currentAdoDistance);
         yte$levellingDistanceField = yte$createNumberField(currentLevellingDistance);
         yte$levellingSpeedField = yte$createNumberField(currentLevellingSpeed);
+        yte$liftNumberField = yte$createLiftNumberField();
+        yte$liftNumberField.setText2(yte$liftNumber);
 
         yte$lastSentSpeed = currentSpeed;
         yte$lastSentAccel = currentAccel;
@@ -269,6 +275,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$lastSentDoorHoldEnabled = yte$doorHoldEnabled;
         yte$lastSentDoorButtonLightMode = yte$doorButtonLightMode;
         yte$lastSentFloorCancelMode = yte$floorCancelMode;
+        yte$lastSentLiftNumber = yte$liftNumber;
     }
 
     @Inject(method = "init2", at = @At("TAIL"))
@@ -314,13 +321,15 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         addChild(new ClickableWidget(yte$adoDistanceField));
         addChild(new ClickableWidget(yte$levellingDistanceField));
         addChild(new ClickableWidget(yte$levellingSpeedField));
+        addChild(new ClickableWidget(yte$liftNumberField));
 
         // 文本框会在界面初始化生命周期里被重建，挂载后恢复可见文本
         yte$syncFieldsFromValues(yte$lastSentSpeed, yte$lastSentDownSpeed, yte$lastSentAccel, yte$lastSentDownAccel, yte$lastSentAdoDistance,
                 yte$lastSentLevellingDistance, yte$lastSentLevellingSpeed);
+        yte$liftNumberField.setText2(yte$liftNumber);
 
-        yte$activeTab = TAB_SIZE;
-        yte$onSelectTab(TAB_SIZE);
+        yte$activeTab = TAB_BASE;
+        yte$onSelectTab(TAB_BASE);
     }
 
     @Override
@@ -347,7 +356,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique
     private void yte$onSelectTab(int tab) {
         yte$activeTab = tab;
-        yte$tabSizeButton.active = tab != TAB_SIZE;
+        yte$tabSizeButton.active = tab != TAB_BASE;
         yte$tabMotionButton.active = tab != TAB_MOTION;
         yte$tabLevelButton.active = tab != TAB_LEVEL;
         yte$tabDoorButton.active = tab != TAB_DOOR;
@@ -364,17 +373,18 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$professionalModeButton.setWidth2(IGui.PANEL_WIDTH);
 
         switch (yte$activeTab) {
-            case TAB_SIZE:
-                yte$positionMinusPlus(buttonHeightMinus, buttonHeightAdd, 1);
-                yte$positionMinusPlus(buttonWidthMinus, buttonWidthAdd, 2);
-                yte$positionMinusPlus(buttonDepthMinus, buttonDepthAdd, 3);
-                yte$positionMinusPlus(buttonOffsetXMinus, buttonOffsetXAdd, 4);
-                yte$positionMinusPlus(buttonOffsetYMinus, buttonOffsetYAdd, 5);
-                yte$positionMinusPlus(buttonOffsetZMinus, buttonOffsetZAdd, 6);
-                yte$positionFullWidth(buttonIsDoubleSided, 8);
-                yte$positionFullWidth(buttonLiftStyle, 9);
-                yte$positionFullWidth(buttonRotateAnticlockwise, 10);
-                yte$positionFullWidth(buttonRotateClockwise, 11);
+            case TAB_BASE:
+                yte$positionField(yte$liftNumberField, 2);
+                yte$positionMinusPlus(buttonHeightMinus, buttonHeightAdd, 4);
+                yte$positionMinusPlus(buttonWidthMinus, buttonWidthAdd, 5);
+                yte$positionMinusPlus(buttonDepthMinus, buttonDepthAdd, 6);
+                yte$positionMinusPlus(buttonOffsetXMinus, buttonOffsetXAdd, 7);
+                yte$positionMinusPlus(buttonOffsetYMinus, buttonOffsetYAdd, 8);
+                yte$positionMinusPlus(buttonOffsetZMinus, buttonOffsetZAdd, 9);
+                yte$positionFullWidth(buttonIsDoubleSided, 11);
+                yte$positionFullWidth(buttonLiftStyle, 12);
+                yte$positionFullWidth(buttonRotateAnticlockwise, 13);
+                yte$positionFullWidth(buttonRotateClockwise, 14);
                 break;
             case TAB_MOTION:
                 yte$positionFullWidth(yte$directionLinkButton, 1);
@@ -423,8 +433,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique
     private int yte$getMaxVisibleRow() {
         switch (yte$activeTab) {
-            case TAB_SIZE:
-                return 11;
+            case TAB_BASE:
+                return 14;
             case TAB_MOTION:
                 return yte$directionParametersLinked ? 6 : 10;
             case TAB_LEVEL:
@@ -480,19 +490,21 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique
     private void yte$drawTabLabels(GraphicsHolder graphicsHolder, double[] values) {
         switch (yte$activeTab) {
-            case TAB_SIZE:
+            case TAB_BASE:
+                graphicsHolder.drawText(TextHelper.translatable("gui.yte.lift_number"), 0,
+                        yte$contentY(1) + IGui.TEXT_PADDING, IGui.ARGB_WHITE, false, GraphicsHolder.getDefaultLight());
                 graphicsHolder.drawCenteredText(TranslationProvider.TOOLTIP_MTR_RAIL_ACTION_HEIGHT.getMutableText(lift.getHeight()),
-                        IGui.PANEL_WIDTH / 2, yte$contentY(1) + IGui.TEXT_PADDING, IGui.ARGB_WHITE);
-                graphicsHolder.drawCenteredText(TranslationProvider.TOOLTIP_MTR_RAIL_ACTION_WIDTH.getMutableText(lift.getWidth()),
-                        IGui.PANEL_WIDTH / 2, yte$contentY(2) + IGui.TEXT_PADDING, IGui.ARGB_WHITE);
-                graphicsHolder.drawCenteredText(TranslationProvider.TOOLTIP_MTR_RAIL_ACTION_DEPTH.getMutableText(lift.getDepth()),
-                        IGui.PANEL_WIDTH / 2, yte$contentY(3) + IGui.TEXT_PADDING, IGui.ARGB_WHITE);
-                graphicsHolder.drawCenteredText(TranslationProvider.GUI_MTR_OFFSET_X.getMutableText(lift.getOffsetX()),
                         IGui.PANEL_WIDTH / 2, yte$contentY(4) + IGui.TEXT_PADDING, IGui.ARGB_WHITE);
-                graphicsHolder.drawCenteredText(TranslationProvider.GUI_MTR_OFFSET_Y.getMutableText(lift.getOffsetY()),
+                graphicsHolder.drawCenteredText(TranslationProvider.TOOLTIP_MTR_RAIL_ACTION_WIDTH.getMutableText(lift.getWidth()),
                         IGui.PANEL_WIDTH / 2, yte$contentY(5) + IGui.TEXT_PADDING, IGui.ARGB_WHITE);
-                graphicsHolder.drawCenteredText(TranslationProvider.GUI_MTR_OFFSET_Z.getMutableText(lift.getOffsetZ()),
+                graphicsHolder.drawCenteredText(TranslationProvider.TOOLTIP_MTR_RAIL_ACTION_DEPTH.getMutableText(lift.getDepth()),
                         IGui.PANEL_WIDTH / 2, yte$contentY(6) + IGui.TEXT_PADDING, IGui.ARGB_WHITE);
+                graphicsHolder.drawCenteredText(TranslationProvider.GUI_MTR_OFFSET_X.getMutableText(lift.getOffsetX()),
+                        IGui.PANEL_WIDTH / 2, yte$contentY(7) + IGui.TEXT_PADDING, IGui.ARGB_WHITE);
+                graphicsHolder.drawCenteredText(TranslationProvider.GUI_MTR_OFFSET_Y.getMutableText(lift.getOffsetY()),
+                        IGui.PANEL_WIDTH / 2, yte$contentY(8) + IGui.TEXT_PADDING, IGui.ARGB_WHITE);
+                graphicsHolder.drawCenteredText(TranslationProvider.GUI_MTR_OFFSET_Z.getMutableText(lift.getOffsetZ()),
+                        IGui.PANEL_WIDTH / 2, yte$contentY(9) + IGui.TEXT_PADDING, IGui.ARGB_WHITE);
                 break;
             case TAB_MOTION:
                 if (yte$directionParametersLinked) {
@@ -552,6 +564,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         final double adoDistance = values[4];
         final double levellingDistance = values[5];
         final double levellingSpeed = values[6];
+        final String liftNumber = yte$liftNumberField.getText2().trim();
 
         if (upSpeed != yte$lastSentSpeed || downSpeed != yte$lastSentDownSpeed
                 || upAccel != yte$lastSentAccel || downAccel != yte$lastSentDownAccel
@@ -561,7 +574,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                 || levellingSpeed != yte$lastSentLevellingSpeed
                 || yte$doorHoldEnabled != yte$lastSentDoorHoldEnabled
                 || yte$doorButtonLightMode != yte$lastSentDoorButtonLightMode
-                || yte$floorCancelMode != yte$lastSentFloorCancelMode) {
+                || yte$floorCancelMode != yte$lastSentFloorCancelMode
+                || !liftNumber.equals(yte$lastSentLiftNumber)) {
             yte$lastSentSpeed = upSpeed;
             yte$lastSentDownSpeed = downSpeed;
             yte$lastSentAccel = upAccel;
@@ -574,14 +588,17 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
             yte$lastSentDoorHoldEnabled = yte$doorHoldEnabled;
             yte$lastSentDoorButtonLightMode = yte$doorButtonLightMode;
             yte$lastSentFloorCancelMode = yte$floorCancelMode;
+            yte$liftNumber = liftNumber;
+            yte$lastSentLiftNumber = liftNumber;
 
             final long liftId = lift.getId();
             final YteLiftConfig config = new YteLiftConfig(liftId, upSpeed, downSpeed, upAccel, downAccel,
                     yte$directionParametersLinked, adoDistance, levellingDistance, levellingSpeed, yte$motionProfile,
-                    yte$doorHoldEnabled, yte$doorButtonLightMode, yte$floorCancelMode, false);
+                    yte$doorHoldEnabled, yte$doorButtonLightMode, yte$floorCancelMode, false, liftNumber);
             YteLiftConfigStore.put(liftId, upSpeed, downSpeed, upAccel, downAccel,
                     adoDistance, levellingDistance, levellingSpeed, yte$motionProfile, yte$doorHoldEnabled,
                     yte$doorButtonLightMode, yte$floorCancelMode, false);
+            YteLiftConfigStore.setLiftNumber(liftId, liftNumber);
 
             final YteUpdateDataRequest request = new YteUpdateDataRequest(
                     config, YteMinecraftClientData.getInstance());
@@ -618,15 +635,23 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique
     private static TextFieldWidgetExtension yte$createNumberField(double value) {
         final TextFieldWidgetExtension field = new TextFieldWidgetExtension(0, 0, 0, IGui.SQUARE_SIZE, 12, TextCase.DEFAULT, null, "0");
+        field.setWidth2(IGui.PANEL_WIDTH - IGui.TEXT_FIELD_PADDING);
         field.setText2(Double.toString(value));
         return field;
     }
 
     @Unique
+    private static TextFieldWidgetExtension yte$createLiftNumberField() {
+        final TextFieldWidgetExtension field = new TextFieldWidgetExtension(0, 0, 0, IGui.SQUARE_SIZE, 4, TextCase.DEFAULT, null, "");
+        field.setWidth2(IGui.PANEL_WIDTH - IGui.TEXT_FIELD_PADDING);
+        return field;
+    }
+
+    @Unique
     private void yte$positionField(TextFieldWidgetExtension field, int row) {
-        field.setX2(0);
+        field.setX2(IGui.TEXT_FIELD_PADDING / 2);
         field.setY2(yte$contentY(row));
-        field.setWidth2(IGui.PANEL_WIDTH);
+        field.setWidth2(IGui.PANEL_WIDTH - IGui.TEXT_FIELD_PADDING);
     }
 
     @Unique
@@ -768,7 +793,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
 
     @Unique
     private void yte$updateModeWidgets() {
-        final boolean sizeTab = yte$activeTab == TAB_SIZE;
+        final boolean sizeTab = yte$activeTab == TAB_BASE;
         final boolean motionTab = yte$activeTab == TAB_MOTION;
         final boolean levelTab = yte$activeTab == TAB_LEVEL;
         final boolean doorTab = yte$activeTab == TAB_DOOR;
@@ -790,6 +815,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         buttonLiftStyle.setVisibleMapped(sizeTab);
         buttonRotateAnticlockwise.setVisibleMapped(sizeTab);
         buttonRotateClockwise.setVisibleMapped(sizeTab);
+        yte$liftNumberField.setVisibleMapped(sizeTab);
 
         // 专业模式为全局 footer（运行/平层标签下显示），其余模式开关仅属于运行标签
         yte$professionalModeButton.setVisibleMapped(motionTab || levelTab);
