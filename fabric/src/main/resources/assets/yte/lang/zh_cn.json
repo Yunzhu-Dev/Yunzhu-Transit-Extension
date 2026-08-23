@@ -453,5 +453,10 @@
   "gui.yte.door_curve_ease_in_out": "门动画曲线：缓入缓出",
   "gui.yte.door_curve_ease_in_linear": "门动画曲线：缓入匀速",
   "gui.yte.lift_hold_open": "延时关门",
+  "gui.yte.lift_number": "电梯编号",
+  "gui.yte.lift_tab_base": "基础",
+  "gui.yte.lift_tab_motion": "运行",
+  "gui.yte.lift_tab_level": "平层",
+  "gui.yte.lift_tab_door": "门控",
   "block.yte.lift_track_magnetic_vane": "电梯快速区间隔磁板"
 }

@@ -3,7 +3,6 @@ package top.xfunny.mod.item;
 import org.mtr.mapping.holder.*;
 import org.mtr.mapping.mapper.ItemExtension;
 import org.mtr.mod.generated.lang.TranslationProvider;
-import top.xfunny.mod.block.base.LiftButtonsBase;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -44,17 +43,8 @@ public abstract class YTEItemBlockClickingBase extends ItemExtension {
                     final Block blockEnd = world.getBlockState(posEnd).getBlock();
                     final Block blockStart = world.getBlockState(posStart).getBlock();
 
-                    boolean triggerThirdClick = false;
-
-                    // [修复] 只有当两个点都是 LiftButtonsBase，且 allowPress 相反时，才触发三点模式
-                    if (blockEnd.data instanceof LiftButtonsBase && blockStart.data instanceof LiftButtonsBase) {
-                        boolean endAllowPress = ((LiftButtonsBase) blockEnd.data).allowPress;
-                        boolean startAllowPress = ((LiftButtonsBase) blockStart.data).allowPress;
-
-                        if (endAllowPress != startAllowPress) {
-                            triggerThirdClick = true;
-                        }
-                    }
+                    // [修复] 按钮↔屏幕(allowPress 相反)，或按钮/屏幕↔键盘(目的地终端) 时触发三点批量模式
+                    final boolean triggerThirdClick = isValidButtonDisplayPair(blockEnd.data, blockStart.data);
 
                     if (triggerThirdClick) {
                         compoundTag.putLong(TAG_SECOND_POS, posStart.asLong());
@@ -91,4 +81,17 @@ public abstract class YTEItemBlockClickingBase extends ItemExtension {
     protected abstract void onEndClick(ItemUsageContext context, BlockPos posEnd, CompoundTag compoundTag);
     protected abstract void onThirdClick(ItemUsageContext context, BlockPos pos1, BlockPos pos2, BlockPos pos3, CompoundTag compoundTag);
     protected abstract boolean clickCondition(ItemUsageContext context);
+
+    /**
+     * 判断两个方块是否构成合法的批量配对。
+     * <p>
+     * 支持：
+     * <ul>
+     *   <li>按钮(LiftButtonsBase allowPress=true) ↔ 屏幕/到站灯(LiftButtonsBase allowPress=false)</li>
+     *   <li>目的地终端(LiftDestinationDispatchTerminalBase) ↔ 按钮/屏幕(LiftButtonsBase)</li>
+     * </ul>
+     */
+    protected static boolean isValidButtonDisplayPair(Object dataA, Object dataB) {
+        return LinkerValidTypes.isValidConnection(dataA, dataB);
+    }
 }

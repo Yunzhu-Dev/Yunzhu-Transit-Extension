@@ -202,7 +202,8 @@ public class RenderShanghaiMitsubishiLehy3Button1 extends BlockEntityRenderer<Sh
                         8.25F,
                         0xFFE77831);
                 liftFloorDisplayView.setDisplayLength(2, 0);
-                liftFloorDisplayView.setTextureId(String.format("shanghai_mitsubishi_lehy_3_button_1_display_%d", i));
+                liftFloorDisplayView.setTextureId(String.format("shanghai_mitsubishi_lehy_3_button_1_display_%d", i))
+                ;
                 liftFloorDisplayView.setWidth(1.4F / 16);
                 liftFloorDisplayView.setHeight(1.7F / 16);
                 liftFloorDisplayView.setMargin(0, 0, 0.2F / 16, 0);
@@ -221,17 +222,12 @@ public class RenderShanghaiMitsubishiLehy3Button1 extends BlockEntityRenderer<Sh
                 liftArrowView.setColor(0xFFE77831);
 
 
-
                 final LinearLayout numberLayout = new LinearLayout(true);
                 numberLayout.setBasicsAttributes(world, blockPos);
                 numberLayout.setWidth(LayoutSize.WRAP_CONTENT);
                 numberLayout.setHeight(LayoutSize.WRAP_CONTENT);
-
-
-
                 numberLayout.addChild(liftArrowView);
                 numberLayout.addChild(liftFloorDisplayView);
-
 
                 if (reverseRendering) {
                     screenLayout.addChild(numberLayout);

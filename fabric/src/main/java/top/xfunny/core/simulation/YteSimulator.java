@@ -14,6 +14,8 @@ import top.xfunny.core.data.YteCoreLogger;
 import top.xfunny.core.data.YteData;
 import top.xfunny.core.data.YteLiftConfig;
 import top.xfunny.core.servlet.YteOperationProcessor;
+import top.xfunny.mod.config.YteLiftConfigStore;
+import top.xfunny.mod.lift.LiftDoorControlState;
 
 import java.nio.file.Path;
 import java.util.Set;
@@ -97,7 +99,8 @@ public class YteSimulator extends YteData implements Utilities {
         if (!orphans.isEmpty()) {
             orphans.forEach(config -> {
                 liftConfigs.remove(config);
-                top.xfunny.mod.lift.LiftDoorControlState.remove(config.getId());
+                LiftDoorControlState.remove(config.getId());
+                YteLiftConfigStore.remove(config.getId());
             });
             sync();
             save();

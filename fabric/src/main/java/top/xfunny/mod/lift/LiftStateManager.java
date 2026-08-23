@@ -1,4 +1,4 @@
-package top.xfunny.mod.util;
+package top.xfunny.mod.lift;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

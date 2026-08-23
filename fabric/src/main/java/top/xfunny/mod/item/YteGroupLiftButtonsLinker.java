@@ -81,8 +81,6 @@ public class YteGroupLiftButtonsLinker extends YTEItemBlockClickingBase implemen
                 }
                 break;
             } else if (isStartTrackBase ^ isEndTrackBase) {
-                Init.LOGGER.info(posEnd.toShortString());
-
                 // Count current pair before connecting (supports both directions)
                 final boolean isCurrentStartTrackFloor = world.getBlockState(posStart).getBlock().data instanceof BlockLiftTrackFloor;
                 final boolean isCurrentEndTrackFloor = world.getBlockState(posEnd).getBlock().data instanceof BlockLiftTrackFloor;
@@ -156,14 +154,7 @@ public class YteGroupLiftButtonsLinker extends YTEItemBlockClickingBase implemen
                 // Count current pair before connecting
                 final Block blockEndPrev = world.getBlockState(pos2).getBlock();
                 final Block blockStartPrev = world.getBlockState(pos1).getBlock();
-                boolean isValidPair = false;
-                if (blockEndPrev.data instanceof LiftButtonsBase && blockStartPrev.data instanceof LiftButtonsBase) {
-                    boolean endAllowPress = ((LiftButtonsBase) blockEndPrev.data).allowPress;
-                    boolean startAllowPress = ((LiftButtonsBase) blockStartPrev.data).allowPress;
-                    if (endAllowPress != startAllowPress) {
-                        isValidPair = true;
-                    }
-                }
+                final boolean isValidPair = isValidButtonDisplayPair(blockEndPrev.data, blockStartPrev.data);
                 if (isValidPair) {
                     floorCount++;
                 }

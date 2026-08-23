@@ -451,6 +451,8 @@
   "gui.yte.lift_door_dwell_s_value": "Door hold: %s s",
   "gui.yte.lift_door_run_delay_ms": "Door run delay (ms)",
   "gui.yte.lift_door_run_delay_s_value": "Run delay: %s s",
+  "gui.yte.lift_recovery_speed": "Rescue speed (m/s)",
+  "gui.yte.lift_recovery_speed_value": "Rescue speed: %s m/s",
   "gui.yte.door_curve_linear": "Door curve: Linear",
   "gui.yte.door_curve_smoothstep": "Door curve: Smoothstep",
   "gui.yte.door_curve_ease_in": "Door curve: Ease in",
@@ -458,5 +460,10 @@
   "gui.yte.door_curve_ease_in_out": "Door curve: Ease in-out",
   "gui.yte.door_curve_ease_in_linear": "Door curve: Ease in + linear",
   "gui.yte.lift_hold_open": "HOLD",
+  "gui.yte.lift_number": "Lift Number",
+  "gui.yte.lift_tab_base": "Base",
+  "gui.yte.lift_tab_motion": "Motion",
+  "gui.yte.lift_tab_level": "Level",
+  "gui.yte.lift_tab_door": "Doors",
   "block.yte.lift_track_magnetic_vane": "Lift Express-Zone Magnetic Vane"
 }

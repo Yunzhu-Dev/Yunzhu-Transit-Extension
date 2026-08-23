@@ -93,7 +93,7 @@ public class RenderToshibaScreen2<T extends LiftPanelBase.BlockEntityBase> exten
                         0xFFFF0000);
                 liftFloorDisplayView.setTextureId(String.format("toshiba_screen_2_display_%d", i));
                 liftFloorDisplayView.setWidth(2.6F / 16);
-                liftFloorDisplayView.setHeight(1.4F / 16);
+                liftFloorDisplayView.setHeight(2.8F / 16);
                 liftFloorDisplayView.setGravity(Gravity.CENTER_VERTICAL);
                 liftFloorDisplayView.setTextAlign(TextView.HorizontalTextAlign.RIGHT);
                 liftFloorDisplayView.setDisplayLength(3, 0);

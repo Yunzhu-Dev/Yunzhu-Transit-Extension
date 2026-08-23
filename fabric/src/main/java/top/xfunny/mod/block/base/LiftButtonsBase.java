@@ -91,7 +91,6 @@ public abstract class LiftButtonsBase extends BlockExtension implements Directio
                 final DefaultButtonsKeyMapping keyMapping = data.getKeyMapping();
                 final String focusButton = keyMapping.mapping(TransformPositionX.transform(MathHelper.fractionalPart(hit.getPos().getXMapped()), MathHelper.fractionalPart(hit.getPos().getZMapped()), IBlock.getStatePropertySafe(state, FACING)), hitY);
 
-                Init.LOGGER.info(focusButton);
 
                 if (unlocked) {
                     if (world.isClient() && !focusButton.equals("null")) {
@@ -152,7 +151,6 @@ public abstract class LiftButtonsBase extends BlockExtension implements Directio
                     }
                     return ActionResult.SUCCESS;
                 } else {
-                    System.out.println(this.allowPress); // [修复] 使用 this.allowPress
                     return ActionResult.FAIL;
                 }
             }

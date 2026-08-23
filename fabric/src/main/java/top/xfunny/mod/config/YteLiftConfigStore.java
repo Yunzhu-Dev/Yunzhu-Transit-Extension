@@ -1,5 +1,6 @@
 package top.xfunny.mod.config;
 
+import top.xfunny.core.data.YteLiftConfig;
 import top.xfunny.mod.lift.DoorMotionCurve;
 import top.xfunny.mod.lift.LiftDoorButtonLightMode;
 import top.xfunny.mod.lift.LiftFloorCancelMode;
@@ -31,6 +32,8 @@ public final class YteLiftConfigStore {
     private static final Map<Long, Long> doorDwellMsMap = new ConcurrentHashMap<>();
     private static final Map<Long, Long> doorRunDelayMsMap = new ConcurrentHashMap<>();
     private static final Map<Long, DoorMotionCurve> doorCurveMap = new ConcurrentHashMap<>();
+    private static final Map<Long, Double> recoverySpeedMap = new ConcurrentHashMap<>();
+    private static final Map<Long, String> liftNumberMap = new ConcurrentHashMap<>();
 
     private static final double DEFAULT_SPEED = 10.0;
     private static final double DEFAULT_ACCELERATION = 4.0;
@@ -43,30 +46,6 @@ public final class YteLiftConfigStore {
     private static final long DEFAULT_DOOR_RUN_DELAY_MS = 500;
 
     private YteLiftConfigStore() {}
-
-    public static void put(long liftId, double speed, double acceleration, double adoDistance, double levellingDistance, double levellingSpeed) {
-        put(liftId, speed, speed, acceleration, acceleration, adoDistance, levellingDistance, levellingSpeed);
-    }
-
-    public static void put(long liftId, double upSpeed, double downSpeed, double upAcceleration, double downAcceleration,
-            double adoDistance, double levellingDistance, double levellingSpeed) {
-        put(liftId, upSpeed, downSpeed, upAcceleration, downAcceleration,
-                adoDistance, levellingDistance, levellingSpeed, LiftMotionProfile.STANDARD);
-    }
-
-    public static void put(long liftId, double upSpeed, double downSpeed, double upAcceleration, double downAcceleration,
-            double adoDistance, double levellingDistance, double levellingSpeed, LiftMotionProfile motionProfile) {
-        put(liftId, upSpeed, downSpeed, upAcceleration, downAcceleration,
-                adoDistance, levellingDistance, levellingSpeed, motionProfile, false);
-    }
-
-    public static void put(long liftId, double upSpeed, double downSpeed, double upAcceleration, double downAcceleration,
-            double adoDistance, double levellingDistance, double levellingSpeed, LiftMotionProfile motionProfile,
-            boolean doorHoldEnabled) {
-        put(liftId, upSpeed, downSpeed, upAcceleration, downAcceleration, adoDistance, levellingDistance,
-                levellingSpeed, motionProfile, doorHoldEnabled, LiftDoorButtonLightMode.MOMENTARY,
-                LiftFloorCancelMode.DOUBLE_CLICK, false);
-    }
 
     public static void put(long liftId, double upSpeed, double downSpeed, double upAcceleration, double downAcceleration,
             double adoDistance, double levellingDistance, double levellingSpeed, LiftMotionProfile motionProfile,
@@ -185,6 +164,33 @@ public final class YteLiftConfigStore {
         doorCurveMap.put(liftId, curve);
     }
 
+    public static void putRecoverySpeed(long liftId, double recoverySpeed) {
+        recoverySpeedMap.put(liftId, recoverySpeed);
+    }
+
+    /** 急停救援就近平层速度（m/s），读端 clamp [0.1, 1.0]。 */
+    public static double getRecoverySpeed(long liftId) {
+        return Math.max(YteLiftConfig.MIN_RECOVERY_SPEED,
+                Math.min(YteLiftConfig.MAX_RECOVERY_SPEED,
+                        recoverySpeedMap.getOrDefault(liftId, YteLiftConfig.DEFAULT_RECOVERY_SPEED)));
+    }
+
+    /**
+     * 电梯编号（备注别名，非 MTR 的 liftId）。
+     * 未设置时返回空字符串。
+     */
+    public static String getLiftNumber(long liftId) {
+        return liftNumberMap.getOrDefault(liftId, "");
+    }
+
+    public static void setLiftNumber(long liftId, String liftNumber) {
+        if (liftNumber == null || liftNumber.isEmpty()) {
+            liftNumberMap.remove(liftId);
+        } else {
+            liftNumberMap.put(liftId, liftNumber);
+        }
+    }
+
     public static void remove(long liftId) {
         speedMap.remove(liftId);
         accelerationMap.remove(liftId);
@@ -198,11 +204,13 @@ public final class YteLiftConfigStore {
         doorButtonLightModeMap.remove(liftId);
         floorCancelModeMap.remove(liftId);
         floorCancelWhileMovingMap.remove(liftId);
+        liftNumberMap.remove(liftId);
         doorOpenMsMap.remove(liftId);
         doorCloseMsMap.remove(liftId);
         doorDwellMsMap.remove(liftId);
         doorRunDelayMsMap.remove(liftId);
         doorCurveMap.remove(liftId);
+        recoverySpeedMap.remove(liftId);
     }
 
     public static void clear() {
@@ -218,10 +226,12 @@ public final class YteLiftConfigStore {
         doorButtonLightModeMap.clear();
         floorCancelModeMap.clear();
         floorCancelWhileMovingMap.clear();
+        liftNumberMap.clear();
         doorOpenMsMap.clear();
         doorCloseMsMap.clear();
         doorDwellMsMap.clear();
         doorRunDelayMsMap.clear();
         doorCurveMap.clear();
+        recoverySpeedMap.clear();
     }
 }

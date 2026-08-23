@@ -16,6 +16,7 @@ import org.mtr.mod.data.IGui;
 import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.block.ThyssenKruppS001Button1WithoutScreen;
 import top.xfunny.mod.block.base.LiftButtonsBase;
+import top.xfunny.mod.client.sound.SoundPlaybackManager;
 import top.xfunny.mod.client.view.*;
 import top.xfunny.mod.client.view.view_group.FrameLayout;
 import top.xfunny.mod.client.view.view_group.LinearLayout;
@@ -128,6 +129,7 @@ public class RenderThyssenKruppS001Button1WithoutScreen extends BlockEntityRende
         buttonUpLight.setDefaultColor(DEFAULT_COLOR);
         buttonUpLight.setHoverColor(HOVER_COLOR);
         buttonUpLight.setPressedColor(PRESSED_COLOR);
+        SoundPlaybackManager.registerButtonSound(buttonUpLight,"tke_stepc_button_1");
 
         ImageView buttonDown = new ImageView();
         buttonDown.setBasicsAttributes(world, blockPos);
@@ -148,6 +150,7 @@ public class RenderThyssenKruppS001Button1WithoutScreen extends BlockEntityRende
         buttonDownLight.setHoverColor(HOVER_COLOR);
         buttonDownLight.setPressedColor(PRESSED_COLOR);
         buttonDownLight.setFlip(false, true);
+        SoundPlaybackManager.registerButtonSound(buttonDownLight,"tke_stepc_button_1");
 
         final LineComponent line = new LineComponent();
         line.setBasicsAttributes(world, blockPos);

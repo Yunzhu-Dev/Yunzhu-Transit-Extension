@@ -65,44 +65,63 @@ public class SchindlerZLine3Keypad1 extends LiftDestinationDispatchTerminalBase 
                 || player.isHolding(Items.YTE_GROUP_LIFT_BUTTONS_LINK_CONNECTOR.get())
                 || player.isHolding(Items.YTE_GROUP_LIFT_BUTTONS_LINK_REMOVER.get())) {
             return ActionResult.PASS;
+        }else{
+            final boolean unlocked = IBlock.getStatePropertySafe(state, UNLOCKED);
+
+            if(unlocked) {
+                // 按键处理仅在客户端执行
+                if (!world.isClient()) {
+                    return ActionResult.SUCCESS;
+                }
+
+                final double hitY = MathHelper.fractionalPart(hit.getPos().getYMapped());
+
+                final org.mtr.mapping.holder.BlockEntity blockEntity = world.getBlockEntity(pos);
+                if (blockEntity == null || !(blockEntity.data instanceof BlockEntityBase)) {
+                    return ActionResult.FAIL;
+                }
+                BlockEntityBase data = (BlockEntityBase) blockEntity.data;
+
+                if (!(blockEntity.data instanceof BlockEntity)) {
+                    return ActionResult.FAIL;
+                }
+                BlockEntity data1 = (BlockEntity) blockEntity.data;
+
+                final DefaultButtonsKeyMapping keyMapping = data.getKeyMapping();
+                final String output = keyMapping.mapping(
+                        TransformPositionX.transform(
+                                MathHelper.fractionalPart(hit.getPos().getXMapped()),
+                                MathHelper.fractionalPart(hit.getPos().getZMapped()),
+                                IBlock.getStatePropertySafe(state, FACING)),
+                        hitY);
+
+                processKeyInput(world, pos, data1, data, output);
+                return ActionResult.SUCCESS;
+            } else{
+                return ActionResult.FAIL;
+            }
+
+
+
+
+
         }
 
-        // 按键处理仅在客户端执行
-        if (!world.isClient()) {
-            return ActionResult.SUCCESS;
-        }
 
-        final double hitY = MathHelper.fractionalPart(hit.getPos().getYMapped());
-
-        final org.mtr.mapping.holder.BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (blockEntity == null || !(blockEntity.data instanceof BlockEntityBase)) {
-            return ActionResult.FAIL;
-        }
-        BlockEntityBase data = (BlockEntityBase) blockEntity.data;
-
-        if (!(blockEntity.data instanceof BlockEntity)) {
-            return ActionResult.FAIL;
-        }
-        BlockEntity data1 = (BlockEntity) blockEntity.data;
-
-        final DefaultButtonsKeyMapping keyMapping = data.getKeyMapping();
-        final String output = keyMapping.mapping(
-                TransformPositionX.transform(
-                        MathHelper.fractionalPart(hit.getPos().getXMapped()),
-                        MathHelper.fractionalPart(hit.getPos().getZMapped()),
-                        IBlock.getStatePropertySafe(state, FACING)),
-                hitY);
-
-        processKeyInput(world, pos, data1, data, output);
-        return ActionResult.SUCCESS;
     }
 
     // ======================== 按键处理（状态机） ========================
 
     private static final Map<String, Integer> NUMBER_KEYS = new HashMap<String, Integer>() {{
-        put("number1", 1); put("number2", 2); put("number3", 3);
-        put("number4", 4); put("number5", 5); put("number6", 6);
-        put("number7", 7); put("number8", 8); put("number9", 9);
+        put("number1", 1);
+        put("number2", 2);
+        put("number3", 3);
+        put("number4", 4);
+        put("number5", 5);
+        put("number6", 6);
+        put("number7", 7);
+        put("number8", 8);
+        put("number9", 9);
         put("number0", 0);
     }};
 

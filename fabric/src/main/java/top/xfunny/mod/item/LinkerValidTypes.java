@@ -2,6 +2,8 @@ package top.xfunny.mod.item;
 
 import org.mtr.mod.block.BlockLiftTrackFloor;
 import top.xfunny.mod.block.*;
+import top.xfunny.mod.block.base.LiftButtonsBase;
+import top.xfunny.mod.block.base.LiftDestinationDispatchTerminalBase;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -334,7 +336,23 @@ public class LinkerValidTypes {
             ThyssenKruppS001Button1.class,
             ThyssenKruppS001Button1WithoutScreen.class,
             ThyssenKruppSF000Screen1Odd.class,
-            ThyssenKruppSF000Screen1Even.class,
-            SchindlerZLine3Keypad1.class
+            ThyssenKruppSF000Screen1Even.class
     ));
+
+    /**
+     * 判断两个方块是否构成合法的连接配对。
+     * <p>
+     * 规则：禁止 false↔false、禁止 true↔true；只允许按钮↔屏幕/键盘。
+     * <ul>
+     *   <li>按钮(LiftButtonsBase allowPress=true) ↔ 屏幕/到站灯(LiftButtonsBase allowPress=false)</li>
+     *   <li>键盘/目的地终端(LiftDestinationDispatchTerminalBase) ↔ 按钮/屏幕(LiftButtonsBase)</li>
+     * </ul>
+     */
+    public static boolean isValidConnection(Object dataA, Object dataB) {
+        if (dataA instanceof LiftButtonsBase && dataB instanceof LiftButtonsBase) {
+            return ((LiftButtonsBase) dataA).allowPress != ((LiftButtonsBase) dataB).allowPress;
+        }
+        return (dataA instanceof LiftButtonsBase && dataB instanceof LiftDestinationDispatchTerminalBase)
+                || (dataA instanceof LiftDestinationDispatchTerminalBase && dataB instanceof LiftButtonsBase);
+    }
 }

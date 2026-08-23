@@ -2,6 +2,7 @@ package top.xfunny.core.data;
 
 import org.mtr.libraries.it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import top.xfunny.mod.config.YteLiftConfigStore;
 
 public abstract class YteData {
 
@@ -13,15 +14,17 @@ public abstract class YteData {
             liftConfigIdMap.clear();
             liftConfigs.forEach(config -> {
                 liftConfigIdMap.put(config.getId(), config);
-                top.xfunny.mod.config.YteLiftConfigStore.put(
+                YteLiftConfigStore.put(
                         config.getId(), config.getUpSpeed(), config.getDownSpeed(),
                         config.getUpAcceleration(), config.getDownAcceleration(), config.getAdoDistance(),
                         config.getLevellingDistance(), config.getLevellingSpeed(), config.getMotionProfile(),
                         config.isDoorHoldEnabled(), config.getDoorButtonLightMode(), config.getFloorCancelMode(),
                         config.isFloorCancelWhileMovingAllowed());
-                top.xfunny.mod.config.YteLiftConfigStore.putDoorParams(
+                top.xfunny.mod.config.YteLiftConfigStore.setLiftNumber(config.getId(), config.getLiftNumber());
+                YteLiftConfigStore.putDoorParams(
                         config.getId(), config.getDoorOpenMs(), config.getDoorCloseMs(),
                         config.getDoorDwellMs(), config.getDoorRunDelayMs(), config.getDoorCurve());
+                YteLiftConfigStore.putRecoverySpeed(config.getId(), config.getRecoverySpeed());
             });
         } catch (Exception e) {
             YteCoreLogger.error("YteData sync error", e);

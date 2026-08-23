@@ -1,6 +1,7 @@
 package top.xfunny.mod.item;
 
 import org.mtr.mapping.holder.*;
+import org.mtr.mapping.mapper.TextHelper;
 import org.mtr.mod.block.BlockLiftButtons;
 import org.mtr.mod.block.BlockLiftPanelBase;
 import org.mtr.mod.block.BlockLiftTrackFloor;
@@ -51,6 +52,22 @@ public class YteLiftButtonsLinker extends ItemBlockClickingBase {
     protected void onEndClick(ItemUsageContext context, BlockPos posEnd, CompoundTag compoundTag) {
         final World world = context.getWorld();
         final BlockPos posStart = context.getBlockPos();
+
+        // [修复] 连接器（非移除器）禁止 false↔false、true↔true，只允许按钮↔屏幕/键盘
+        if (isConnector) {
+            final Object startData = world.getBlockState(posStart).getBlock().data;
+            final Object endData = world.getBlockState(posEnd).getBlock().data;
+            final boolean startIsButtonLike = startData instanceof LiftButtonsBase || startData instanceof LiftDestinationDispatchTerminalBase;
+            final boolean endIsButtonLike = endData instanceof LiftButtonsBase || endData instanceof LiftDestinationDispatchTerminalBase;
+            if (startIsButtonLike && endIsButtonLike && !LinkerValidTypes.isValidConnection(startData, endData)) {
+                final PlayerEntity playerEntity = context.getPlayer();
+                if (playerEntity != null) {
+                    playerEntity.sendMessage(Text.cast(TextHelper.translatable("message.linker_status_failed")), true);
+                }
+                return;
+            }
+        }
+
         connect(world, posStart, posEnd, isConnector);
         connect(world, posEnd, posStart, isConnector);
     }

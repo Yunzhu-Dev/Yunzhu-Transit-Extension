@@ -33,16 +33,20 @@ body:
     id: steps-to-reproduce
     attributes:
       label: |
-        复现步骤 / Steps to Reproduce
+        Bug复现步骤 / Steps to Reproduce the program exception
       description: |
-        一步步说明如何复现该问题，越详细越好<br>
-        Provide step-by-step instructions on how to reproduce the issue; the more detailed, the better.
+        请您在这片文本框里，把重现那个问题的每一步细细地写下来吧。若问题无法稳定复现，请在表单末尾附上发生时的运行日志<br>
+        Please describe in detail in the text box below the steps to reproduce this issue; the more detailed, the better.<br>
+        If the issue cannot be reliably reproduced, please attach and upload the game log at the end of the form.
       placeholder: |
-        1. 启动游戏，进入世界（或服务器）
-        2. 执行操作 ...
-        3. 观察到异常 ...
+        1. 启动游戏，进入世界或服务器
+         Launch the game and enter the world or server.
+        2. 执行操作……
+         Perform the operations...
+        3. 观察到异常现象……
+         Observe the abnormal behavior...
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: expected-behavior

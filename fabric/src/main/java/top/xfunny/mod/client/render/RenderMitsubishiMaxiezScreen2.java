@@ -98,7 +98,7 @@ public class RenderMitsubishiMaxiezScreen2<T extends LiftPanelBase.BlockEntityBa
                         FontList.instance.getFont("gill_sans_mt_light"),
                         12,
                         0xFFBBBBBB);
-                liftFloorDisplayView.setTextureId("mitsubishi_maxiez_screen_2_display_%d_%s");
+                liftFloorDisplayView.setTextureId(String.format("mitsubishi_maxiez_screen_2_display_%d_%s", i, blockEntity.getPos2().asLong()));
                 liftFloorDisplayView.setWidth(1.9F / 16);
                 liftFloorDisplayView.setHeight(1.5F / 16);
                 liftFloorDisplayView.setGravity(Gravity.CENTER_VERTICAL);

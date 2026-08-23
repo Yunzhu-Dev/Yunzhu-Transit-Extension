@@ -23,6 +23,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import top.xfunny.mod.block.LiftTrackMagneticVane;
+import top.xfunny.mod.lift.LiftDoorControlState;
 import top.xfunny.mod.lift.LiftDisplayDirection;
 import top.xfunny.mod.util.LiftTrackMagneticVaneDisplayHelper;
 
@@ -36,7 +37,7 @@ public abstract class MixinRenderLifts {
     @Redirect(method = "lambda$render$6", at = @At(value = "INVOKE",
             target = "Lorg/mtr/core/data/Lift;getDoorValue()F"), require = 4)
     private static float yte$fullCurveDoorValue(Lift lift) {
-        return lift.getDoorValue() * 0.75F;
+        return lift.getDoorValue() * (float) LiftDoorControlState.DOOR_MAX_OPEN_SCALE;
     }
 
     @Inject(method = "render", at = @At("TAIL"))

@@ -395,10 +395,13 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
         if (lift == null || !yte$isStoppedAtFloor(lift)) {
             return;
         }
-        final float doorValue = Math.max(0, Math.min(lift.getDoorValue(), 1));
-        if (doorValue >= 0.999F) {
-            ((MixinLiftSchema) lift).setStoppingCoolDown(
-                    YteLiftConfigStore.getDoorParams(liftId).closeStartCoolDown());
+        // ponytail: 用 coolDown 相位区间判定「门已全开」，取代平滑后的浮点门值，
+        // 避免门值因临界阻尼平滑暂时 <0.999 而漏判、退回网络往返造成偶发延迟
+        final MixinLiftSchema schema = (MixinLiftSchema) lift;
+        final YteLiftConfigStore.DoorParams p = YteLiftConfigStore.getDoorParams(liftId);
+        final long coolDown = schema.getStoppingCoolDown();
+        if (coolDown > p.closeStartCoolDown() && coolDown <= p.fullOpenCoolDown()) {
+            schema.setStoppingCoolDown(p.closeStartCoolDown());
         }
     }
 
@@ -410,24 +413,25 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
         }
 
         final MixinLiftSchema schema = (MixinLiftSchema) lift;
-        final YteLiftConfigStore.DoorParams doorParams = YteLiftConfigStore.getDoorParams(liftId);
+        final YteLiftConfigStore.DoorParams p = YteLiftConfigStore.getDoorParams(liftId);
         final long coolDown = schema.getStoppingCoolDown();
-        final float doorValue = Math.max(0, Math.min(lift.getDoorValue(), 1));
+        final LiftDoorControlState.DoorState phase = LiftDoorControlState.getDoorState(coolDown, p);
 
         // HOLD 在门已关时无可重置，忽略
-        if (command == LiftDoorControlState.Command.HOLD_OPEN && doorValue <= 0) {
+        if (command == LiftDoorControlState.Command.HOLD_OPEN && phase == LiftDoorControlState.DoorState.CLOSED) {
             return;
         }
 
-        if (doorValue >= 1) {
-            schema.setStoppingCoolDown(doorParams.fullOpenCoolDown());
-        } else if (doorValue <= 0 && coolDown <= doorParams.runDelay) {
-            schema.setStoppingCoolDown(doorParams.total());
+        if (phase == LiftDoorControlState.DoorState.FULLY_OPEN) {
+            schema.setStoppingCoolDown(p.fullOpenCoolDown());
+        } else if (coolDown <= p.runDelay) {
+            // 刚关（CLOSED 下半段）：本地立即开门；其余（开门中 / 关门中）不做本地动作，
+            // 等待服务端同步，避免前后跳动
+            schema.setStoppingCoolDown(p.total());
             if (schema.getInstructions().isEmpty()) {
                 LiftDisplayDirectionState.get(liftId).resetForIdleDoorCycle();
             }
         }
-        // 关门中（v ∈ (0,1) 且 coolDown ≤ closeStart）：不做本地反向，等服务端反向同步，避免前后跳动
     }
 
     @Unique

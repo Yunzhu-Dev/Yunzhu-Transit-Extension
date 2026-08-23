@@ -7,7 +7,14 @@ package top.xfunny.mod.lift;
  */
 public interface LiftDoorMaintenance {
 
-	void yte$setMaintenanceOpen(boolean open);
+	/**
+	 * 切换检修开门状态并启动过渡动画。开门线性播放 {@code durationMs}；
+	 * 关门按时长与曲线套用该梯配置（由实现内部按 {@code liftId} 查询）。
+	 */
+	void yte$setMaintenanceOpen(boolean open, long liftId, long durationMs);
 
 	boolean yte$isMaintenanceOpen();
+
+	/** 是否存在尚未播完的过渡动画（供 S→C 回声包守卫）。 */
+	boolean yte$isMaintenanceAnimating();
 }
