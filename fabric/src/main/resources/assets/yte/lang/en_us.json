@@ -453,6 +453,8 @@
   "gui.yte.lift_door_run_delay_s_value": "Run delay: %s s",
   "gui.yte.lift_recovery_speed": "Rescue speed (m/s)",
   "gui.yte.lift_recovery_speed_value": "Rescue speed: %s m/s",
+  "gui.yte.lift_max_door_open_ms": "Max door open time (ms)",
+  "gui.yte.lift_max_door_open_s_value": "Max door open: %s s",
   "gui.yte.door_curve_linear": "Door curve: Linear",
   "gui.yte.door_curve_smoothstep": "Door curve: Smoothstep",
   "gui.yte.door_curve_ease_in": "Door curve: Ease in",

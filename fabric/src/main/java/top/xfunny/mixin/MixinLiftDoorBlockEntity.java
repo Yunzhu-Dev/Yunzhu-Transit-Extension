@@ -5,6 +5,9 @@ import org.mtr.core.data.LiftFloor;
 import org.mtr.mapping.holder.BlockPos;
 import org.mtr.mapping.holder.BlockState;
 import org.mtr.mapping.holder.BlockEntityType;
+import org.mtr.mapping.holder.BlockHitResult;
+import org.mtr.mapping.holder.ClientPlayerEntity;
+import org.mtr.mapping.holder.MinecraftClient;
 import org.mtr.mapping.mapper.BlockEntityExtension;
 import org.mtr.mod.block.BlockLiftDoor;
 import org.mtr.mod.block.BlockLiftDoorOdd;
@@ -15,7 +18,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import top.xfunny.mod.client.InitClient;
 import top.xfunny.mod.block.HitachiB85Door1;
 import top.xfunny.mod.block.KoneMDoor1;
 import top.xfunny.mod.block.MitsubishiNexWayDoor1;
@@ -23,8 +28,11 @@ import top.xfunny.mod.block.OtisE411USDoor1;
 import top.xfunny.mod.block.SchindlerQKS9Door1;
 import top.xfunny.mod.config.YteLiftConfigStore;
 import top.xfunny.mod.lift.DoorMotionCurve;
-import top.xfunny.mod.lift.LiftDoorControlState;
+import top.xfunny.mod.lift.LiftDoorState;
+import top.xfunny.mod.lift.LiftModeState;
 import top.xfunny.mod.lift.LiftDoorMaintenance;
+import top.xfunny.mod.packet.PacketLiftDoorCurtain;
+import top.xfunny.mod.util.LiftShaftLocator;
 
 @Mixin(value = BlockPSDAPGDoorBase.BlockEntityBase.class, remap = false)
 public abstract class MixinLiftDoorBlockEntity extends BlockEntityExtension implements LiftDoorMaintenance {
@@ -40,6 +48,86 @@ public abstract class MixinLiftDoorBlockEntity extends BlockEntityExtension impl
     private long yte$animDurationMs = 1;
     @Unique
     private DoorMotionCurve yte$animCurve = DoorMotionCurve.LINEAR;
+    /** 光幕客户端检测状态（每格独立，服务端去重）。 */
+    @Unique
+    private boolean yte$curtainLastBlocked;
+    @Unique
+    private long yte$curtainNextSendNanos;
+    @Unique
+    private Long yte$curtainLiftId;
+    @Unique
+    private long yte$nextAttackSendNanos;
+
+    /**
+     * 光幕客户端检测：本格碰撞盒微扩后与本地玩家相交即视为「玩家在门区域」，
+     * 状态变化立即上报、持续遮挡每秒心跳一次（C→S）。
+     */
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void yte$curtainDetect(float tickDelta, CallbackInfo ci) {
+        final org.mtr.mapping.holder.World world = getWorld2();
+        if (world == null || !world.isClient()) {
+            return;
+        }
+        final ClientPlayerEntity player = MinecraftClient.getInstance().getPlayerMapped();
+        if (player == null) {
+            return;
+        }
+        final BlockPos pos = getPos2();
+        final double px = player.getPos().getXMapped();
+        final double py = player.getPos().getYMapped();
+        final double pz = player.getPos().getZMapped();
+        final boolean blocked = px + 0.3 > pos.getX() && px - 0.3 < pos.getX() + 1
+                && py + 1.8 > pos.getY() && py < pos.getY() + 1
+                && pz + 0.3 > pos.getZ() && pz - 0.3 < pos.getZ() + 1;
+
+        final long now = System.nanoTime();
+
+        // 攻击门：左键按住且 1 格视线首命中本门 → 「手伸进门缝」脉冲（独立 250ms 节流，立即上报）
+        if (MinecraftClient.getInstance().getOptionsMapped().getKeyAttackMapped().isPressed()
+                && now >= yte$nextAttackSendNanos) {
+            final org.mtr.mapping.holder.HitResult hitResult = player.raycast(1.0, 0, false);
+            if (BlockHitResult.isInstance(hitResult)
+                    && BlockHitResult.cast(hitResult).getBlockPos().equals(getPos2())) {
+                yte$nextAttackSendNanos = now + 250_000_000L;
+                if (yte$curtainLiftId == null) {
+                    yte$curtainLiftId = LiftShaftLocator.findNearest(pos);
+                }
+                if (yte$curtainAllowed(yte$curtainLiftId)) {
+                    InitClient.REGISTRY_CLIENT.sendPacketToServer(
+                            new PacketLiftDoorCurtain(yte$curtainLiftId, true));
+                }
+            }
+        }
+
+        final boolean shouldSend = blocked != yte$curtainLastBlocked
+                || (blocked && now >= yte$curtainNextSendNanos);
+        if (!shouldSend) {
+            return;
+        }
+        if (blocked) {
+            yte$curtainNextSendNanos = now + 300_000_000L;
+        }
+        yte$curtainLastBlocked = blocked;
+        if (yte$curtainLiftId == null) {
+            yte$curtainLiftId = LiftShaftLocator.findNearest(pos);
+        }
+        if (yte$curtainAllowed(yte$curtainLiftId)) {
+            InitClient.REGISTRY_CLIENT.sendPacketToServer(
+                    new PacketLiftDoorCurtain(yte$curtainLiftId, blocked));
+        }
+    }
+
+    /**
+     * 锁定 / 模式过渡与执行期间整梯不接入光幕：客户端不上报遮挡（服务端 guard 为最终权威）。
+     */
+    @Unique
+    private static boolean yte$curtainAllowed(Long liftId) {
+        if (liftId == null) {
+            return false;
+        }
+        final LiftModeState.State modeState = LiftModeState.getOrCreate(liftId);
+        return !modeState.maintenanceLocked && !modeState.modePending && !modeState.modeActive;
+    }
 
     protected MixinLiftDoorBlockEntity(BlockEntityType<?> blockEntityType, BlockPos blockPos, BlockState blockState) {
         super(blockEntityType, blockPos, blockState);
@@ -196,11 +284,12 @@ public abstract class MixinLiftDoorBlockEntity extends BlockEntityExtension impl
             final long targetY = targetFloor.getPosition().getY();
             final long targetZ = targetFloor.getPosition().getZ();
             final double alignY = targetY + lift.getOffsetY();
-            final double horizontalRange = Math.max(lift.getWidth(), lift.getDepth()) / 2 + 1;
-            if (Math.abs(doorPos.getX() - targetX) <= horizontalRange
-                    && Math.abs(doorPos.getZ() - targetZ) <= horizontalRange
+            final double rangeX = lift.getWidth();
+            final double rangeZ = Math.max(lift.getWidth(), lift.getDepth()) / 2 + 1;
+            if (Math.abs(doorPos.getX() - targetX) <= rangeX
+                    && Math.abs(doorPos.getZ() - targetZ) <= rangeZ
                     && doorPos.getY() + 1 >= alignY - 2 && doorPos.getY() <= alignY + 2) {
-                doorValue = Math.max(doorValue, lift.getDoorValue() * LiftDoorControlState.DOOR_MAX_OPEN_SCALE);
+                doorValue = Math.max(doorValue, lift.getDoorValue() * LiftDoorState.DOOR_MAX_OPEN_SCALE);
             }
         }
         return doorValue;

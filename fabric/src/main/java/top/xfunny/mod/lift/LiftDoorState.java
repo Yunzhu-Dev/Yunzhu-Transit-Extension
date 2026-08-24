@@ -5,7 +5,11 @@ import top.xfunny.mod.config.YteLiftConfigStore;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public final class LiftDoorControlState {
+/**
+ * 门控运行时状态（每梯独立）：门相位、门命令、光幕、关门计时与最大开门时长强关。
+ * 电梯锁定/模式/救援/消防等非门状态见 {@link LiftModeState}。
+ */
+public final class LiftDoorState {
 
     public enum Command {
         OPEN,
@@ -13,7 +17,7 @@ public final class LiftDoorControlState {
         HOLD_OPEN
     }
 
-    /** Close timer sentinel: the door stays open indefinitely (fire/special mode). */
+    /** Close timer sentinel: the door stays open indefinitely (fire recall). */
     public static final long INFINITE_OPEN = -1;
 
     /** 层门/轿厢门渲染最大开度 = 满程的 75%（模型几何限制）。 */
@@ -44,15 +48,8 @@ public final class LiftDoorControlState {
         return DoorState.CLOSING;
     }
 
-    /**
-     * 故障隔离：联锁 / 待救援 / 救援中 任一为真即视为故障，从外呼派梯中分离
-     * （{@code MixinLift} 的 pressButton 注入据此拒绝调度）。未来新增故障源时并入此链。
-     */
-    public static boolean isIsolated(long liftId) {
-        final DoorQueue queue = QUEUES.get(liftId);
-        return queue != null && (queue.maintenanceLocked
-                || queue.maintenanceRecoveryPending || queue.recovering);
-    }
+    /** 光幕盲区：门值低于此阈值后光幕全部失效（门必然关死）。 */
+    public static final double CURTAIN_MIN_DOOR_VALUE = 0.1;
 
     /**
      * Per-lift door message queue. Server-authoritative, processed by
@@ -66,16 +63,22 @@ public final class LiftDoorControlState {
         public long closeRemainingMs;
         /** Current door state; transitions into FULLY_OPEN / CLOSED are the two door events. */
         public DoorState doorState = DoorState.CLOSED;
-        /** 联锁：某层门被三角钥匙手动打开 → 轿厢禁止运行，直到层门关闭。 */
-        public boolean maintenanceLocked;
-        /** 上锁/解锁后待执行的指令清空（下一服务端 tick 生效，按钮灯随之熄灭）。 */
-        public boolean instructionPurgePending;
-        /** 解锁后等待层门关闭动画播完（closeMs），再进入就近平层救援。 */
-        public boolean maintenanceRecoveryPending;
-        public long recoveryCloseDelayMs;
-        /** 救援模式：低速就近平层，门循环完成后解除。 */
-        public boolean recovering;
+        /** 光幕区域有效期截至的时间戳（0=门区内无人）。 */
+        public long obstructionUntilMillis;
+        /** 本停靠周期的最大开门剩余时长（ms），FULLY_OPEN 保持期递减，归零强制关门。 */
+        public long maxOpenRemainingMs;
+        /** 超时强关后本周期内光幕/开门请求失效。 */
+        public boolean curtainSuppressed;
+        /** 超时强关阶段：门全闭前隔离保持，开门类指令与派梯全部拒绝。 */
+        public boolean forcedClosing;
+        /** 光幕区域位（CURTAIN_SWEEP/CURTAIN_TOUCH），客户端上报、服务端消费。 */
+        public int curtainFlags;
     }
+
+    /** 光幕区域位：玩家位于关闭位扫掠路径（整列）——预检用。 */
+    public static final int CURTAIN_SWEEP = 1;
+    /** 光幕区域位：玩家接触当前面板盒——CLOSING 反转用。 */
+    public static final int CURTAIN_TOUCH = 2;
 
     private static final Map<Long, DoorQueue> QUEUES = new ConcurrentHashMap<>();
     private static final Map<Long, DoorSmoother> SMOOTHERS = new ConcurrentHashMap<>();
@@ -88,7 +91,7 @@ public final class LiftDoorControlState {
     /** ω 过渡时间常数（秒）：软化↔跟踪之间一阶惯性趋近，避免回复力阶跃造成抽动。 */
     private static final double OMEGA_TAU = 0.08;
 
-    private LiftDoorControlState() {
+    private LiftDoorState() {
     }
 
     public static DoorQueue getOrCreate(long liftId) {

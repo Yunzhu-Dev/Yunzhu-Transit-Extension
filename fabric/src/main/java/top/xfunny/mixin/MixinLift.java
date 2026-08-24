@@ -16,12 +16,12 @@ import top.xfunny.mod.config.YteLiftConfigStore;
 import top.xfunny.mod.Init;
 import top.xfunny.mod.lift.LiftDisplayDirection;
 import top.xfunny.mod.lift.LiftDisplayDirectionState;
-import top.xfunny.mod.lift.LiftDoorControlState;
+import top.xfunny.mod.lift.LiftDoorState;
+import top.xfunny.mod.lift.LiftModeState;
 import top.xfunny.mod.lift.LiftFloorCancelState;
 import top.xfunny.mod.lift.DisplayDirectionMode;
 import top.xfunny.mod.lift.LiftDisplayState;
 import top.xfunny.mod.lift.LiftMotionProfile;
-import top.xfunny.mod.lift.LiftStateManager;
 
 @Mixin(value = Lift.class, remap = false)
 public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, MixinNameColorDataBaseSchema, LiftDisplayDirection {
@@ -45,14 +45,19 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
     private static final long YTE_TWO_STAGE_COARSE_HOLD_TIME = 1000;
 
     /**
-     * 故障隔离（D2）：隔离期（联锁/待救援/救援中）对外呼派梯返回
+     * 故障隔离（D2）：隔离期（联锁/待救援/救援中/消防迫降/急停）对呼叫派梯返回
      * {@link Double#MAX_VALUE} —— MTR 调度器取最小成本，故障梯永不出局；
      * 全场皆故障时 bestLift==null，呼叫静默丢弃。覆盖 MTR 原生/YTE/面板所有按钮路径。
+     * 外呼与内呼分开判定：消防员模式下放行内呼、拒绝外呼，其余隔离态全部拒绝。
      */
     @Inject(method = "pressButton", at = @At("HEAD"), cancellable = true)
     private void yte$rejectDispatchWhenIsolated(LiftInstruction instruction, boolean actuallyRegister,
                                                 CallbackInfoReturnable<Double> cir) {
-        if (LiftDoorControlState.isIsolated(((Lift) (Object) this).getId())) {
+        final long liftId = ((Lift) (Object) this).getId();
+        final boolean rejected = instruction.getDirection() != LiftDirection.NONE
+                ? !LiftModeState.canAcceptHallCall(liftId)
+                : !LiftModeState.canAcceptCarCall(liftId);
+        if (rejected) {
             cir.setReturnValue(Double.MAX_VALUE);
         }
     }
@@ -77,7 +82,7 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
             final long storeyY = getFloors().get(floor).getPosition().getY();
             final PressLift pressLift = new PressLift();
             for (final Lift other : simulator.lifts) {
-                if (other.getId() == selfId || LiftDoorControlState.isIsolated(other.getId())) {
+                if (other.getId() == selfId || !LiftModeState.canAcceptHallCall(other.getId())) {
                     continue;
                 }
                 for (int i = 0; i < other.getFloorCount(); i++) {
@@ -92,13 +97,29 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
         }
     }
 
-    /** 救援模式：全部内外呼已在上锁时清空，此处仅就近平层，低速由运动分支钳制。 */
+    /** 原始门值（服务端四段公式，无客户端平滑），供门值渲染与光幕门控共用。 */
     @Unique
-    private void yte$beginMaintenanceRecovery(LiftDoorControlState.DoorQueue queue) {
+    private static double yte$rawDoorValue(long coolDown, YteLiftConfigStore.DoorParams p) {
+        switch (LiftDoorState.getDoorState(coolDown, p)) {
+            case OPENING:
+                return p.curve.apply((double) (p.total() - coolDown) / p.openMs);
+            case FULLY_OPEN:
+                return 1;
+            case CLOSING:
+                return p.curve.apply((double) (coolDown - p.runDelay) / p.closeMs);
+            default: // CLOSED
+                return 0;
+        }
+    }
+
+    /** 模式移动（救援等）：全部内外呼已在进入模式时清空，此处仅就近平层，低速由运动分支钳制。 */
+    @Unique
+    private void yte$beginModeMovement(LiftModeState.State modeState) {
         // 以轿厢中心为判定基准（方案 A）：底部锚点会让“顶部已贴近上层”的情形误选下层
         final double carCenterProgress = getRailProgress() + ((Lift) (Object) this).getHeight() / 2.0;
         int nearestFloor = -1;
         double nearestDistance = Double.POSITIVE_INFINITY;
+        // TODO: modeTargetFloor 已预留（消防迫降等指定楼层模式）；当前所有模式一律就近平层
         for (int i = 0; i < getFloors().size(); i++) {
             final double distance = Math.abs(invokeGetProgress(i) - carCenterProgress);
             if (distance < nearestDistance) {
@@ -110,7 +131,7 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
             return;
         }
         getInstructions().add(0, new LiftInstruction(nearestFloor, LiftDirection.NONE));
-        queue.recovering = true;
+        modeState.modeActive = true;
         setNeedsUpdate(true);
     }
 
@@ -125,7 +146,7 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
         final YteLiftConfigStore.DoorParams p = YteLiftConfigStore.getDoorParams(lift.getId());
         final long coolDown = getStoppingCoolDown();
         final double doorValue;
-        switch (LiftDoorControlState.getDoorState(coolDown, p)) {
+        switch (LiftDoorState.getDoorState(coolDown, p)) {
             case OPENING:
                 doorValue = p.curve.apply((double) (p.total() - coolDown) / p.openMs);
                 break;
@@ -141,7 +162,7 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
         // 客户端渲染值做一阶平滑，关门↔开门反转时呈减速→加速过渡，同步跳变也被吸收；
         // 服务端保持原始曲线值（门控判定依赖精确相位）
         cir.setReturnValue(isClientside()
-                ? LiftDoorControlState.smoothDoorValue(lift.getId(), (float) doorValue)
+                ? LiftDoorState.smoothDoorValue(lift.getId(), (float) doorValue)
                 : (float) doorValue);
     }
 
@@ -152,7 +173,11 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
     @Inject(method = "getDirection", at = @At("HEAD"), cancellable = true)
     private void yte$getDisplayDirection(CallbackInfoReturnable<LiftDirection> cir) {
         if (isClientside()) {
-            cir.setReturnValue(yte$getDisplayDirection(DisplayDirectionMode.LATCH_UNTIL_DOOR_CLOSE));
+            // 模式运动期旁路：不拦截，MTR 原版 getDirection() 直通
+            // （有目标=行进方向；到站/无目标=NONE），箭头与常规运行一致
+            if (!LiftModeState.getOrCreate(((Lift) (Object) this).getId()).modeActive) {
+                cir.setReturnValue(yte$getDisplayDirection(DisplayDirectionMode.LATCH_UNTIL_DOOR_CLOSE));
+            }
         }
     }
 
@@ -167,12 +192,13 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
         }
 
         final long id = ((Lift) (Object) this).getId();
-        final LiftDoorControlState.DoorQueue doorQueue = LiftDoorControlState.getOrCreate(id);
+        final LiftDoorState.DoorQueue doorQueue = LiftDoorState.getOrCreate(id);
+        final LiftModeState.State modeState = LiftModeState.getOrCreate(id);
         final boolean movingDown = getSpeed() < 0 || getSpeed() == 0 && !getInstructions().isEmpty()
                 && invokeGetProgress(getInstructions().get(0).getFloor()) < getRailProgress();
         double customMaxSpeed = YteLiftConfigStore.getSpeed(id, movingDown) / 1000.0;
-        if (doorQueue.recovering) {
-            // 救援限速：recoverySpeed（读端已 clamp [0.1,1.0] m/s）
+        if (modeState.modeActive && modeState.mode == LiftModeState.LiftMode.MANUAL_DOOR_RECOVERY) {
+            // 救援限速：recoverySpeed（读端已 clamp [0.1,1.0] m/s）；其余模式正常速度
             customMaxSpeed = Math.min(customMaxSpeed, YteLiftConfigStore.getRecoverySpeed(id) / 1000.0);
         }
         final double customAccel = YteLiftConfigStore.getAcceleration(id, movingDown) / 1_000_000.0;
@@ -182,6 +208,31 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
         final LiftMotionProfile motionProfile = YteLiftConfigStore.getMotionProfile(id);
 
         if (!isClientside()) {
+            // 锁定 / 待进入模式 / 模式执行中：整梯不接入光幕，清空残留遮挡状态
+            if (modeState.maintenanceLocked || modeState.modePending || modeState.modeActive) {
+                doorQueue.curtainFlags = 0;
+                doorQueue.obstructionUntilMillis = 0;
+            } else {
+                // 光幕安全网：CLOSING 全程持续门控（300ms 心跳维持）——
+                // 接触面板（从方块边缘向内推进的前沿）立即反向续开；盲区内保持待命、自然关死
+                final boolean curtainTouch = (doorQueue.curtainFlags & LiftDoorState.CURTAIN_TOUCH) != 0;
+                final boolean curtainActive =
+                        System.currentTimeMillis() < doorQueue.obstructionUntilMillis || curtainTouch;
+                if (curtainActive && !doorQueue.forcedClosing) {
+                    final YteLiftConfigStore.DoorParams cp = YteLiftConfigStore.getDoorParams(id);
+                    final LiftDoorState.DoorState curtainPhase =
+                            LiftDoorState.getDoorState(getStoppingCoolDown(), cp);
+                    if (curtainPhase == LiftDoorState.DoorState.CLOSING) {
+                        if (curtainTouch && yte$rawDoorValue(getStoppingCoolDown(), cp)
+                                >= LiftDoorState.CURTAIN_MIN_DOOR_VALUE) {
+                            yte$processDoorCommand(doorQueue, LiftDoorState.Command.OPEN);
+                        }
+                    } else if (curtainPhase != LiftDoorState.DoorState.CLOSING) {
+                        // 离开接触区：清除 TOUCH 位
+                        doorQueue.curtainFlags &= ~LiftDoorState.CURTAIN_TOUCH;
+                    }
+                }
+            }
             if (doorQueue.pendingCommand != null) {
                 yte$processDoorCommand(doorQueue, doorQueue.pendingCommand);
                 doorQueue.pendingCommand = null;
@@ -189,12 +240,12 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
             yte$updateDoorState(doorQueue);
             yte$tickCloseTimer(doorQueue, millisElapsed);
 
-            // 上锁/解锁后的指令清空（下一 tick 生效）：按钮灯随指令清除熄灭，
-            // 并防止锁定期间旧的同层指令触发重开门；
+            // 上锁/进入模式后的指令清空（下一 tick 生效）：按钮灯随指令清除熄灭，
+            // 并防止隔离期间旧的同层指令触发重开门；
             // 外呼（dir≠NONE）清空前按楼层坐标重派——隔离注入使故障梯绝不回流，
             // 自动落到同组健康梯，全场皆故障则静默丢弃；内呼直接抛弃
-            if (doorQueue.instructionPurgePending) {
-                doorQueue.instructionPurgePending = false;
+            if (modeState.instructionPurgePending) {
+                modeState.instructionPurgePending = false;
                 if (!getInstructions().isEmpty()) {
                     yte$redispatchHallCalls();
                     getInstructions().clear();
@@ -202,22 +253,33 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
                 }
             }
 
-            // 解锁后等待层门关门动画播完（closeMs，与动画共用配置时长）；
-            // 空闲且已平层停靠：跳过救援保持原样待命（隔离随 pending 清除即刻解除）
-            if (doorQueue.maintenanceRecoveryPending && !doorQueue.maintenanceLocked) {
-                doorQueue.recoveryCloseDelayMs -= millisElapsed;
-                if (doorQueue.recoveryCloseDelayMs <= 0) {
-                    doorQueue.maintenanceRecoveryPending = false;
+            // 模式倒计时：解锁/触发后等待前置条件（如层门关门动画播完），再启动模式移动；
+            // 空闲且已平层停靠：无需移动——需自动退出的模式（救援）即刻退出待命
+            if (modeState.modePending && !modeState.maintenanceLocked) {
+                modeState.modeDelayMs -= millisElapsed;
+                if (modeState.modeDelayMs <= 0) {
+                    modeState.modePending = false;
                     if (!getInstructions().isEmpty() || !yte$isExactlyAtFloor()) {
-                        yte$beginMaintenanceRecovery(doorQueue);
+                        yte$beginModeMovement(modeState);
+                    } else if (modeState.mode.shouldAutoExit()) {
+                        LiftModeState.exitMode(id);
                     }
                 }
             }
 
-            // 救援收尾：就近平层 + 开关门循环全部结束后恢复正常调度
-            if (doorQueue.recovering && getInstructions().isEmpty()
+            // 模式收尾：就近平层 + 开关门循环全部结束后退出执行态
+            // （exitMode 内部按 shouldAutoExit 决定是否回到 NORMAL）
+            if (modeState.modeActive && getInstructions().isEmpty()
                     && getStoppingCoolDown() == 0 && getSpeed() == 0) {
-                doorQueue.recovering = false;
+                LiftModeState.exitMode(id);
+                setNeedsUpdate(true);
+            }
+
+            // 超时强关自愈：门已关死（CLOSED 相位）即解除强关隔离
+            if (doorQueue.forcedClosing
+                    && LiftDoorState.getDoorState(getStoppingCoolDown(),
+                            YteLiftConfigStore.getDoorParams(id)) == LiftDoorState.DoorState.CLOSED) {
+                doorQueue.forcedClosing = false;
                 setNeedsUpdate(true);
             }
 
@@ -270,7 +332,7 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
                     Init.sendLiftDoorOpen(id, getStoppingCoolDown(), true);
                 }
             }
-        } else if (LiftDoorControlState.getOrCreate(id).maintenanceLocked) {
+        } else if (modeState.maintenanceLocked) {
             // 联锁：层门被钥匙手动打开 → 两端同步冻结速度；
             // 客户端不冻结会继续模拟、被服务端逐帧同步拽回（“闪回”）
             setSpeed(0);
@@ -340,6 +402,10 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
                             setStoppingCoolDown(YteLiftConfigStore.getDoorParams(id).total()
                                     + (adoDistance <= 0 ? YTE_BRAKE_HOLD_TIME : 0));
                         }
+                        // 新停靠周期：重置光幕最大开门时长并解除超时抑制
+                        doorQueue.maxOpenRemainingMs = YteLiftConfigStore.getMaxDoorOpenMs(id);
+                        doorQueue.curtainSuppressed = false;
+                        doorQueue.obstructionUntilMillis = 0;
                         setNeedsUpdate(true);
                     }
                 }
@@ -365,9 +431,24 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
     }
 
     @Unique
-    private void yte$processDoorCommand(LiftDoorControlState.DoorQueue queue, LiftDoorControlState.Command command) {
+    private void yte$processDoorCommand(LiftDoorState.DoorQueue queue, LiftDoorState.Command command) {
         final Lift lift = (Lift) (Object) this;
         final long id = lift.getId();
+
+        // 超时强关阶段：开门/保持类指令全部失效，仅允许 CLOSE
+        if (queue.forcedClosing && command != LiftDoorState.Command.CLOSE) {
+            return;
+        }
+
+        // 锁定 / 模式过渡与执行期间不接受门命令；
+        // 隔离模式常驻期（如消防迫降未开消防员）同样拒绝，防止门被意外关闭
+        final LiftModeState.State modeState = LiftModeState.getOrCreate(id);
+        if (modeState.maintenanceLocked || modeState.modePending || modeState.modeActive) {
+            return;
+        }
+        if (modeState.mode.isolates() && !modeState.firefighterMode) {
+            return;
+        }
 
         if (getSpeed() != 0 || !yte$isExactlyAtFloor()) {
             return;
@@ -376,37 +457,42 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
         final YteLiftConfigStore.DoorParams p = YteLiftConfigStore.getDoorParams(id);
         final long coolDown = getStoppingCoolDown();
         final float doorValue = Utilities.clamp(lift.getDoorValue(), 0, 1);
-        final LiftDoorControlState.DoorState phase = LiftDoorControlState.getDoorState(coolDown, p);
+        final LiftDoorState.DoorState phase = LiftDoorState.getDoorState(coolDown, p);
 
-        if (command == LiftDoorControlState.Command.CLOSE) {
+        if (command == LiftDoorState.Command.CLOSE) {
+            // 光幕（Q2甲）：遮挡生效期内手动关门同样被拦截
+            if (System.currentTimeMillis() < queue.obstructionUntilMillis && !queue.curtainSuppressed) {
+                return;
+            }
             // 全开相位按下：立即进入关门段，跳过保持时长；
-            // 开门中/关门中/门关：忽略（现实电梯开门过程中按关门键无效，门完成开门循环后由保持计时器自动关）
-            if (phase == LiftDoorControlState.DoorState.FULLY_OPEN) {
+            if (phase == LiftDoorState.DoorState.FULLY_OPEN) {
                 setStoppingCoolDown(p.closeStartCoolDown());
                 setNeedsUpdate(true);
             }
             return;
         }
 
-        if (command == LiftDoorControlState.Command.HOLD_OPEN
-                && (phase == LiftDoorControlState.DoorState.CLOSED || !YteLiftConfigStore.isDoorHoldEnabled(id))) {
+        if (command == LiftDoorState.Command.HOLD_OPEN
+                && (phase == LiftDoorState.DoorState.CLOSED || !YteLiftConfigStore.isDoorHoldEnabled(id))) {
             return;
         }
 
-        final boolean startingIdleDoorCycle = command == LiftDoorControlState.Command.OPEN
+        final boolean startingIdleDoorCycle = command == LiftDoorState.Command.OPEN
                 && getInstructions().isEmpty()
                 && coolDown < p.runDelay;
         if (coolDown <= p.runDelay) {
             setStoppingCoolDown(p.total());
             queue.closeRemainingMs = yte$closeTimerValue(id);
+            queue.maxOpenRemainingMs = YteLiftConfigStore.getMaxDoorOpenMs(id);
+            queue.curtainSuppressed = false;
             Init.sendLiftDoorOpen(id, getStoppingCoolDown(), startingIdleDoorCycle);
             setNeedsUpdate(true);
-        } else if (phase == LiftDoorControlState.DoorState.FULLY_OPEN) {
+        } else if (phase == LiftDoorState.DoorState.FULLY_OPEN) {
             setStoppingCoolDown(p.fullOpenCoolDown());
             queue.closeRemainingMs = yte$closeTimerValue(id);
             Init.sendLiftDoorOpen(id, getStoppingCoolDown(), false);
             setNeedsUpdate(true);
-        } else if (phase == LiftDoorControlState.DoorState.CLOSING) {
+        } else if (phase == LiftDoorState.DoorState.CLOSING) {
             // 关门中：反向续开
             setStoppingCoolDown(p.total() - Math.round(p.curve.invert(doorValue) * p.openMs));
             queue.closeRemainingMs = yte$closeTimerValue(id);
@@ -418,38 +504,44 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
         }
     }
 
-    /** -1（消防/专用模式）表示无限开门；否则为配置的开门保持时长。 */
+    /** -1（消防迫降）表示无限开门；否则为配置的开门保持时长。 */
     @Unique
     private static long yte$closeTimerValue(long id) {
-        return LiftStateManager.isFireMode(id)
-                ? LiftDoorControlState.INFINITE_OPEN
+        return LiftModeState.isFireRecall(id)
+                ? LiftDoorState.INFINITE_OPEN
                 : YteLiftConfigStore.getDoorDwellMs(id);
     }
 
     /** 由 coolDown 推导门状态；转入 FULLY_OPEN / CLOSED 即「门已完全打开/关闭」事件。 */
     @Unique
-    private void yte$updateDoorState(LiftDoorControlState.DoorQueue queue) {
+    private void yte$updateDoorState(LiftDoorState.DoorQueue queue) {
         final Lift lift = (Lift) (Object) this;
         final YteLiftConfigStore.DoorParams p = YteLiftConfigStore.getDoorParams(lift.getId());
         final long coolDown = getStoppingCoolDown();
-        final LiftDoorControlState.DoorState state = LiftDoorControlState.getDoorState(coolDown, p);
+        final LiftDoorState.DoorState state = LiftDoorState.getDoorState(coolDown, p);
 
         if (state != queue.doorState) {
             queue.doorState = state;
-            if (state == LiftDoorControlState.DoorState.FULLY_OPEN) {
+            if (state == LiftDoorState.DoorState.FULLY_OPEN) {
                 // 「门已完全打开」事件：启动关门计时器
                 queue.closeRemainingMs = yte$closeTimerValue(lift.getId());
+                if (LiftModeState.getOrCreate(lift.getId()).modeActive) {
+                    // 完全开门即恢复服务（不等关门）：退出模式执行态 + 清理强关残留
+                    LiftModeState.exitMode(lift.getId());
+                    yte$resetArrivalDirectionDelay();
+                    setNeedsUpdate(true);
+                }
             }
         }
     }
 
     @Unique
-    private void yte$tickCloseTimer(LiftDoorControlState.DoorQueue queue, long millisElapsed) {
-        if (queue.doorState != LiftDoorControlState.DoorState.FULLY_OPEN) {
+    private void yte$tickCloseTimer(LiftDoorState.DoorQueue queue, long millisElapsed) {
+        if (queue.doorState != LiftDoorState.DoorState.FULLY_OPEN) {
             return;
         }
         final YteLiftConfigStore.DoorParams p = YteLiftConfigStore.getDoorParams(((Lift) (Object) this).getId());
-        if (queue.closeRemainingMs == LiftDoorControlState.INFINITE_OPEN) {
+        if (queue.closeRemainingMs == LiftDoorState.INFINITE_OPEN) {
             // 无限开门：把冷却钉在全开位置
             if (getStoppingCoolDown() < p.fullOpenCoolDown()) {
                 setStoppingCoolDown(p.fullOpenCoolDown());
@@ -457,9 +549,29 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
             }
             return;
         }
+
+        // 最大开门时长：保持期无条件递减（光幕不能无限续命），归零强制关门
+        if (queue.maxOpenRemainingMs > 0) {
+            queue.maxOpenRemainingMs = Math.max(queue.maxOpenRemainingMs - millisElapsed, 0);
+        }
+        if (queue.maxOpenRemainingMs == 0 && !queue.forcedClosing) {
+            // 超时强关：本周期抑制光幕与开门请求，门全闭后解除
+            queue.forcedClosing = true;
+            queue.curtainSuppressed = true;
+            setStoppingCoolDown(p.closeStartCoolDown());
+            setNeedsUpdate(true);
+            return;
+        }
+
         queue.closeRemainingMs -= millisElapsed;
         if (queue.closeRemainingMs <= 0) {
-            queue.closeRemainingMs = LiftDoorControlState.INFINITE_OPEN;
+            // 光幕预检：发出关门指令前先查门区是否有人；
+            // 有人则暂缓发指令（置 1 下 tick 重查），门保持全开、零关门动画
+            if (System.currentTimeMillis() < queue.obstructionUntilMillis && !queue.curtainSuppressed) {
+                queue.closeRemainingMs = 1;
+                return;
+            }
+            queue.closeRemainingMs = LiftDoorState.INFINITE_OPEN;
             setStoppingCoolDown(p.closeStartCoolDown());
             setNeedsUpdate(true);
         }
@@ -511,6 +623,10 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
     @Unique
     private void yte$updateDisplayDirection(long millisElapsed) {
         final Lift lift = (Lift) (Object) this;
+        // 模式运动期跳过自定义闩锁更新：箭头由 MTR 原版 getDirection() 驱动（见 getDisplayDirection 旁路）
+        if (LiftModeState.getOrCreate(lift.getId()).modeActive) {
+            return;
+        }
         final LiftDisplayDirectionState displayState = LiftDisplayDirectionState.get(lift.getId());
         final int instructionCount = getInstructions().size();
         final boolean instructionAdded = instructionCount > displayState.previousInstructionCount;

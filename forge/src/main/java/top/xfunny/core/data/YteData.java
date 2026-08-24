@@ -25,6 +25,7 @@ public abstract class YteData {
                         config.getId(), config.getDoorOpenMs(), config.getDoorCloseMs(),
                         config.getDoorDwellMs(), config.getDoorRunDelayMs(), config.getDoorCurve());
                 YteLiftConfigStore.putRecoverySpeed(config.getId(), config.getRecoverySpeed());
+                YteLiftConfigStore.putMaxDoorOpenMs(config.getId(), config.getMaxDoorOpenMs());
             });
         } catch (Exception e) {
             YteCoreLogger.error("YteData sync error", e);

@@ -27,6 +27,7 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
     protected String doorCurve;
     protected double recoverySpeed = DEFAULT_RECOVERY_SPEED;
     protected String liftNumber;
+    protected long maxDoorOpenMs;
 
     private static final String KEY_LIFT_ID = "lift_id";
     private static final String KEY_SPEED = "speed";
@@ -48,6 +49,7 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
     private static final String KEY_DOOR_RUN_DELAY_MS = "door_run_delay_ms";
     private static final String KEY_DOOR_CURVE = "door_curve";
     private static final String KEY_RECOVERY_SPEED = "recovery_speed";
+    private static final String KEY_MAX_DOOR_OPEN_MS = "max_door_open_ms";
     private static final String KEY_LIFT_NUMBER = "lift_number";
 
     public static final double DEFAULT_SPEED = 10.0;
@@ -87,6 +89,10 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
     public static final double DEFAULT_RECOVERY_SPEED = 0.3;
     public static final double MIN_RECOVERY_SPEED = 0.1;
     public static final double MAX_RECOVERY_SPEED = 1.0;
+    /** 光幕最大开门时长（ms），超时强制关门。 */
+    public static final long DEFAULT_MAX_DOOR_OPEN_MS = 30000;
+    public static final long MIN_MAX_DOOR_OPEN_MS = 30000;
+    public static final long MAX_MAX_DOOR_OPEN_MS = 60000;
     public static final String DEFAULT_LIFT_NUMBER = "";
 
     protected YteLiftConfigSchema(long liftId, double speed, double acceleration, double adoDistance, double levellingDistance, double levellingSpeed) {
@@ -151,6 +157,7 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         this.doorRunDelayMs = doorRunDelayMs;
         this.doorCurve = doorCurve;
         this.liftNumber = liftNumber;
+        this.maxDoorOpenMs = maxDoorOpenMs;
     }
 
     protected YteLiftConfigSchema(ReaderBase readerBase) {
@@ -174,6 +181,7 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         doorCurve = DEFAULT_DOOR_CURVE;
         liftNumber = DEFAULT_LIFT_NUMBER;
         recoverySpeed = DEFAULT_RECOVERY_SPEED;
+        maxDoorOpenMs = DEFAULT_MAX_DOOR_OPEN_MS;
         updateData(readerBase);
     }
 
@@ -200,6 +208,7 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         doorCurve = readerBase.getString(KEY_DOOR_CURVE, DEFAULT_DOOR_CURVE);
         liftNumber = readerBase.getString(KEY_LIFT_NUMBER, DEFAULT_LIFT_NUMBER);
         recoverySpeed = clampRecoverySpeed(readerBase.getDouble(KEY_RECOVERY_SPEED, DEFAULT_RECOVERY_SPEED));
+        maxDoorOpenMs = clampMaxDoorOpenMs(readerBase.getLong(KEY_MAX_DOOR_OPEN_MS, DEFAULT_MAX_DOOR_OPEN_MS));
     }
 
     @Override
@@ -224,6 +233,7 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         writerBase.writeLong(KEY_DOOR_RUN_DELAY_MS, doorRunDelayMs);
         writerBase.writeString(KEY_DOOR_CURVE, doorCurve);
         writerBase.writeDouble(KEY_RECOVERY_SPEED, recoverySpeed);
+        writerBase.writeLong(KEY_MAX_DOOR_OPEN_MS, maxDoorOpenMs);
         writerBase.writeString(KEY_LIFT_NUMBER, liftNumber);
     }
 
@@ -254,5 +264,9 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
 
     private static double clampRecoverySpeed(double value) {
         return Math.max(MIN_RECOVERY_SPEED, Math.min(MAX_RECOVERY_SPEED, value));
+    }
+
+    private static long clampMaxDoorOpenMs(long value) {
+        return Math.max(MIN_MAX_DOOR_OPEN_MS, Math.min(MAX_MAX_DOOR_OPEN_MS, value));
     }
 }

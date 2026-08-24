@@ -16,7 +16,7 @@ import org.mtr.mod.client.MinecraftClientData;
 import top.xfunny.mixin.MixinLiftSchema;
 import top.xfunny.mod.Init;
 import top.xfunny.mod.config.YteLiftConfigStore;
-import top.xfunny.mod.lift.LiftDoorControlState;
+import top.xfunny.mod.lift.LiftModeState;
 import top.xfunny.mod.lift.LiftDoorMaintenance;
 
 /**
@@ -64,19 +64,14 @@ public final class PacketLiftDoorMaintenance extends PacketHandler {
 		}
 		((LiftDoorMaintenance) entity.data).yte$setMaintenanceOpen(open, liftId, durationMs);
 
-		final LiftDoorControlState.DoorQueue queue = LiftDoorControlState.getOrCreate(liftId);
 		if (open) {
 			// 上锁（安全回路断开）：急停 + 弃全部内外呼，进入故障隔离
-			queue.maintenanceLocked = true;
-			queue.maintenanceRecoveryPending = false;
-			queue.recovering = false;
-			queue.instructionPurgePending = true;
+			LiftModeState.lock(liftId);
 		} else {
 			// 解锁：等层门关门动画播完（配置 closeMs）后自动就近平层救援
-			queue.maintenanceLocked = false;
-			queue.maintenanceRecoveryPending = true;
-			queue.recoveryCloseDelayMs = YteLiftConfigStore.getDoorParams(liftId).closeMs;
-			queue.instructionPurgePending = true;
+			LiftModeState.unlock(liftId);
+			LiftModeState.requestMode(liftId, LiftModeState.LiftMode.MANUAL_DOOR_RECOVERY,
+					YteLiftConfigStore.getDoorParams(liftId).closeMs);
 		}
 		MinecraftServerHelper.iteratePlayers(minecraftServer, player ->
 				Init.REGISTRY.sendPacketToClient(player,
@@ -90,7 +85,9 @@ public final class PacketLiftDoorMaintenance extends PacketHandler {
 			return;
 		}
 		// 镜像联锁到客户端：本地模拟同样冻结，避免被服务端逐帧同步拽回（“闪回”）
-		LiftDoorControlState.getOrCreate(liftId).maintenanceLocked = open;
+		// ponytail: 客户端仅镜像锁定标志，不走 lock/unlock API——instructionPurgePending
+		// 只由服务端消费，客户端误置会残留；指令清空在下方手动完成
+		LiftModeState.getOrCreate(liftId).maintenanceLocked = open;
 		// 同步清空客户端指令副本：服务端上锁即弃全部内外呼，客户端提前清空
 		// 可在广播到达时立刻停止朝旧目标模拟（服务端 purge 下一 tick 才生效）
 		final Lift clientLift = MinecraftClientData.getLift(liftId);

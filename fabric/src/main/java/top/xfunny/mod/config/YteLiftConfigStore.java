@@ -33,6 +33,7 @@ public final class YteLiftConfigStore {
     private static final Map<Long, Long> doorRunDelayMsMap = new ConcurrentHashMap<>();
     private static final Map<Long, DoorMotionCurve> doorCurveMap = new ConcurrentHashMap<>();
     private static final Map<Long, Double> recoverySpeedMap = new ConcurrentHashMap<>();
+    private static final Map<Long, Long> maxDoorOpenMsMap = new ConcurrentHashMap<>();
     private static final Map<Long, String> liftNumberMap = new ConcurrentHashMap<>();
 
     private static final double DEFAULT_SPEED = 10.0;
@@ -168,6 +169,18 @@ public final class YteLiftConfigStore {
         recoverySpeedMap.put(liftId, recoverySpeed);
     }
 
+    public static void putMaxDoorOpenMs(long liftId, long maxDoorOpenMs) {
+        maxDoorOpenMsMap.put(liftId, Math.max(YteLiftConfig.MIN_MAX_DOOR_OPEN_MS,
+                Math.min(YteLiftConfig.MAX_MAX_DOOR_OPEN_MS, maxDoorOpenMs)));
+    }
+
+    /** 光幕最大开门时长（ms），读端 clamp [30s, 60s]。 */
+    public static long getMaxDoorOpenMs(long liftId) {
+        return Math.max(YteLiftConfig.MIN_MAX_DOOR_OPEN_MS,
+                Math.min(YteLiftConfig.MAX_MAX_DOOR_OPEN_MS,
+                        maxDoorOpenMsMap.getOrDefault(liftId, YteLiftConfig.DEFAULT_MAX_DOOR_OPEN_MS)));
+    }
+
     /** 急停救援就近平层速度（m/s），读端 clamp [0.1, 1.0]。 */
     public static double getRecoverySpeed(long liftId) {
         return Math.max(YteLiftConfig.MIN_RECOVERY_SPEED,
@@ -211,6 +224,7 @@ public final class YteLiftConfigStore {
         doorRunDelayMsMap.remove(liftId);
         doorCurveMap.remove(liftId);
         recoverySpeedMap.remove(liftId);
+        maxDoorOpenMsMap.remove(liftId);
     }
 
     public static void clear() {
@@ -233,5 +247,6 @@ public final class YteLiftConfigStore {
         doorRunDelayMsMap.clear();
         doorCurveMap.clear();
         recoverySpeedMap.clear();
+        maxDoorOpenMsMap.clear();
     }
 }

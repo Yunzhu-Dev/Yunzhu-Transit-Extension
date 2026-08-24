@@ -13,7 +13,7 @@ import org.mtr.mod.data.IGui;
 import org.mtr.mod.render.MainRenderer;
 import org.mtr.mod.render.QueuedRenderLayer;
 import org.mtr.mod.render.StoredMatrixTransformations;
-import top.xfunny.mod.lift.LiftDoorControlState;
+import top.xfunny.mod.lift.LiftDoorState;
 
 public class RenderLiftDoor<T extends BlockAPGDoor.BlockEntityBase> extends BlockEntityRenderer<T> implements IGui, IBlock {
 
@@ -43,7 +43,7 @@ public class RenderLiftDoor<T extends BlockAPGDoor.BlockEntityBase> extends Bloc
         final boolean side = IBlock.getStatePropertySafe(world, blockPos, BlockPSDAPGDoorBase.SIDE) == EnumSide.RIGHT;
         final boolean half = IBlock.getStatePropertySafe(world, blockPos, BlockPSDAPGDoorBase.HALF) == DoubleBlockHalf.UPPER;
         final boolean unlocked = IBlock.getStatePropertySafe(world, blockPos, BlockPSDAPGDoorBase.UNLOCKED);
-        final double open = Math.min(entity.getDoorValue(), LiftDoorControlState.DOOR_MAX_OPEN_SCALE);
+        final double open = Math.min(entity.getDoorValue(), LiftDoorState.DOOR_MAX_OPEN_SCALE);
 
 
         final StoredMatrixTransformations storedMatrixTransformations = new StoredMatrixTransformations(0.5 + entity.getPos2().getX(), entity.getPos2().getY(), 0.5 + entity.getPos2().getZ());

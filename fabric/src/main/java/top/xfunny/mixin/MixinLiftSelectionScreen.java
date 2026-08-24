@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.xfunny.mod.lift.LiftDoorButtonLightMode;
-import top.xfunny.mod.lift.LiftDoorControlState;
+import top.xfunny.mod.lift.LiftDoorState;
 import top.xfunny.mod.lift.LiftDisplayDirectionState;
 import top.xfunny.mod.lift.LiftFloorCancelMode;
 import top.xfunny.mod.client.InitClient;
@@ -50,7 +50,7 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
     @Unique private LiftSelectionButtonWidget yte$closeDoorButton;
     @Unique private boolean yte$clearDoorButtonFocus;
     @Unique private boolean yte$lastHoldEnabled;
-    @Unique private LiftDoorControlState.Command yte$pressedDoorCommand;
+    @Unique private LiftDoorState.Command yte$pressedDoorCommand;
     @Unique private long yte$nextDoorRepeatTime;
     @Unique private boolean yte$holdCommandActive;
     @Unique private long yte$holdOpenLightUntil;
@@ -78,11 +78,11 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
     @Inject(method = "<init>", at = @At("TAIL"))
     private void yte$createDoorButtons(long liftId, CallbackInfo ci) {
         yte$holdOpenButton = new LiftSelectionButtonWidget(0, 0, 0, IGui.SQUARE_SIZE,
-                TextHelper.translatable("gui.yte.lift_hold_open"), button -> yte$sendDoorCommand(LiftDoorControlState.Command.HOLD_OPEN));
+                TextHelper.translatable("gui.yte.lift_hold_open"), button -> yte$sendDoorCommand(LiftDoorState.Command.HOLD_OPEN));
         yte$openDoorButton = new LiftSelectionButtonWidget(0, 0, 0, IGui.SQUARE_SIZE,
-                TextHelper.literal("◀▶"), button -> yte$sendDoorCommand(LiftDoorControlState.Command.OPEN));
+                TextHelper.literal("◀▶"), button -> yte$sendDoorCommand(LiftDoorState.Command.OPEN));
         yte$closeDoorButton = new LiftSelectionButtonWidget(0, 0, 0, IGui.SQUARE_SIZE,
-                TextHelper.literal("▶◀"), button -> yte$sendDoorCommand(LiftDoorControlState.Command.CLOSE));
+                TextHelper.literal("▶◀"), button -> yte$sendDoorCommand(LiftDoorState.Command.CLOSE));
     }
 
     @Inject(method = "onPress", at = @At("HEAD"), cancellable = true)
@@ -170,7 +170,7 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
             final LiftSelectionButtonWidget pressedButton = yte$getDoorButton(yte$pressedDoorCommand);
             if (pressedButton == null || !pressedButton.getVisibleMapped()) {
                 yte$finishDoorButtonPress(currentTime);
-            } else if (yte$pressedDoorCommand != LiftDoorControlState.Command.HOLD_OPEN
+            } else if (yte$pressedDoorCommand != LiftDoorState.Command.HOLD_OPEN
                     && currentTime >= yte$nextDoorRepeatTime) {
                 yte$sendDoorCommand(yte$pressedDoorCommand);
                 yte$nextDoorRepeatTime = currentTime + YTE_DOOR_REPEAT_INTERVAL;
@@ -218,7 +218,7 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
     @Override
     public boolean mouseClicked2(double mouseX, double mouseY, int button) {
         if (button == 0) {
-            final LiftDoorControlState.Command command = yte$getDoorCommandAt(mouseX, mouseY);
+            final LiftDoorState.Command command = yte$getDoorCommandAt(mouseX, mouseY);
             if (command != null) {
                 yte$startDoorButtonPress(command);
                 return true;
@@ -241,15 +241,15 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
     }
 
     @Unique
-    private LiftDoorControlState.Command yte$getDoorCommandAt(double mouseX, double mouseY) {
+    private LiftDoorState.Command yte$getDoorCommandAt(double mouseX, double mouseY) {
         if (yte$isClickableDoorButton(yte$holdOpenButton, mouseX, mouseY)) {
-            return LiftDoorControlState.Command.HOLD_OPEN;
+            return LiftDoorState.Command.HOLD_OPEN;
         }
         if (yte$isClickableDoorButton(yte$openDoorButton, mouseX, mouseY)) {
-            return LiftDoorControlState.Command.OPEN;
+            return LiftDoorState.Command.OPEN;
         }
         if (yte$isClickableDoorButton(yte$closeDoorButton, mouseX, mouseY)) {
-            return LiftDoorControlState.Command.CLOSE;
+            return LiftDoorState.Command.CLOSE;
         }
         return null;
     }
@@ -260,7 +260,7 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
     }
 
     @Unique
-    private void yte$startDoorButtonPress(LiftDoorControlState.Command command) {
+    private void yte$startDoorButtonPress(LiftDoorState.Command command) {
         final long currentTime = System.currentTimeMillis();
         if (yte$pressedDoorCommand != null) {
             yte$finishDoorButtonPress(currentTime);
@@ -288,18 +288,18 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
         final LiftDoorButtonLightMode lightMode = YteLiftConfigStore.getDoorButtonLightMode(liftId);
         // HOLD 键：按下发送 HOLD 指令即点亮，直到发送其他门指令（OPEN/CLOSE）才熄灭
         yte$holdOpenButton.setLit(yte$holdCommandActive || lightMode.isLit(
-                yte$pressedDoorCommand == LiftDoorControlState.Command.HOLD_OPEN,
+                yte$pressedDoorCommand == LiftDoorState.Command.HOLD_OPEN,
                 currentTime < yte$holdOpenLightUntil, false));
         yte$openDoorButton.setLit(lightMode.isLit(
-                yte$pressedDoorCommand == LiftDoorControlState.Command.OPEN,
+                yte$pressedDoorCommand == LiftDoorState.Command.OPEN,
                 currentTime < yte$openDoorLightUntil, false));
         yte$closeDoorButton.setLit(lightMode.isLit(
-                yte$pressedDoorCommand == LiftDoorControlState.Command.CLOSE,
+                yte$pressedDoorCommand == LiftDoorState.Command.CLOSE,
                 currentTime < yte$closeDoorLightUntil, false));
     }
 
     @Unique
-    private void yte$setDoorLightUntil(LiftDoorControlState.Command command, long lightUntil) {
+    private void yte$setDoorLightUntil(LiftDoorState.Command command, long lightUntil) {
         switch (command) {
             case HOLD_OPEN:
                 yte$holdOpenLightUntil = lightUntil;
@@ -316,7 +316,7 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
     }
 
     @Unique
-    private LiftSelectionButtonWidget yte$getDoorButton(LiftDoorControlState.Command command) {
+    private LiftSelectionButtonWidget yte$getDoorButton(LiftDoorState.Command command) {
         switch (command) {
             case HOLD_OPEN:
                 return yte$holdOpenButton;
@@ -367,17 +367,17 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
     }
 
     @Unique
-    private void yte$sendDoorCommand(LiftDoorControlState.Command command) {
-        if (command == LiftDoorControlState.Command.HOLD_OPEN) {
+    private void yte$sendDoorCommand(LiftDoorState.Command command) {
+        if (command == LiftDoorState.Command.HOLD_OPEN) {
             yte$holdCommandActive = true;
         } else {
             yte$holdCommandActive = false;
-            if (command == LiftDoorControlState.Command.CLOSE) {
+            if (command == LiftDoorState.Command.CLOSE) {
                 yte$holdOpenLightUntil = 0;
                 yte$applyClientCloseCommand();
             }
         }
-        if (command == LiftDoorControlState.Command.OPEN || command == LiftDoorControlState.Command.HOLD_OPEN) {
+        if (command == LiftDoorState.Command.OPEN || command == LiftDoorState.Command.HOLD_OPEN) {
             yte$applyClientOpenCommand(command);
         }
         InitClient.REGISTRY_CLIENT.sendPacketToServer(new PacketLiftDoorControl(liftId, command));
@@ -406,7 +406,7 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
     }
 
     @Unique
-    private void yte$applyClientOpenCommand(LiftDoorControlState.Command command) {
+    private void yte$applyClientOpenCommand(LiftDoorState.Command command) {
         final Lift lift = MinecraftClientData.getLift(liftId);
         if (lift == null || !yte$isStoppedAtFloor(lift)) {
             return;
@@ -415,14 +415,14 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
         final MixinLiftSchema schema = (MixinLiftSchema) lift;
         final YteLiftConfigStore.DoorParams p = YteLiftConfigStore.getDoorParams(liftId);
         final long coolDown = schema.getStoppingCoolDown();
-        final LiftDoorControlState.DoorState phase = LiftDoorControlState.getDoorState(coolDown, p);
+        final LiftDoorState.DoorState phase = LiftDoorState.getDoorState(coolDown, p);
 
         // HOLD 在门已关时无可重置，忽略
-        if (command == LiftDoorControlState.Command.HOLD_OPEN && phase == LiftDoorControlState.DoorState.CLOSED) {
+        if (command == LiftDoorState.Command.HOLD_OPEN && phase == LiftDoorState.DoorState.CLOSED) {
             return;
         }
 
-        if (phase == LiftDoorControlState.DoorState.FULLY_OPEN) {
+        if (phase == LiftDoorState.DoorState.FULLY_OPEN) {
             schema.setStoppingCoolDown(p.fullOpenCoolDown());
         } else if (coolDown <= p.runDelay) {
             // 刚关（CLOSED 下半段）：本地立即开门；其余（开门中 / 关门中）不做本地动作，

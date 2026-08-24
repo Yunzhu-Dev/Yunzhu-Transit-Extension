@@ -13,13 +13,15 @@ import org.mtr.mapping.mapper.ItemExtension;
 import org.mtr.mod.client.MinecraftClientData;
 import org.mtr.mod.item.ItemDriverKey;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.xfunny.mod.client.InitClient;
-import top.xfunny.mod.lift.LiftDoorControlState;
+import top.xfunny.mod.lift.LiftModeState;
 import top.xfunny.mod.lift.LiftDoorMaintenance;
 import top.xfunny.mod.packet.PacketLiftDoorMaintenance;
+import top.xfunny.mod.util.LiftShaftLocator;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -34,8 +36,10 @@ import java.util.concurrent.ThreadLocalRandom;
 public abstract class MixinItemDriverKey {
 
 	/** 检修开门动画随机时长范围（ms），固定值不可配置。 */
-	private static final long MAINTENANCE_OPEN_MIN_MS = 1600;
-	private static final long MAINTENANCE_OPEN_MAX_MS = 3200;
+	@Unique
+    private static final long MAINTENANCE_OPEN_MIN_MS = 1600;
+	@Unique
+    private static final long MAINTENANCE_OPEN_MAX_MS = 3200;
 
 	@Inject(method = "useWithoutResult", at = @At("HEAD"), cancellable = true)
 	private void yte$toggleMaintenanceDoor(World world, PlayerEntity player, Hand hand, CallbackInfo ci) {
@@ -64,8 +68,10 @@ public abstract class MixinItemDriverKey {
 		// 本地立即生效；服务端同步标志 + 置联锁（禁止该电梯运行）并广播其他客户端
 		((LiftDoorMaintenance) blockEntity.data).yte$setMaintenanceOpen(open, liftId, durationMs);
 		// 本地立即联锁：点击视角电梯即刻急停/解锁，不等服务端广播往返；
-		// 同时清空本地指令副本，与服务端“上锁即弃全部内外呼”对齐
-		LiftDoorControlState.getOrCreate(liftId).maintenanceLocked = open;
+		// 同时清空本地指令副本，与服务端“上锁即弃全部内外呼”对齐。
+		// ponytail: 客户端仅镜像锁定标志（同 PacketLiftDoorMaintenance.runClient），
+		// 服务端才走 lock/unlock/requestMode 完整流程
+		LiftModeState.getOrCreate(liftId).maintenanceLocked = open;
 		final Lift localLift = MinecraftClientData.getLift(liftId);
 		if (localLift != null) {
 			((MixinLiftSchema) localLift).getInstructions().clear();
@@ -78,26 +84,8 @@ public abstract class MixinItemDriverKey {
 	 * 逐层最近者胜：层门必然位于某层高度（垂直对齐该层+offsetY），
 	 * 水平收紧到贴墙距离；邻井重叠时取水平最近的一部，杜绝跨井误锁。
 	 */
-	private static Long yte$findShaftLift(BlockPos doorPos) {
-		Long bestLiftId = null;
-		double bestDistanceSq = Double.POSITIVE_INFINITY;
-		for (final Lift lift : MinecraftClientData.getInstance().lifts) {
-			final MixinLiftSchema schema = (MixinLiftSchema) lift;
-			final double horizontalRange = Math.max(lift.getWidth(), lift.getDepth()) / 2 + 1;
-			for (int i = 0; i < schema.getFloors().size(); i++) {
-				final Position floorPosition = schema.getFloors().get(i).getPosition();
-				final double dx = Math.abs(doorPos.getX() - floorPosition.getX());
-				final double dz = Math.abs(doorPos.getZ() - floorPosition.getZ());
-				final double dy = Math.abs(doorPos.getY() - (floorPosition.getY() + lift.getOffsetY()));
-				if (dx <= horizontalRange && dz <= horizontalRange && dy <= 2) {
-					final double distanceSq = dx * dx + dz * dz;
-					if (distanceSq < bestDistanceSq) {
-						bestDistanceSq = distanceSq;
-						bestLiftId = lift.getId();
-					}
-				}
-			}
-		}
-		return bestLiftId;
+	@Unique
+    private static Long yte$findShaftLift(BlockPos doorPos) {
+		return LiftShaftLocator.findNearest(doorPos);
 	}
 }

@@ -114,6 +114,8 @@ public class YteLiftConfig extends YteLiftConfigSchema {
 
     public double getRecoverySpeed() { return recoverySpeed; }
 
+    public long getMaxDoorOpenMs() { return maxDoorOpenMs; }
+
     public void setSpeed(double speed) {
         this.speed = clamp(speed, MIN_SPEED, MAX_SPEED);
     }
@@ -158,6 +160,10 @@ public class YteLiftConfig extends YteLiftConfigSchema {
 
     public void setRecoverySpeed(double recoverySpeed) {
         this.recoverySpeed = clamp(recoverySpeed, MIN_RECOVERY_SPEED, MAX_RECOVERY_SPEED);
+    }
+
+    public void setMaxDoorOpenMs(long maxDoorOpenMs) {
+        this.maxDoorOpenMs = clampLong(maxDoorOpenMs, MIN_MAX_DOOR_OPEN_MS, MAX_MAX_DOOR_OPEN_MS);
     }
 
     private static double clamp(double value, double min, double max) {

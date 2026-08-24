@@ -15,7 +15,8 @@ import org.mtr.mapping.holder.WorldSavePath;
 import org.mtr.mapping.mapper.MinecraftServerHelper;
 import org.mtr.mapping.registry.Registry;
 import top.xfunny.core.YteMain;
-import top.xfunny.mod.lift.LiftDoorControlState;
+import top.xfunny.mod.lift.LiftDoorState;
+import top.xfunny.mod.lift.LiftModeState;
 import top.xfunny.mod.packet.*;
 
 import javax.annotation.Nullable;
@@ -81,6 +82,7 @@ public final class Init implements Utilities {
             REGISTRY.registerPacket(PacketLiftDoorControl.class, PacketLiftDoorControl::new);
             REGISTRY.registerPacket(PacketLiftFloorCancel.class, PacketLiftFloorCancel::new);
             REGISTRY.registerPacket(PacketLiftDoorMaintenance.class, PacketLiftDoorMaintenance::new);
+            REGISTRY.registerPacket(PacketLiftDoorCurtain.class, PacketLiftDoorCurtain::new);
         });
 
         int currentStep = 1;
@@ -122,7 +124,8 @@ public final class Init implements Utilities {
 
         REGISTRY.eventRegistry.registerServerStopping(minecraftServer -> {
             Init.minecraftServer = null;
-            LiftDoorControlState.clearQueues();
+            LiftDoorState.clearQueues();
+            LiftModeState.clearQueues();
             if (yteMain != null) {
                 yteMain.stop();
             }
@@ -143,7 +146,7 @@ public final class Init implements Utilities {
         if (minecraftServer != null) {
             MinecraftServerHelper.iteratePlayers(minecraftServer, player ->
                     REGISTRY.sendPacketToClient(player,
-                            new PacketLiftDoorControl(liftId, LiftDoorControlState.Command.OPEN,
+                            new PacketLiftDoorControl(liftId, LiftDoorState.Command.OPEN,
                                     stoppingCoolDown, resetIdleDirection)));
         }
     }
