@@ -5,7 +5,7 @@
 **云竹交通扩展Mod**是 [Minecraft Transit Railway Mod](https://github.com/jonafanho/Minecraft-Transit-Railway)
 的装饰性附加模组，提供精美的**电梯**与**地铁站**元素，以美化您的轨交建造。
 
-<img src="http://image.yunzhu.host/i/2025/05/01/681363e498172.webp" style="width: 200px; height: auto;" />
+<img src="http://image.yunzhu.host/i/2026/08/24/6a8b1eb91396d.webp" style="width: 200px; height: auto;" />
 
 
 ---

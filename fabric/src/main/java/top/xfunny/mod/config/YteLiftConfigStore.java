@@ -25,6 +25,7 @@ public final class YteLiftConfigStore {
     private static final Map<Long, LiftDoorButtonLightMode> doorButtonLightModeMap = new ConcurrentHashMap<>();
     private static final Map<Long, LiftFloorCancelMode> floorCancelModeMap = new ConcurrentHashMap<>();
     private static final Map<Long, Boolean> floorCancelWhileMovingMap = new ConcurrentHashMap<>();
+    private static final Map<Long, String> liftNumberMap = new ConcurrentHashMap<>();
 
     private static final double DEFAULT_SPEED = 10.0;
     private static final double DEFAULT_ACCELERATION = 4.0;
@@ -118,6 +119,22 @@ public final class YteLiftConfigStore {
         return floorCancelWhileMovingMap.getOrDefault(liftId, false);
     }
 
+    /**
+     * 电梯编号（备注别名，非 MTR 的 liftId）。
+     * 未设置时返回空字符串。
+     */
+    public static String getLiftNumber(long liftId) {
+        return liftNumberMap.getOrDefault(liftId, "");
+    }
+
+    public static void setLiftNumber(long liftId, String liftNumber) {
+        if (liftNumber == null || liftNumber.isEmpty()) {
+            liftNumberMap.remove(liftId);
+        } else {
+            liftNumberMap.put(liftId, liftNumber);
+        }
+    }
+
     public static void remove(long liftId) {
         speedMap.remove(liftId);
         accelerationMap.remove(liftId);
@@ -131,6 +148,7 @@ public final class YteLiftConfigStore {
         doorButtonLightModeMap.remove(liftId);
         floorCancelModeMap.remove(liftId);
         floorCancelWhileMovingMap.remove(liftId);
+        liftNumberMap.remove(liftId);
     }
 
     public static void clear() {
@@ -146,5 +164,6 @@ public final class YteLiftConfigStore {
         doorButtonLightModeMap.clear();
         floorCancelModeMap.clear();
         floorCancelWhileMovingMap.clear();
+        liftNumberMap.clear();
     }
 }

@@ -20,6 +20,7 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
     protected String doorButtonLightMode;
     protected String floorCancelMode;
     protected boolean floorCancelWhileMoving;
+    protected String liftNumber;
 
     private static final String KEY_LIFT_ID = "lift_id";
     private static final String KEY_SPEED = "speed";
@@ -35,6 +36,7 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
     private static final String KEY_DOOR_BUTTON_LIGHT_MODE = "door_button_light_mode";
     private static final String KEY_FLOOR_CANCEL_MODE = "floor_cancel_mode";
     private static final String KEY_FLOOR_CANCEL_WHILE_MOVING = "floor_cancel_while_moving";
+    private static final String KEY_LIFT_NUMBER = "lift_number";
 
     public static final double DEFAULT_SPEED = 10.0;
     public static final double DEFAULT_ACCELERATION = 4.0;
@@ -55,6 +57,7 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
     public static final String DEFAULT_MOTION_PROFILE = "STANDARD";
     public static final String DEFAULT_DOOR_BUTTON_LIGHT_MODE = "MOMENTARY";
     public static final String DEFAULT_FLOOR_CANCEL_MODE = "DOUBLE_CLICK";
+    public static final String DEFAULT_LIFT_NUMBER = "";
 
     protected YteLiftConfigSchema(long liftId, double speed, double acceleration, double adoDistance, double levellingDistance, double levellingSpeed) {
         this(liftId, speed, speed, acceleration, acceleration, true, adoDistance, levellingDistance, levellingSpeed,
@@ -79,13 +82,13 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
             String motionProfile, boolean doorHoldEnabled) {
         this(liftId, speed, downSpeed, acceleration, downAcceleration, directionParametersLinked,
                 adoDistance, levellingDistance, levellingSpeed, motionProfile, doorHoldEnabled,
-                DEFAULT_DOOR_BUTTON_LIGHT_MODE, DEFAULT_FLOOR_CANCEL_MODE, false);
+                DEFAULT_DOOR_BUTTON_LIGHT_MODE, DEFAULT_FLOOR_CANCEL_MODE, false, DEFAULT_LIFT_NUMBER);
     }
 
     protected YteLiftConfigSchema(long liftId, double speed, double downSpeed, double acceleration, double downAcceleration,
             boolean directionParametersLinked, double adoDistance, double levellingDistance, double levellingSpeed,
             String motionProfile, boolean doorHoldEnabled, String doorButtonLightMode, String floorCancelMode,
-            boolean floorCancelWhileMoving) {
+            boolean floorCancelWhileMoving, String liftNumber) {
         this.liftId = liftId;
         this.speed = speed;
         this.acceleration = acceleration;
@@ -100,6 +103,7 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         this.doorButtonLightMode = doorButtonLightMode;
         this.floorCancelMode = floorCancelMode;
         this.floorCancelWhileMoving = floorCancelWhileMoving;
+        this.liftNumber = liftNumber;
     }
 
     protected YteLiftConfigSchema(ReaderBase readerBase) {
@@ -116,6 +120,7 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         doorButtonLightMode = DEFAULT_DOOR_BUTTON_LIGHT_MODE;
         floorCancelMode = DEFAULT_FLOOR_CANCEL_MODE;
         floorCancelWhileMoving = false;
+        liftNumber = DEFAULT_LIFT_NUMBER;
         updateData(readerBase);
     }
 
@@ -135,6 +140,7 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         doorButtonLightMode = readerBase.getString(KEY_DOOR_BUTTON_LIGHT_MODE, DEFAULT_DOOR_BUTTON_LIGHT_MODE);
         floorCancelMode = readerBase.getString(KEY_FLOOR_CANCEL_MODE, DEFAULT_FLOOR_CANCEL_MODE);
         floorCancelWhileMoving = readerBase.getBoolean(KEY_FLOOR_CANCEL_WHILE_MOVING, false);
+        liftNumber = readerBase.getString(KEY_LIFT_NUMBER, DEFAULT_LIFT_NUMBER);
     }
 
     @Override
@@ -153,6 +159,7 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         writerBase.writeString(KEY_DOOR_BUTTON_LIGHT_MODE, doorButtonLightMode);
         writerBase.writeString(KEY_FLOOR_CANCEL_MODE, floorCancelMode);
         writerBase.writeBoolean(KEY_FLOOR_CANCEL_WHILE_MOVING, floorCancelWhileMoving);
+        writerBase.writeString(KEY_LIFT_NUMBER, liftNumber);
     }
 
     @Override

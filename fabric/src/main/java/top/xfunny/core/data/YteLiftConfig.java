@@ -34,16 +34,16 @@ public class YteLiftConfig extends YteLiftConfigSchema {
             LiftMotionProfile motionProfile, boolean doorHoldEnabled) {
         this(liftId, upSpeed, downSpeed, upAcceleration, downAcceleration, directionParametersLinked,
                 adoDistance, levellingDistance, levellingSpeed, motionProfile, doorHoldEnabled,
-                LiftDoorButtonLightMode.MOMENTARY, LiftFloorCancelMode.DOUBLE_CLICK, false);
+                LiftDoorButtonLightMode.MOMENTARY, LiftFloorCancelMode.DOUBLE_CLICK, false, "");
     }
 
     public YteLiftConfig(long liftId, double upSpeed, double downSpeed, double upAcceleration, double downAcceleration,
             boolean directionParametersLinked, double adoDistance, double levellingDistance, double levellingSpeed,
             LiftMotionProfile motionProfile, boolean doorHoldEnabled, LiftDoorButtonLightMode doorButtonLightMode,
-            LiftFloorCancelMode floorCancelMode, boolean floorCancelWhileMoving) {
+            LiftFloorCancelMode floorCancelMode, boolean floorCancelWhileMoving, String liftNumber) {
         super(liftId, upSpeed, downSpeed, upAcceleration, downAcceleration, directionParametersLinked,
                 adoDistance, levellingDistance, levellingSpeed, motionProfile.name(), doorHoldEnabled,
-                doorButtonLightMode.name(), floorCancelMode.name(), floorCancelWhileMoving);
+                doorButtonLightMode.name(), floorCancelMode.name(), floorCancelWhileMoving, liftNumber);
     }
 
     public YteLiftConfig(ReaderBase readerBase) {
@@ -88,6 +88,8 @@ public class YteLiftConfig extends YteLiftConfigSchema {
 
     public boolean isFloorCancelWhileMovingAllowed() { return floorCancelWhileMoving; }
 
+    public String getLiftNumber() { return liftNumber; }
+
     public void setSpeed(double speed) {
         this.speed = clamp(speed, MIN_SPEED, MAX_SPEED);
     }
@@ -114,6 +116,10 @@ public class YteLiftConfig extends YteLiftConfigSchema {
 
     public void setFloorCancelWhileMovingAllowed(boolean floorCancelWhileMoving) {
         this.floorCancelWhileMoving = floorCancelWhileMoving;
+    }
+
+    public void setLiftNumber(String liftNumber) {
+        this.liftNumber = liftNumber;
     }
 
     private static double clamp(double value, double min, double max) {

@@ -5,7 +5,7 @@
 **Yunzhu Transit Extension** is a decorative add-on for
 the [Minecraft Transit Railway Mod](https://github.com/jonafanho/Minecraft-Transit-Railway), providing stylish **elevator** and **metro station** elements to enhance your transit builds.
 
-<img src="http://image.yunzhu.host/i/2025/05/01/681363e498172.webp" style="width: 200px; height: auto;" />
+<img src="http://image.yunzhu.host/i/2026/08/24/6a8b1eb91396d.webp" style="width: 200px; height: auto;" />
 
 
 ---
