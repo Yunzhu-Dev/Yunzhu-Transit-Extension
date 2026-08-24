@@ -323,6 +323,16 @@ public final class SoundsHelper {
                         1.0F
                 );
                 break;
+            case "hitachi_zlmo_button_1":
+                serverPlayerEntity.getEntityWorld().playSound(
+                        null,
+                        blockPos,
+                        SoundEvents.HITACHI_ZLMO_BUTTON_1.get(),
+                        SoundCategory.BLOCKS,
+                        1.0F,
+                        1.0F
+                );
+                break;
         }
     }
 }

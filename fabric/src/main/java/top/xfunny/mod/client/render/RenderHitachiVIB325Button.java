@@ -22,6 +22,7 @@ import top.xfunny.mod.client.resource.FontList;
 import top.xfunny.mod.client.view.*;
 import top.xfunny.mod.client.view.view_group.FrameLayout;
 import top.xfunny.mod.client.view.view_group.LinearLayout;
+import top.xfunny.mod.client.sound.SoundPlaybackManager;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
 import top.xfunny.mod.keymapping.DefaultButtonsKeyMapping;
@@ -132,6 +133,7 @@ public class RenderHitachiVIB325Button extends BlockEntityRenderer<HitachiVIB325
         buttonUpLight.setDefaultColor(DEFAULT_COLOR);
         buttonUpLight.setHoverColor(HOVER_COLOR);
         buttonUpLight.setPressedColor(PRESSED_COLOR);
+        SoundPlaybackManager.registerButtonSound(buttonUpLight,"hitachi_wlmw_button_1");
 
         ImageView buttonDown = new ImageView();
         buttonDown.setBasicsAttributes(world, blockPos);
@@ -152,6 +154,7 @@ public class RenderHitachiVIB325Button extends BlockEntityRenderer<HitachiVIB325
         buttonDownLight.setHoverColor(HOVER_COLOR);
         buttonDownLight.setPressedColor(PRESSED_COLOR);
         buttonDownLight.setFlip(false, false);
+        SoundPlaybackManager.registerButtonSound(buttonDownLight,"hitachi_wlmw_button_1");
 
         final LineComponent line = new LineComponent();
         line.setBasicsAttributes(world, blockPos);
