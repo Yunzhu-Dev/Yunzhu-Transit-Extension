@@ -87,6 +87,14 @@
       }
     ]
   },
+  "schindler_d_series_button_2": {
+    "sounds": [
+      {
+        "name": "yte:schindler_d_series_button_2",
+        "pitch": 1.0
+      }
+    ]
+  },
   "schindler_m_series_lantern_1": {
     "sounds": [
       {

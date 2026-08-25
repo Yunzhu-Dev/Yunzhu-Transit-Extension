@@ -16,6 +16,7 @@ public class SoundEvents {
     public static final SoundEventRegistryObject OTIS_SERIES_3_LANTERN_1_DOWN;
     public static final SoundEventRegistryObject OTIS_SERIES_3_BUTTON_1;
     public static final SoundEventRegistryObject SCHINDLER_D_SERIES_BUTTON_1;
+    public static final SoundEventRegistryObject SCHINDLER_D_SERIES_BUTTON_2;
     public static final SoundEventRegistryObject SCHINDLER_M_SERIES_LANTERN_1;
     public static final SoundEventRegistryObject SCHINDLER_M_SERIES_LANTERN_2;
     public static final SoundEventRegistryObject SCHINDLER_M_SERIES_BUTTON_1;
@@ -50,6 +51,7 @@ public class SoundEvents {
         OTIS_SERIES_3_LANTERN_1_DOWN = Init.REGISTRY.registerSoundEvent(new Identifier(Init.MOD_ID, "otis_series_3_lantern_1_down"));
         OTIS_SERIES_3_BUTTON_1 = Init.REGISTRY.registerSoundEvent(new Identifier(Init.MOD_ID, "otis_series_3_button_1"));
         SCHINDLER_D_SERIES_BUTTON_1 = Init.REGISTRY.registerSoundEvent(new Identifier(Init.MOD_ID, "schindler_d_series_button_1"));
+        SCHINDLER_D_SERIES_BUTTON_2 = Init.REGISTRY.registerSoundEvent(new Identifier(Init.MOD_ID, "schindler_d_series_button_2"));
         SCHINDLER_M_SERIES_LANTERN_1 = Init.REGISTRY.registerSoundEvent(new Identifier(Init.MOD_ID, "schindler_m_series_lantern_1"));
         SCHINDLER_M_SERIES_LANTERN_2 = Init.REGISTRY.registerSoundEvent(new Identifier(Init.MOD_ID, "schindler_m_series_lantern_2"));
         SCHINDLER_M_SERIES_BUTTON_1 = Init.REGISTRY.registerSoundEvent(new Identifier(Init.MOD_ID, "schindler_m_series_button_1"));
