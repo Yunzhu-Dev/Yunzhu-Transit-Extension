@@ -151,6 +151,14 @@
       }
     ]
   },
+  "schindler_linea_button_2": {
+    "sounds": [
+      {
+        "name": "yte:schindler_linea_button_2",
+        "pitch": 1.0
+      }
+    ]
+  },
   "mitsubishi_nexway_lantern_1_up": {
     "sounds": [
       {

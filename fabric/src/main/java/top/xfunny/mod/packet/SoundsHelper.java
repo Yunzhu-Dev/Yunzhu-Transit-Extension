@@ -201,6 +201,16 @@ public final class SoundsHelper {
                         1.0F
                 );
                 break;
+            case "schindler_linea_button_2":
+                serverPlayerEntity.getEntityWorld().playSound(
+                        null,
+                        blockPos,
+                        SoundEvents.SCHINDLER_LINEA_BUTTON_2.get(),
+                        SoundCategory.BLOCKS,
+                        1.0F,
+                        1.0F
+                );
+                break;
             case "mitsubishi_nexway_lantern_1_up":
                 serverPlayerEntity.getEntityWorld().playSound(
                         null,

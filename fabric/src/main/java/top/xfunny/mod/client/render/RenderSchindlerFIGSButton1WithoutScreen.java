@@ -20,7 +20,6 @@ import top.xfunny.mod.client.sound.SoundPlaybackManager;
 import top.xfunny.mod.client.view.*;
 import top.xfunny.mod.client.view.view_group.FrameLayout;
 import top.xfunny.mod.client.view.view_group.LinearLayout;
-import top.xfunny.mod.client.sound.SoundPlaybackManager;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
 import top.xfunny.mod.keymapping.DefaultButtonsKeyMapping;
