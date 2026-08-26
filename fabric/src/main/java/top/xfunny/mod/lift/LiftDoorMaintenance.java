@@ -17,4 +17,9 @@ public interface LiftDoorMaintenance {
 
 	/** 是否存在尚未播完的过渡动画（供 S→C 回声包守卫）。 */
 	boolean yte$isMaintenanceAnimating();
+
+	void yte$applyMaintenanceState(boolean open, float fromValue, long startNanos, long durationMs,
+			DoorMotionCurve curve);
+
+	double yte$maintenanceAnimValue();
 }

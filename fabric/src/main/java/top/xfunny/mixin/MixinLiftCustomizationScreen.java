@@ -202,6 +202,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique private long yte$lastSentDoorCloseMs;
     @Unique private long yte$lastSentDoorDwellMs;
     @Unique private long yte$lastSentDoorRunDelayMs;
+    @Unique private DoorMotionCurve yte$lastSentDoorCurve = DoorMotionCurve.LINEAR;
     @Unique private double yte$lastSentRecoverySpeed = -1;
     @Unique private long yte$lastSentMaxDoorOpenMs = -1;
     @Unique private double yte$lastSentAdoDistance = -1;
@@ -355,6 +356,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$lastSentDoorCloseMs = yte$doorCloseMs;
         yte$lastSentDoorDwellMs = yte$doorDwellMs;
         yte$lastSentDoorRunDelayMs = yte$doorRunDelayMs;
+        yte$lastSentDoorCurve = yte$doorCurve;
         yte$lastSentRecoverySpeed = currentRecoverySpeed;
         yte$lastSentMaxDoorOpenMs = currentMaxDoorOpenMs;
     }
@@ -723,6 +725,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                 || yte$floorCancelMode != yte$lastSentFloorCancelMode
                 || doorOpenMs != yte$lastSentDoorOpenMs || doorCloseMs != yte$lastSentDoorCloseMs
                 || doorDwellMs != yte$lastSentDoorDwellMs || doorRunDelayMs != yte$lastSentDoorRunDelayMs
+                || yte$doorCurve != yte$lastSentDoorCurve
                 || recoverySpeed != yte$lastSentRecoverySpeed
                 || maxDoorOpenMs != yte$lastSentMaxDoorOpenMs
                 || !liftNumber.equals(yte$lastSentLiftNumber)) {
@@ -744,6 +747,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
             yte$lastSentDoorCloseMs = doorCloseMs;
             yte$lastSentDoorDwellMs = doorDwellMs;
             yte$lastSentDoorRunDelayMs = doorRunDelayMs;
+            yte$lastSentDoorCurve = yte$doorCurve;
             yte$lastSentRecoverySpeed = recoverySpeed;
             yte$lastSentMaxDoorOpenMs = maxDoorOpenMs;
 

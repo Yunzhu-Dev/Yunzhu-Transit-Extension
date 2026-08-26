@@ -223,8 +223,7 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
                     final LiftDoorState.DoorState curtainPhase =
                             LiftDoorState.getDoorState(getStoppingCoolDown(), cp);
                     if (curtainPhase == LiftDoorState.DoorState.CLOSING) {
-                        if (curtainTouch && yte$rawDoorValue(getStoppingCoolDown(), cp)
-                                >= LiftDoorState.CURTAIN_MIN_DOOR_VALUE) {
+                        if (curtainTouch) {
                             yte$processDoorCommand(doorQueue, LiftDoorState.Command.OPEN);
                         }
                     } else if (curtainPhase != LiftDoorState.DoorState.CLOSING) {
@@ -446,7 +445,7 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
         if (modeState.maintenanceLocked || modeState.modePending || modeState.modeActive) {
             return;
         }
-        if (modeState.mode.isolates() && !modeState.firefighterMode) {
+        if (modeState.mode.isolates() && !modeState.firemanMode) {
             return;
         }
 

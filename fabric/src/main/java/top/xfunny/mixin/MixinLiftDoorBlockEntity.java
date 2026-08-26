@@ -2,10 +2,9 @@ package top.xfunny.mixin;
 
 import org.mtr.core.data.Lift;
 import org.mtr.core.data.LiftFloor;
+import org.mtr.mapping.holder.BlockHitResult;
 import org.mtr.mapping.holder.BlockPos;
 import org.mtr.mapping.holder.BlockState;
-import org.mtr.mapping.holder.BlockEntityType;
-import org.mtr.mapping.holder.BlockHitResult;
 import org.mtr.mapping.holder.ClientPlayerEntity;
 import org.mtr.mapping.holder.MinecraftClient;
 import org.mtr.mapping.mapper.BlockEntityExtension;
@@ -28,14 +27,14 @@ import top.xfunny.mod.block.OtisE411USDoor1;
 import top.xfunny.mod.block.SchindlerQKS9Door1;
 import top.xfunny.mod.config.YteLiftConfigStore;
 import top.xfunny.mod.lift.DoorMotionCurve;
+import top.xfunny.mod.lift.LiftDoorMaintenance;
 import top.xfunny.mod.lift.LiftDoorState;
 import top.xfunny.mod.lift.LiftModeState;
-import top.xfunny.mod.lift.LiftDoorMaintenance;
 import top.xfunny.mod.packet.PacketLiftDoorCurtain;
 import top.xfunny.mod.util.LiftShaftLocator;
 
 @Mixin(value = BlockPSDAPGDoorBase.BlockEntityBase.class, remap = false)
-public abstract class MixinLiftDoorBlockEntity extends BlockEntityExtension implements LiftDoorMaintenance {
+public abstract class MixinLiftDoorBlockEntity implements LiftDoorMaintenance {
 
     @Unique
     private boolean yte$maintenanceOpen;
@@ -58,43 +57,70 @@ public abstract class MixinLiftDoorBlockEntity extends BlockEntityExtension impl
     @Unique
     private long yte$nextAttackSendNanos;
 
-    /**
-     * 光幕客户端检测：本格碰撞盒微扩后与本地玩家相交即视为「玩家在门区域」，
-     * 状态变化立即上报、持续遮挡每秒心跳一次（C→S）。
-     */
+    /** 光幕检测：玩家在门贴面 ±0.25 块薄层且落在门宽/门高内即上报；上半格跳过（门高按整扇 2 格覆盖）。 */
     @Inject(method = "tick", at = @At("HEAD"))
     private void yte$curtainDetect(float tickDelta, CallbackInfo ci) {
-        final org.mtr.mapping.holder.World world = getWorld2();
+        final org.mtr.mapping.holder.World world = yte$self().getWorld2();
         if (world == null || !world.isClient()) {
+            return;
+        }
+        final BlockState state = yte$self().getCachedState2();
+        if (IBlock.getStatePropertySafe(state, IBlock.HALF) == IBlock.DoubleBlockHalf.UPPER) {
             return;
         }
         final ClientPlayerEntity player = MinecraftClient.getInstance().getPlayerMapped();
         if (player == null) {
             return;
         }
-        final BlockPos pos = getPos2();
+        final BlockPos pos = yte$self().getPos2();
         final double px = player.getPos().getXMapped();
         final double py = player.getPos().getYMapped();
         final double pz = player.getPos().getZMapped();
-        final boolean blocked = px + 0.3 > pos.getX() && px - 0.3 < pos.getX() + 1
-                && py + 1.8 > pos.getY() && py < pos.getY() + 1
-                && pz + 0.3 > pos.getZ() && pz - 0.3 < pos.getZ() + 1;
+
+        // 光幕只看门贴面 ±0.25 块薄层：整格判定会让井道内侧/玻璃后空间误触发
+        boolean blocked;
+        switch (IBlock.getStatePropertySafe(state, BlockPSDAPGDoorBase.FACING)) {
+            case NORTH:
+                blocked = Math.abs(pos.getZ() - pz) < 0.25
+                        && Math.abs(px - (pos.getX() + 0.5)) < 0.8;
+                break;
+            case SOUTH:
+                blocked = Math.abs(pz - (pos.getZ() + 1)) < 0.25
+                        && Math.abs(px - (pos.getX() + 0.5)) < 0.8;
+                break;
+            case WEST:
+                blocked = Math.abs(pos.getX() - px) < 0.25
+                        && Math.abs(pz - (pos.getZ() + 0.5)) < 0.8;
+                break;
+            case EAST:
+                blocked = Math.abs(px - (pos.getX() + 1)) < 0.25
+                        && Math.abs(pz - (pos.getZ() + 0.5)) < 0.8;
+                break;
+            default:
+                blocked = false;
+        }
+        // 纵向覆盖整扇门高（本格 + 上格）
+        if (!(py < pos.getY() + 2 && py + 1.8 > pos.getY())) {
+            blocked = false;
+        }
 
         final long now = System.nanoTime();
 
-        // 攻击门：左键按住且 1 格视线首命中本门 → 「手伸进门缝」脉冲（独立 250ms 节流，立即上报）
+        // 攻击门：左键按住且 2 格视线首命中本门（含上格）→ 「手伸进门缝」脉冲（独立 250ms 节流，立即上报）
         if (MinecraftClient.getInstance().getOptionsMapped().getKeyAttackMapped().isPressed()
                 && now >= yte$nextAttackSendNanos) {
-            final org.mtr.mapping.holder.HitResult hitResult = player.raycast(1.0, 0, false);
-            if (BlockHitResult.isInstance(hitResult)
-                    && BlockHitResult.cast(hitResult).getBlockPos().equals(getPos2())) {
-                yte$nextAttackSendNanos = now + 250_000_000L;
-                if (yte$curtainLiftId == null) {
-                    yte$curtainLiftId = LiftShaftLocator.findNearest(pos);
-                }
-                if (yte$curtainAllowed(yte$curtainLiftId)) {
-                    InitClient.REGISTRY_CLIENT.sendPacketToServer(
-                            new PacketLiftDoorCurtain(yte$curtainLiftId, true));
+            final org.mtr.mapping.holder.HitResult hitResult = player.raycast(2.0, 0, false);
+            if (BlockHitResult.isInstance(hitResult)) {
+                final BlockPos hitPos = BlockHitResult.cast(hitResult).getBlockPos();
+                if (hitPos.equals(pos) || hitPos.equals(pos.up(1))) {
+                    yte$nextAttackSendNanos = now + 250_000_000L;
+                    if (yte$curtainLiftId == null) {
+                        yte$curtainLiftId = LiftShaftLocator.findForDoor(pos);
+                    }
+                    if (yte$curtainAllowed(yte$curtainLiftId)) {
+                        InitClient.REGISTRY_CLIENT.sendPacketToServer(
+                                new PacketLiftDoorCurtain(yte$curtainLiftId, true));
+                    }
                 }
             }
         }
@@ -109,7 +135,7 @@ public abstract class MixinLiftDoorBlockEntity extends BlockEntityExtension impl
         }
         yte$curtainLastBlocked = blocked;
         if (yte$curtainLiftId == null) {
-            yte$curtainLiftId = LiftShaftLocator.findNearest(pos);
+            yte$curtainLiftId = LiftShaftLocator.findForDoor(pos);
         }
         if (yte$curtainAllowed(yte$curtainLiftId)) {
             InitClient.REGISTRY_CLIENT.sendPacketToServer(
@@ -129,40 +155,27 @@ public abstract class MixinLiftDoorBlockEntity extends BlockEntityExtension impl
         return !modeState.maintenanceLocked && !modeState.modePending && !modeState.modeActive;
     }
 
-    protected MixinLiftDoorBlockEntity(BlockEntityType<?> blockEntityType, BlockPos blockPos, BlockState blockState) {
-        super(blockEntityType, blockPos, blockState);
-    }
-
     @Override
     public void yte$setMaintenanceOpen(boolean open, long liftId, long durationMs) {
-        // ponytail: MTR's door block entity has no NBT hooks, so this flag is
-        // in-memory only; the C→S/S→C packets re-apply it after chunk reloads.
-        // 以自身当前动画值为过渡起点；关门时长与曲线取该梯配置
         final YteLiftConfigStore.DoorParams params = YteLiftConfigStore.getDoorParams(liftId);
         final float from = (float) yte$maintenanceAnimValue();
         final long startNanos = System.nanoTime();
         final long resolvedDurationMs = open ? durationMs : params.closeMs;
         final DoorMotionCurve curve = params.curve;
-        markDirty2();
-        // 门共四格实体（左右扇 × 上下格）：全部写入同一组状态，否则只开半扇/动画错相
-        final org.mtr.mapping.holder.World world = getWorld2();
+        yte$self().markDirty2();
+        final org.mtr.mapping.holder.World world = yte$self().getWorld2();
         if (world != null) {
-            BlockPos bottomPos = getPos2();
-            if (IBlock.getStatePropertySafe(getCachedState2(), IBlock.HALF) == IBlock.DoubleBlockHalf.UPPER) {
+            BlockPos bottomPos = yte$self().getPos2();
+            if (IBlock.getStatePropertySafe(yte$self().getCachedState2(), IBlock.HALF) == IBlock.DoubleBlockHalf.UPPER) {
                 bottomPos = bottomPos.down(1);
             }
-            final org.mtr.mapping.holder.Direction facing = IBlock.getStatePropertySafe(getCachedState2(), BlockPSDAPGDoorBase.FACING);
-            final boolean sideRight = IBlock.getStatePropertySafe(getCachedState2(), IBlock.SIDE) == IBlock.EnumSide.RIGHT;
-            final org.mtr.mapping.holder.Direction otherDirection = sideRight
-                    ? facing.rotateYCounterclockwise() : facing.rotateYClockwise();
-            final BlockPos[] targets = {
-                    bottomPos, bottomPos.up(1),
-                    bottomPos.offset(otherDirection), bottomPos.offset(otherDirection).up(1)
-            };
-            for (final BlockPos target : targets) {
+            final org.mtr.mapping.holder.Direction facing = IBlock.getStatePropertySafe(yte$self().getCachedState2(), BlockPSDAPGDoorBase.FACING);
+            final BlockPos otherPos = bottomPos.offset(IBlock.getStatePropertySafe(yte$self().getCachedState2(), IBlock.SIDE) == IBlock.EnumSide.RIGHT
+                    ? facing.rotateYCounterclockwise() : facing.rotateYClockwise());
+            for (final BlockPos target : new BlockPos[]{bottomPos, bottomPos.up(1), otherPos, otherPos.up(1)}) {
                 final org.mtr.mapping.holder.BlockEntity entity = world.getBlockEntity(target);
-                if (entity != null && entity.data instanceof MixinLiftDoorBlockEntity) {
-                    ((MixinLiftDoorBlockEntity) entity.data).yte$applyMaintenanceState(
+                if (entity != null && entity.data instanceof LiftDoorMaintenance) {
+                    ((LiftDoorMaintenance) entity.data).yte$applyMaintenanceState(
                             open, from, startNanos, resolvedDurationMs, curve);
                 }
             }
@@ -171,20 +184,21 @@ public abstract class MixinLiftDoorBlockEntity extends BlockEntityExtension impl
         }
     }
 
-    @Unique
-    private void yte$applyMaintenanceState(
+    /** 四格状态统一写入；四格一致后任意一格读取即为整扇门状态。 */
+    @Override
+    public void yte$applyMaintenanceState(
             boolean open, float fromValue, long startNanos, long durationMs, DoorMotionCurve curve) {
         yte$maintenanceOpen = open;
         yte$animFromValue = fromValue;
         yte$animStartNanos = startNanos;
         yte$animDurationMs = Math.max(durationMs, 1);
         yte$animCurve = curve == null ? DoorMotionCurve.LINEAR : curve;
-        markDirty2();
+        yte$self().markDirty2();
     }
 
     /** 检修过渡的实时门值：开门线性、关门套配置曲线，播完后稳定在目标值。 */
-    @Unique
-    private double yte$maintenanceAnimValue() {
+    @Override
+    public double yte$maintenanceAnimValue() {
         if (yte$animStartNanos == 0) {
             return yte$maintenanceOpen ? 1.0 : 0.0;
         }
@@ -203,15 +217,13 @@ public abstract class MixinLiftDoorBlockEntity extends BlockEntityExtension impl
 
     @Override
     public boolean yte$isMaintenanceOpen() {
-        final MixinLiftDoorBlockEntity bottom = yte$getBottomEntity();
-        return bottom != null ? bottom.yte$maintenanceOpen : yte$maintenanceOpen;
+        return yte$maintenanceOpen;
     }
 
     @Override
     public boolean yte$isMaintenanceAnimating() {
-        final MixinLiftDoorBlockEntity bottom = yte$getBottomEntity();
-        return bottom != null && bottom.yte$animStartNanos != 0
-                && System.nanoTime() - bottom.yte$animStartNanos < bottom.yte$animDurationMs * 1_000_000L;
+        return yte$animStartNanos != 0
+                && System.nanoTime() - yte$animStartNanos < yte$animDurationMs * 1_000_000L;
     }
 
     /**
@@ -225,36 +237,17 @@ public abstract class MixinLiftDoorBlockEntity extends BlockEntityExtension impl
         if (!yte$isLiftDoor()) {
             return;
         }
-        // 检修动画状态统一读本扇底部实体（四格一致）
-        final MixinLiftDoorBlockEntity bottom = yte$getBottomEntity();
-        double value;
-        if (bottom != null && (bottom.yte$maintenanceOpen || bottom.yte$animStartNanos != 0)) {
-            value = Math.max(bottom.yte$maintenanceAnimValue(), yte$nearbyLiftDoorValue());
-        } else {
-            value = yte$nearbyLiftDoorValue();
+        double value = yte$nearbyLiftDoorValue();
+        if (yte$maintenanceOpen || yte$animStartNanos != 0) {
+            value = Math.max(yte$maintenanceAnimValue(), value);
         }
         cir.setReturnValue(value);
     }
 
     @Unique
-    private MixinLiftDoorBlockEntity yte$getBottomEntity() {
-        final org.mtr.mapping.holder.World world = getWorld2();
-        if (world == null) {
-            return null;
-        }
-        BlockPos pos = getPos2();
-        if (IBlock.getStatePropertySafe(getCachedState2(), IBlock.HALF) == IBlock.DoubleBlockHalf.UPPER) {
-            pos = pos.down(1);
-        }
-        final org.mtr.mapping.holder.BlockEntity entity = world.getBlockEntity(pos);
-        return entity != null && entity.data instanceof MixinLiftDoorBlockEntity
-                ? (MixinLiftDoorBlockEntity) entity.data : null;
-    }
-
-    @Unique
     private double yte$nearbyLiftDoorValue() {
-        BlockPos doorPos = getPos2();
-        if (IBlock.getStatePropertySafe(getCachedState2(), IBlock.HALF) == IBlock.DoubleBlockHalf.UPPER) {
+        BlockPos doorPos = yte$self().getPos2();
+        if (IBlock.getStatePropertySafe(yte$self().getCachedState2(), IBlock.HALF) == IBlock.DoubleBlockHalf.UPPER) {
             doorPos = doorPos.down(1);
         }
 
@@ -280,19 +273,16 @@ public abstract class MixinLiftDoorBlockEntity extends BlockEntityExtension impl
                 targetFloor = schema.getFloors().get(targetFloorIndex);
             }
 
-            final long targetX = targetFloor.getPosition().getX();
-            final long targetY = targetFloor.getPosition().getY();
-            final long targetZ = targetFloor.getPosition().getZ();
-            final double alignY = targetY + lift.getOffsetY();
-            final double rangeX = lift.getWidth();
-            final double rangeZ = Math.max(lift.getWidth(), lift.getDepth()) / 2 + 1;
-            if (Math.abs(doorPos.getX() - targetX) <= rangeX
-                    && Math.abs(doorPos.getZ() - targetZ) <= rangeZ
-                    && doorPos.getY() + 1 >= alignY - 2 && doorPos.getY() <= alignY + 2) {
+            if (LiftShaftLocator.isDoorAtLiftDoorway(doorPos, lift, targetFloor.getPosition())) {
                 doorValue = Math.max(doorValue, lift.getDoorValue() * LiftDoorState.DOOR_MAX_OPEN_SCALE);
             }
         }
         return doorValue;
+    }
+
+    @Unique
+    private BlockEntityExtension yte$self() {
+        return (BlockEntityExtension) (Object) this;
     }
 
     private boolean yte$isLiftDoor() {

@@ -51,8 +51,7 @@ public final class LiftModeState {
 
         // 消防
         public String fireFloorNumber;
-        /** 消防员模式：与 FIRE_RECALL 叠加时只响应内呼；单独开启时也只响应内呼。 */
-        public boolean firefighterMode;
+        public boolean firemanMode; // 只能在消防迫降开启后
     }
 
     private static final Map<Long, State> STATES = new ConcurrentHashMap<>();
@@ -150,7 +149,7 @@ public final class LiftModeState {
         if (state.maintenanceLocked || state.modePending || state.modeActive) {
             return false;
         }
-        if (state.firefighterMode) {
+        if (state.firemanMode) {
             return false;
         }
         if (state.mode != LiftMode.NORMAL && state.mode.isolates()) {
@@ -171,7 +170,7 @@ public final class LiftModeState {
         if (state.mode == LiftMode.EMERGENCY_STOP) {
             return false;
         }
-        if (state.firefighterMode) {
+        if (state.firemanMode) {
             return true;
         }
         if (state.mode != LiftMode.NORMAL && state.mode.isolates()) {
@@ -188,7 +187,7 @@ public final class LiftModeState {
     public static void enableFireRecall(long liftId, String fireFloorNumber) {
         final State state = getOrCreate(liftId);
         state.fireFloorNumber = fireFloorNumber;
-        // ponytail: targetFloor 由 fireFloorNumber 解析的逻辑待定，先一律就近平层
+        // targetFloor 由 fireFloorNumber 解析的逻辑待定，先一律就近平层
         requestMode(liftId, LiftMode.FIRE_RECALL, 0, -1);
     }
 
@@ -202,11 +201,11 @@ public final class LiftModeState {
     }
 
     public static void enableFirefighterMode(long liftId) {
-        getOrCreate(liftId).firefighterMode = true;
+        getOrCreate(liftId).firemanMode = true;
     }
 
     public static void disableFirefighterMode(long liftId) {
-        getOrCreate(liftId).firefighterMode = false;
+        getOrCreate(liftId).firemanMode = false;
     }
 
     /** 是否处于消防迫降模式（用于门无限常开）。 */

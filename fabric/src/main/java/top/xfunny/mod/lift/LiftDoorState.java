@@ -48,8 +48,6 @@ public final class LiftDoorState {
         return DoorState.CLOSING;
     }
 
-    /** 光幕盲区：门值低于此阈值后光幕全部失效（门必然关死）。 */
-    public static final double CURTAIN_MIN_DOOR_VALUE = 0.1;
 
     /**
      * Per-lift door message queue. Server-authoritative, processed by

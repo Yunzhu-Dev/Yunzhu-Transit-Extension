@@ -1,7 +1,6 @@
 package top.xfunny.mixin;
 
 import org.mtr.core.data.Lift;
-import org.mtr.core.data.Position;
 import org.mtr.mapping.holder.BlockEntity;
 import org.mtr.mapping.holder.BlockHitResult;
 import org.mtr.mapping.holder.BlockPos;
@@ -56,7 +55,7 @@ public abstract class MixinItemDriverKey {
 			return;
 		}
 
-		final Long liftId = yte$findShaftLift(blockPos);
+		final Long liftId = LiftShaftLocator.findForDoor(blockPos);
 		if (liftId == null) {
 			return;
 		}
@@ -78,14 +77,5 @@ public abstract class MixinItemDriverKey {
 		}
 		InitClient.REGISTRY_CLIENT.sendPacketToServer(new PacketLiftDoorMaintenance(liftId, blockPos, open, durationMs));
 		ci.cancel();
-	}
-
-	/**
-	 * 逐层最近者胜：层门必然位于某层高度（垂直对齐该层+offsetY），
-	 * 水平收紧到贴墙距离；邻井重叠时取水平最近的一部，杜绝跨井误锁。
-	 */
-	@Unique
-    private static Long yte$findShaftLift(BlockPos doorPos) {
-		return LiftShaftLocator.findNearest(doorPos);
 	}
 }
