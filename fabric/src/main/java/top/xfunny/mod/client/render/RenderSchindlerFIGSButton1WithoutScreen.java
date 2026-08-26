@@ -16,6 +16,7 @@ import org.mtr.mod.data.IGui;
 import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.block.SchindlerFIGSButton1WithoutScreen;
 import top.xfunny.mod.block.base.LiftButtonsBase;
+import top.xfunny.mod.client.sound.SoundPlaybackManager;
 import top.xfunny.mod.client.view.*;
 import top.xfunny.mod.client.view.view_group.FrameLayout;
 import top.xfunny.mod.client.view.view_group.LinearLayout;
@@ -114,7 +115,7 @@ public class RenderSchindlerFIGSButton1WithoutScreen extends BlockEntityRenderer
         buttonUpLight.setDefaultColor(ARGB_WHITE, true);
         buttonUpLight.setHoverColor(HOVER_COLOR);
         buttonUpLight.setPressedColor(PRESSED_COLOR);
-        buttonUpLight.setButtonSound("schindler_fi_gs_button_1");
+        SoundPlaybackManager.registerButtonSound(buttonUpLight,"schindler_d_series_button_2");
 
         ImageView buttonDown = new ImageView();
         buttonDown.setBasicsAttributes(world, blockPos);
@@ -134,7 +135,7 @@ public class RenderSchindlerFIGSButton1WithoutScreen extends BlockEntityRenderer
         buttonDownLight.setDefaultColor(ARGB_WHITE, true);
         buttonDownLight.setHoverColor(HOVER_COLOR);
         buttonDownLight.setPressedColor(PRESSED_COLOR);
-        buttonDownLight.setButtonSound("schindler_fi_gs_button_1");
+        SoundPlaybackManager.registerButtonSound(buttonDownLight,"schindler_d_series_button_2");
 
 
         final LineComponent line = new LineComponent();

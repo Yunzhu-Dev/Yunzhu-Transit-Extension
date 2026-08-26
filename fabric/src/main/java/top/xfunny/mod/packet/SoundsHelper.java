@@ -121,6 +121,16 @@ public final class SoundsHelper {
                         1.0F
                 );
                 break;
+            case "schindler_d_series_button_2":
+                serverPlayerEntity.getEntityWorld().playSound(
+                        null,
+                        blockPos,
+                        SoundEvents.SCHINDLER_D_SERIES_BUTTON_2.get(),
+                        SoundCategory.BLOCKS,
+                        1.0F,
+                        1.0F
+                );
+                break;
             case "schindler_m_series_lantern_1":
                 serverPlayerEntity.getEntityWorld().playSound(
                         null,
@@ -186,6 +196,16 @@ public final class SoundsHelper {
                         null,
                         blockPos,
                         SoundEvents.SCHINDLER_LINEA_BUTTON_1.get(),
+                        SoundCategory.BLOCKS,
+                        1.0F,
+                        1.0F
+                );
+                break;
+            case "schindler_linea_button_2":
+                serverPlayerEntity.getEntityWorld().playSound(
+                        null,
+                        blockPos,
+                        SoundEvents.SCHINDLER_LINEA_BUTTON_2.get(),
                         SoundCategory.BLOCKS,
                         1.0F,
                         1.0F
@@ -309,7 +329,7 @@ public final class SoundsHelper {
                         blockPos,
                         SoundEvents.TKE_STEPC_BUTTON_1.get(),
                         SoundCategory.BLOCKS,
-                        0.8F,
+                        0.6F,
                         1.0F
                 );
                 break;
@@ -319,7 +339,17 @@ public final class SoundsHelper {
                         blockPos,
                         SoundEvents.HITACHI_WLMW_BUTTON_1.get(),
                         SoundCategory.BLOCKS,
-                        0.6F,
+                        1.0F,
+                        1.0F
+                );
+                break;
+            case "hitachi_zlmo_button_1":
+                serverPlayerEntity.getEntityWorld().playSound(
+                        null,
+                        blockPos,
+                        SoundEvents.HITACHI_ZLMO_BUTTON_1.get(),
+                        SoundCategory.BLOCKS,
+                        1.0F,
                         1.0F
                 );
                 break;

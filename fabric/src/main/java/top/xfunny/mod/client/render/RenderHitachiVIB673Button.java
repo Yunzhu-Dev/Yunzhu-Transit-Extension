@@ -21,6 +21,7 @@ import top.xfunny.mod.client.resource.FontList;
 import top.xfunny.mod.client.view.*;
 import top.xfunny.mod.client.view.view_group.FrameLayout;
 import top.xfunny.mod.client.view.view_group.LinearLayout;
+import top.xfunny.mod.client.sound.SoundPlaybackManager;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
 import top.xfunny.mod.keymapping.DefaultButtonsKeyMapping;
@@ -134,6 +135,7 @@ public class RenderHitachiVIB673Button extends BlockEntityRenderer<HitachiVIB673
         buttonUpLight.setDefaultColor(DEFAULT_COLOR);
         buttonUpLight.setHoverColor(HOVER_COLOR);
         buttonUpLight.setPressedColor(PRESSED_COLOR);
+        SoundPlaybackManager.registerButtonSound(buttonUpLight,"hitachi_wlmw_button_1");
 
         ImageView buttonDown = new ImageView();
         buttonDown.setBasicsAttributes(world, blockPos);
@@ -154,6 +156,7 @@ public class RenderHitachiVIB673Button extends BlockEntityRenderer<HitachiVIB673
         buttonDownLight.setHoverColor(HOVER_COLOR);
         buttonDownLight.setPressedColor(PRESSED_COLOR);
         buttonDownLight.setFlip(false, false);
+        SoundPlaybackManager.registerButtonSound(buttonDownLight,"hitachi_wlmw_button_1");
 
         final LineComponent line = new LineComponent();
         line.setBasicsAttributes(world, blockPos);
@@ -222,7 +225,7 @@ public class RenderHitachiVIB673Button extends BlockEntityRenderer<HitachiVIB673
                 liftArrowView.setBasicsAttributes(world, blockPos, sortedPositionsAndLifts.get(i).right(), LiftArrowView.ArrowType.AUTO);
                 liftArrowView.setTexture(ARROW_TEXTURE);
                 liftArrowView.setDimension(0.475F / 16, 384, 512);
-                liftArrowView.setMargin(0.48F / 16, 1.35F / 16, 0, -0.2F / 16);
+                liftArrowView.setMargin(0.58F / 16, 1.35F / 16, 0, -0.2F / 16);
                 liftArrowView.setQueuedRenderLayer(QueuedRenderLayer.LIGHT_TRANSLUCENT);
                 if (unlocked) {
                     liftArrowView.setColor(0xFFFFFFFF);
