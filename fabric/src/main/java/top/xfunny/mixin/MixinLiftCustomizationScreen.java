@@ -28,6 +28,7 @@ import top.xfunny.mod.client.InitClient;
 import top.xfunny.mod.client.YteMinecraftClientData;
 import top.xfunny.mod.config.YteLiftConfigStore;
 import top.xfunny.mod.packet.YtePacketUpdateData;
+import top.xfunny.mod.lift.LiftArrivalLanternTriggerMode;
 import top.xfunny.mod.lift.LiftDoorButtonLightMode;
 import top.xfunny.mod.lift.LiftFloorCancelMode;
 import top.xfunny.mod.lift.LiftMotionProfile;
@@ -123,6 +124,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique private ButtonWidgetExtension yte$doorHoldButton;
     @Unique private ButtonWidgetExtension yte$doorButtonLightModeButton;
     @Unique private ButtonWidgetExtension yte$floorCancelModeButton;
+    @Unique private ButtonWidgetExtension yte$arrivalLanternTriggerModeButton;
     @Unique private TextFieldWidgetExtension yte$speedField;
     @Unique private TextFieldWidgetExtension yte$accelerationField;
     @Unique private TextFieldWidgetExtension yte$downSpeedField;
@@ -160,6 +162,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique private LiftDoorButtonLightMode yte$lastSentDoorButtonLightMode = LiftDoorButtonLightMode.MOMENTARY;
     @Unique private LiftFloorCancelMode yte$floorCancelMode = LiftFloorCancelMode.DOUBLE_CLICK;
     @Unique private LiftFloorCancelMode yte$lastSentFloorCancelMode = LiftFloorCancelMode.DOUBLE_CLICK;
+    @Unique private LiftArrivalLanternTriggerMode yte$arrivalLanternTriggerMode = LiftArrivalLanternTriggerMode.DECELERATION;
+    @Unique private LiftArrivalLanternTriggerMode yte$lastSentArrivalLanternTriggerMode = LiftArrivalLanternTriggerMode.DECELERATION;
     @Unique private String yte$liftNumber = "";
     @Unique private String yte$lastSentLiftNumber = "";
     @Unique private double yte$lastSentAdoDistance = -1;
@@ -197,6 +201,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$doorHoldEnabled = config != null && config.isDoorHoldEnabled();
         yte$doorButtonLightMode = config == null ? LiftDoorButtonLightMode.MOMENTARY : config.getDoorButtonLightMode();
         yte$floorCancelMode = config == null ? LiftFloorCancelMode.DOUBLE_CLICK : config.getFloorCancelMode();
+        yte$arrivalLanternTriggerMode = config == null
+                ? LiftArrivalLanternTriggerMode.DECELERATION : config.getArrivalLanternTriggerMode();
         yte$liftNumber = config == null ? "" : config.getLiftNumber();
         final double currentAdoDistance = config != null ? config.getAdoDistance() : YteLiftConfig.DEFAULT_ADO_DISTANCE;
         final double currentLevellingDistance = config != null ? config.getLevellingDistance() : YteLiftConfig.DEFAULT_LEVELLING_DISTANCE;
@@ -243,6 +249,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                 TextHelper.literal(""), button -> yte$toggleDoorButtonLightMode());
         yte$floorCancelModeButton = new ButtonWidgetExtension(0, 0, 0, IGui.SQUARE_SIZE,
                 TextHelper.literal(""), button -> yte$toggleFloorCancelMode());
+        yte$arrivalLanternTriggerModeButton = new ButtonWidgetExtension(0, 0, 0, IGui.SQUARE_SIZE,
+                TextHelper.literal(""), button -> yte$toggleArrivalLanternTriggerMode());
 
         yte$tabSizeButton = new ButtonWidgetExtension(0, 0, 0, IGui.SQUARE_SIZE,
                 TextHelper.translatable("gui.yte.lift_tab_base"), button -> yte$onSelectTab(TAB_BASE));
@@ -275,6 +283,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$lastSentDoorHoldEnabled = yte$doorHoldEnabled;
         yte$lastSentDoorButtonLightMode = yte$doorButtonLightMode;
         yte$lastSentFloorCancelMode = yte$floorCancelMode;
+        yte$lastSentArrivalLanternTriggerMode = yte$arrivalLanternTriggerMode;
         yte$lastSentLiftNumber = yte$liftNumber;
     }
 
@@ -306,6 +315,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         addChild(new ClickableWidget(yte$doorHoldButton));
         addChild(new ClickableWidget(yte$doorButtonLightModeButton));
         addChild(new ClickableWidget(yte$floorCancelModeButton));
+        addChild(new ClickableWidget(yte$arrivalLanternTriggerModeButton));
         addChild(new ClickableWidget(yte$sliderSpeed));
         addChild(new ClickableWidget(yte$sliderAcceleration));
         addChild(new ClickableWidget(yte$sliderDownSpeed));
@@ -410,6 +420,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                 yte$positionFullWidth(yte$doorHoldButton, 1);
                 yte$positionFullWidth(yte$doorButtonLightModeButton, 2);
                 yte$positionFullWidth(yte$floorCancelModeButton, 3);
+                yte$positionFullWidth(yte$arrivalLanternTriggerModeButton, 4);
                 break;
             default:
                 break;
@@ -440,7 +451,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
             case TAB_LEVEL:
                 return 6;
             case TAB_DOOR:
-                return 3;
+                return 4;
             default:
                 return 1;
         }
@@ -575,6 +586,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                 || yte$doorHoldEnabled != yte$lastSentDoorHoldEnabled
                 || yte$doorButtonLightMode != yte$lastSentDoorButtonLightMode
                 || yte$floorCancelMode != yte$lastSentFloorCancelMode
+                || yte$arrivalLanternTriggerMode != yte$lastSentArrivalLanternTriggerMode
                 || !liftNumber.equals(yte$lastSentLiftNumber)) {
             yte$lastSentSpeed = upSpeed;
             yte$lastSentDownSpeed = downSpeed;
@@ -588,16 +600,18 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
             yte$lastSentDoorHoldEnabled = yte$doorHoldEnabled;
             yte$lastSentDoorButtonLightMode = yte$doorButtonLightMode;
             yte$lastSentFloorCancelMode = yte$floorCancelMode;
+            yte$lastSentArrivalLanternTriggerMode = yte$arrivalLanternTriggerMode;
             yte$liftNumber = liftNumber;
             yte$lastSentLiftNumber = liftNumber;
 
             final long liftId = lift.getId();
             final YteLiftConfig config = new YteLiftConfig(liftId, upSpeed, downSpeed, upAccel, downAccel,
                     yte$directionParametersLinked, adoDistance, levellingDistance, levellingSpeed, yte$motionProfile,
-                    yte$doorHoldEnabled, yte$doorButtonLightMode, yte$floorCancelMode, false, liftNumber);
+                    yte$doorHoldEnabled, yte$doorButtonLightMode, yte$floorCancelMode, false,
+                    yte$arrivalLanternTriggerMode, liftNumber);
             YteLiftConfigStore.put(liftId, upSpeed, downSpeed, upAccel, downAccel,
                     adoDistance, levellingDistance, levellingSpeed, yte$motionProfile, yte$doorHoldEnabled,
-                    yte$doorButtonLightMode, yte$floorCancelMode, false);
+                    yte$doorButtonLightMode, yte$floorCancelMode, false, yte$arrivalLanternTriggerMode);
             YteLiftConfigStore.setLiftNumber(liftId, liftNumber);
 
             final YteUpdateDataRequest request = new YteUpdateDataRequest(
@@ -708,6 +722,12 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique
     private void yte$toggleFloorCancelMode() {
         yte$floorCancelMode = yte$floorCancelMode.next();
+        yte$updateModeWidgets();
+    }
+
+    @Unique
+    private void yte$toggleArrivalLanternTriggerMode() {
+        yte$arrivalLanternTriggerMode = yte$arrivalLanternTriggerMode.next();
         yte$updateModeWidgets();
     }
 
@@ -826,6 +846,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$doorHoldButton.setVisibleMapped(doorTab);
         yte$doorButtonLightModeButton.setVisibleMapped(doorTab);
         yte$floorCancelModeButton.setVisibleMapped(doorTab);
+        yte$arrivalLanternTriggerModeButton.setVisibleMapped(doorTab);
 
         // 运行参数：滑块/文本框
         yte$sliderSpeed.setVisibleMapped(motionTab && !yte$professionalMode);
@@ -861,6 +882,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                 yte$doorButtonLightMode.getTranslationKey()).data));
         yte$floorCancelModeButton.setMessage2(new Text(TextHelper.translatable(
                 yte$floorCancelMode.getTranslationKey()).data));
+        yte$arrivalLanternTriggerModeButton.setMessage2(new Text(TextHelper.translatable(
+                yte$arrivalLanternTriggerMode.getTranslationKey()).data));
     }
 
     @Unique

@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import top.xfunny.mod.config.YteLiftConfigStore;
 import top.xfunny.mod.Init;
+import top.xfunny.mod.lift.LiftArrivalLanternState;
 import top.xfunny.mod.lift.LiftDisplayDirection;
 import top.xfunny.mod.lift.LiftDisplayDirectionState;
 import top.xfunny.mod.lift.LiftDoorControlState;
@@ -216,6 +217,8 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
         if (isClientside()) {
             yte$updateDisplayFacts(levellingDistance);
             yte$updateDisplayDirection(millisElapsed);
+            LiftArrivalLanternState.get(id).update(
+                    LiftDisplayState.get(id), YteLiftConfigStore.getArrivalLanternTriggerMode(id));
         }
 
         if (getData() instanceof Simulator) {
@@ -290,12 +293,17 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
 
     @Unique
     private boolean yte$isExactlyAtFloor() {
+        return yte$getExactFloorIndex() >= 0;
+    }
+
+    @Unique
+    private int yte$getExactFloorIndex() {
         for (int i = 0; i < getFloors().size(); i++) {
             if (Math.abs(getRailProgress() - invokeGetProgress(i)) < 0.000001) {
-                return true;
+                return i;
             }
         }
-        return false;
+        return -1;
     }
 
     @Unique
@@ -308,6 +316,7 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
         int targetFloor = -1;
         double distanceToTarget = Double.POSITIVE_INFINITY;
         LiftDirection targetDirection = LiftDirection.NONE;
+        LiftDirection plannedArrivalDirection = LiftDirection.NONE;
 
         if (!getInstructions().isEmpty()) {
             final LiftInstruction instruction = getInstructions().get(0);
@@ -319,16 +328,47 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
                     : difference < 0
                     ? LiftDirection.DOWN
                     : instruction.getDirection();
+            plannedArrivalDirection = yte$getPlannedArrivalDirection(targetFloor, instruction, movementDirection);
         }
 
         final boolean doorCycle = getStoppingCoolDown() > 1 || lift.getDoorValue() != 0;
         final boolean levelling = moving && levellingDistance > 0 && distanceToTarget <= levellingDistance;
         final boolean idle = !moving && getInstructions().isEmpty() && !doorCycle;
         final int displayedFloor = lift.getFloorIndex(lift.getCurrentFloor().getPosition());
+        final int exactFloor = yte$getExactFloorIndex();
 
         LiftDisplayState.get(lift.getId()).update(
-                movementDirection, targetDirection, moving, levelling, doorCycle, idle,
-                displayedFloor, targetFloor, getSpeed(), distanceToTarget, getStoppingCoolDown());
+                movementDirection, targetDirection, plannedArrivalDirection,
+                moving, levelling, doorCycle, idle,
+                displayedFloor, exactFloor, targetFloor, getSpeed(), lift.getDoorValue(),
+                distanceToTarget, getStoppingCoolDown());
+    }
+
+    @Unique
+    private LiftDirection yte$getPlannedArrivalDirection(int targetFloor, LiftInstruction instruction,
+            LiftDirection movementDirection) {
+        final int floorCount = getFloors().size();
+        final boolean arrivingFromTravel = getSpeed() != 0
+                || LiftDisplayDirectionState.get(((Lift) (Object) this).getId()).movedSinceIdle;
+        if (arrivingFromTravel && targetFloor == floorCount - 1) {
+            return LiftDirection.DOWN;
+        }
+        if (arrivingFromTravel && targetFloor == 0) {
+            return LiftDirection.UP;
+        }
+        if (instruction.getDirection() != LiftDirection.NONE) {
+            return instruction.getDirection();
+        }
+        if (getInstructions().size() > 1) {
+            final int followingFloor = getInstructions().get(1).getFloor();
+            if (followingFloor > targetFloor) {
+                return LiftDirection.UP;
+            }
+            if (followingFloor < targetFloor) {
+                return LiftDirection.DOWN;
+            }
+        }
+        return movementDirection;
     }
 
     @Unique

@@ -438,6 +438,8 @@
   "gui.yte.lift_door_button_light_automatic": "开关门按钮灯光：跟随门动作",
   "gui.yte.lift_floor_cancel_double_click": "取消已选楼层：双击",
   "gui.yte.lift_floor_cancel_long_press": "取消已选楼层：长按",
+  "gui.yte.lift_arrival_lantern_trigger_deceleration": "到站灯触发：减速时",
+  "gui.yte.lift_arrival_lantern_trigger_door_open": "到站灯触发：开门时",
   "gui.yte.lift_hold_open": "延时关门",
   "gui.yte.lift_number": "电梯编号",
   "gui.yte.lift_tab_base": "基础",

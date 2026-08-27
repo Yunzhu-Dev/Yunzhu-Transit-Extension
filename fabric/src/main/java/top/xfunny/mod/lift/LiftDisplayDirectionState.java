@@ -31,6 +31,11 @@ public final class LiftDisplayDirectionState {
         return STATES.computeIfAbsent(liftId, ignored -> new LiftDisplayDirectionState());
     }
 
+    public static synchronized void clear() {
+        STATES.clear();
+        PENDING_SAME_FLOOR_CALLS.clear();
+    }
+
     public static synchronized void registerPendingSameFloorCall(Set<Long> candidateLiftIds, LiftDirection direction) {
         if (candidateLiftIds.isEmpty() || direction == LiftDirection.NONE) {
             return;
