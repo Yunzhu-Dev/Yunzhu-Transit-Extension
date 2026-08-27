@@ -15,8 +15,7 @@ import org.mtr.mapping.holder.WorldSavePath;
 import org.mtr.mapping.mapper.MinecraftServerHelper;
 import org.mtr.mapping.registry.Registry;
 import top.xfunny.core.YteMain;
-import top.xfunny.mod.lift.LiftDoorState;
-import top.xfunny.mod.lift.LiftModeState;
+import top.xfunny.mod.lift.LiftDoorControlState;
 import top.xfunny.mod.packet.*;
 
 import javax.annotation.Nullable;
@@ -80,9 +79,8 @@ public final class Init implements Utilities {
             REGISTRY.registerPacket(YtePacketUpdateData.class, YtePacketUpdateData::new);
             REGISTRY.registerPacket(PacketLiftAdoStart.class, PacketLiftAdoStart::new);
             REGISTRY.registerPacket(PacketLiftDoorControl.class, PacketLiftDoorControl::new);
+            REGISTRY.registerPacket(PacketLiftHoldState.class, PacketLiftHoldState::new);
             REGISTRY.registerPacket(PacketLiftFloorCancel.class, PacketLiftFloorCancel::new);
-            REGISTRY.registerPacket(PacketLiftDoorMaintenance.class, PacketLiftDoorMaintenance::new);
-            REGISTRY.registerPacket(PacketLiftDoorCurtain.class, PacketLiftDoorCurtain::new);
         });
 
         int currentStep = 1;
@@ -124,8 +122,6 @@ public final class Init implements Utilities {
 
         REGISTRY.eventRegistry.registerServerStopping(minecraftServer -> {
             Init.minecraftServer = null;
-            LiftDoorState.clearQueues();
-            LiftModeState.clearQueues();
             if (yteMain != null) {
                 yteMain.stop();
             }
@@ -146,8 +142,17 @@ public final class Init implements Utilities {
         if (minecraftServer != null) {
             MinecraftServerHelper.iteratePlayers(minecraftServer, player ->
                     REGISTRY.sendPacketToClient(player,
-                            new PacketLiftDoorControl(liftId, LiftDoorState.Command.OPEN,
+                            new PacketLiftDoorControl(liftId, LiftDoorControlState.Command.OPEN,
                                     stoppingCoolDown, resetIdleDirection)));
+        }
+    }
+
+    public static void sendLiftHoldState(long liftId, boolean active) {
+        if (minecraftServer != null) {
+            final long remainingMillis = active ? LiftDoorControlState.getHoldRemainingMillis(liftId) : 0;
+            MinecraftServerHelper.iteratePlayers(minecraftServer, player ->
+                    REGISTRY.sendPacketToClient(player,
+                            PacketLiftHoldState.update(liftId, active && remainingMillis > 0, remainingMillis)));
         }
     }
 
