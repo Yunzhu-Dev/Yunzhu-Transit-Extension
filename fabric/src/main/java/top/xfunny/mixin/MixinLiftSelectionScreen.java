@@ -2,10 +2,12 @@ package top.xfunny.mixin;
 
 import org.mtr.core.data.Lift;
 import org.mtr.core.data.LiftDirection;
+import org.mtr.core.data.LiftFloor;
 import org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectObjectImmutablePair;
 import org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.mtr.mapping.holder.BlockPos;
 import org.mtr.mapping.holder.ClickableWidget;
+import org.mtr.mapping.holder.ClientWorld;
 import org.mtr.mapping.holder.World;
 import org.mtr.mapping.mapper.TextHelper;
 import org.mtr.mod.client.MinecraftClientData;
@@ -20,7 +22,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.xfunny.mod.lift.LiftDoorButtonLightMode;
 import top.xfunny.mod.lift.LiftDoorState;
@@ -38,6 +39,7 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
 
     @Shadow @Final private DashboardList selectionList;
     @Shadow @Final private ObjectArrayList<BlockPos> floorLevels;
+    @Shadow @Final private ObjectArrayList<String> floorDescriptions;
     @Shadow @Final private long liftId;
 
     @Unique private static final long YTE_DOUBLE_CLICK_WINDOW = 400;
@@ -63,16 +65,15 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
     @Unique private long yte$floorHoldStartTime;
     @Unique private boolean yte$floorHoldArmed;
 
-    @Redirect(
-            method = "lambda$new$0",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lorg/mtr/mod/render/RenderLifts;getLiftDetails(Lorg/mtr/mapping/holder/World;Lorg/mtr/core/data/Lift;Lorg/mtr/mapping/holder/BlockPos;)Lorg/mtr/libraries/it/unimi/dsi/fastutil/objects/ObjectObjectImmutablePair;"
-            )
-    )
-    private ObjectObjectImmutablePair<LiftDirection, ObjectObjectImmutablePair<String, String>> yte$getRealFloorDetailsForSelection(
-            World world, Lift lift, BlockPos blockPos) {
-        return GetLiftDetails.getLiftDetails(world, lift, blockPos);
+    @Inject(method = "lambda$new$0", at = @At("TAIL"))
+    private void yte$getRealFloorDetailsForSelection(
+            ClientWorld clientWorld, Lift lift, LiftFloor floor, CallbackInfo ci) {
+        floorDescriptions.remove(floorDescriptions.size() - 1);
+        final ObjectObjectImmutablePair<LiftDirection, ObjectObjectImmutablePair<String, String>> details =
+                GetLiftDetails.getLiftDetails(new World(clientWorld.data), lift,
+                        org.mtr.mod.Init.positionToBlockPos(floor.getPosition()));
+        floorDescriptions.add(String.format("%s %s",
+                details.right().left(), IGui.formatStationName(details.right().right())));
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))
@@ -127,11 +128,13 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
         }
     }
 
-    @Redirect(
+    @Inject(
             method = "onPress",
-            at = @At(value = "INVOKE", target = "Lorg/mtr/mod/screen/LiftSelectionScreen;onClose2()V")
+            at = @At(value = "INVOKE", target = "Lorg/mtr/mod/screen/LiftSelectionScreen;onClose2()V"),
+            cancellable = true
     )
-    private void yte$keepSelectionScreenOpen(LiftSelectionScreen ignoredScreen) {
+    private void yte$keepSelectionScreenOpen(DashboardListItem item, int index, CallbackInfo ci) {
+        ci.cancel();
     }
 
     @Inject(method = "init2", at = @At("TAIL"))
