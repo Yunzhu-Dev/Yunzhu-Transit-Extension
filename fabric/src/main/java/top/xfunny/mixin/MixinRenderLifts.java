@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import top.xfunny.mod.block.LiftTrackMagneticVane;
@@ -34,10 +34,18 @@ public abstract class MixinRenderLifts {
     private static final ModelSmallCube YTE_MAGNETIC_VANE_MARKER = new ModelSmallCube(
             new Identifier("textures/block/lapis_block.png"));
 
-    @Redirect(method = "lambda$render$6", at = @At(value = "INVOKE",
-            target = "Lorg/mtr/core/data/Lift;getDoorValue()F"), require = 4)
-    private static float yte$fullCurveDoorValue(Lift lift) {
-        return lift.getDoorValue() * (float) LiftDoorState.DOOR_MAX_OPEN_SCALE;
+    @ModifyArg(method = "lambda$render$6", at = @At(value = "INVOKE",
+            target = "Lorg/mtr/mod/model/ModelLift1;render(Lorg/mtr/mod/render/StoredMatrixTransformations;Lorg/mtr/core/data/NameColorDataBase;Lorg/mtr/mapping/holder/Identifier;IFFZIIZZZZZ)V",
+            remap = false), index = 4)
+    private static float yte$doorValueRight(float original) {
+        return original * (float) LiftDoorState.DOOR_MAX_OPEN_SCALE;
+    }
+
+    @ModifyArg(method = "lambda$render$6", at = @At(value = "INVOKE",
+            target = "Lorg/mtr/mod/model/ModelLift1;render(Lorg/mtr/mod/render/StoredMatrixTransformations;Lorg/mtr/core/data/NameColorDataBase;Lorg/mtr/mapping/holder/Identifier;IFFZIIZZZZZ)V",
+            remap = false), index = 5)
+    private static float yte$doorValueLeft(float original) {
+        return original * (float) LiftDoorState.DOOR_MAX_OPEN_SCALE;
     }
 
     @Inject(method = "render", at = @At("TAIL"))
