@@ -442,7 +442,7 @@
   "gui.yte.lift_arrival_lantern_trigger_door_open": "到站燈觸發：開門時",
   "gui.yte.lift_hold_open": "延遲關門",
   "gui.yte.lift_number": "升降機編號",
-  "gui.yte.lift_tab_base": "Base",
+  "gui.yte.lift_tab_base": "基本",
   "gui.yte.lift_tab_motion": "運行",
   "gui.yte.lift_tab_level": "平層",
   "gui.yte.lift_tab_door": "門控",
