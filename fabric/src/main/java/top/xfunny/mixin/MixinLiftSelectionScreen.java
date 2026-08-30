@@ -1,11 +1,8 @@
 package top.xfunny.mixin;
 
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.sugar.Local;
 import org.mtr.core.data.Lift;
 import org.mtr.core.data.LiftDirection;
 import org.mtr.core.data.LiftFloor;
-import org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectObjectImmutablePair;
 import org.mtr.mapping.holder.BlockPos;
@@ -25,6 +22,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.xfunny.mod.lift.FiremanOperationType;
 import top.xfunny.mod.lift.LiftDoorButtonLightMode;
@@ -188,20 +186,23 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
         yte$updateDoorButtonLayout(buttonY);
     }
 
-    /** 类型2：按住未登记期间行亮（注入 MTR tick2 行灯判定，hasInstruction 返回副本可安全修改）；
-     * 登记在途（sent）期间保持常亮桥接同步空窗；服务端指令到达后由 hasInstruction 原生常亮、到站熄灭。 */
-    @ModifyExpressionValue(
+    /** 类型2：按住未登记期间行亮——setData 前把 held 行强制「已选」色（-65536，与 MTR tick2 行灯同色）；
+     * 登记在途（sent）期间保持常亮桥接同步空窗；服务端指令到达后由 hasInstruction 原生常亮、到站熄灭。
+     * 行索引映射：tick2 由 floorLevels 逆序构建 items，items[k] ↔ selectionIndex k。 */
+    @ModifyArg(
             method = "tick2",
             at = @At(value = "INVOKE",
-                    target = "Lorg/mtr/core/data/Lift;hasInstruction(I)Lorg/mtr/libraries/it/unimi/dsi/fastutil/objects/ObjectArraySet;")
+                    target = "Lorg/mtr/mod/screen/DashboardList;setData(Lorg/mtr/libraries/it/unimi/dsi/fastutil/objects/ObjectArrayList;ZZZZZZ)V"),
+            index = 0,
+            remap = false
     )
-    private ObjectArraySet<LiftDirection> yte$lightHeldFloorRow(
-            ObjectArraySet<LiftDirection> original, @Local(ordinal = 0) int floorLevelIndex) {
+    private ObjectArrayList<DashboardListItem> yte$lightHeldFloorRow(ObjectArrayList<DashboardListItem> items) {
         if ((yte$firemanFloorPressed || yte$firemanRegistrationSent) && yte$firemanHeldFloorIndex >= 0
-                && floorLevelIndex == floorLevels.size() - 1 - yte$firemanHeldFloorIndex) {
-            original.add(LiftDirection.NONE);
+                && yte$firemanHeldFloorIndex < items.size()) {
+            final DashboardListItem item = items.get(yte$firemanHeldFloorIndex);
+            items.set(yte$firemanHeldFloorIndex, new DashboardListItem(item.id, item.getName(false), -65536));
         }
-        return original;
+        return items;
     }
 
     @Inject(method = "tick2", at = @At("TAIL"))
