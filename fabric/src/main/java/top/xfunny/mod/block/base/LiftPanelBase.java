@@ -212,5 +212,3 @@ public abstract class LiftPanelBase extends BlockExtension implements DirectionH
 
 }
 
-
-

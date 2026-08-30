@@ -22,6 +22,7 @@ import top.xfunny.mod.client.view.LineComponent;
 import top.xfunny.mod.client.view.view_group.LinearLayout;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
+import top.xfunny.mod.lift.policy.HitachiGHLLanternPolicy;
 import top.xfunny.mod.packet.PacketLanternSoundInstruction;
 
 public class RenderHitachiGHL668Lantern1<T extends LiftButtonsBase.BlockEntityBase> extends BlockEntityRenderer<T> implements DirectionHelper, IGui, IBlock {
@@ -96,10 +97,6 @@ public class RenderHitachiGHL668Lantern1<T extends LiftButtonsBase.BlockEntityBa
 
         final ObjectArrayList<ObjectObjectImmutablePair<BlockPos, Lift>> sortedPositionsAndLifts = new ObjectArrayList<>();
 
-        final boolean enableCallFlash = true;
-        final boolean enableApproachFlash = true;
-        final boolean flash = (System.currentTimeMillis() % 800) < 400;
-
         blockEntity.forEachTrackPosition(trackPosition -> {
             line.RenderLine(holdingLinker, trackPosition);
 
@@ -107,19 +104,17 @@ public class RenderHitachiGHL668Lantern1<T extends LiftButtonsBase.BlockEntityBa
                 sortedPositionsAndLifts.add(new ObjectObjectImmutablePair<>(trackPosition, lift));
             });
 
-            LiftButtonsBase.LanternState state = blockEntity.getLanternState(trackPosition);
-            final boolean useFlash = (state.phase == LiftButtonsBase.LanternPhase.CALL_REGISTERED && enableCallFlash)
-                    || ((state.phase == LiftButtonsBase.LanternPhase.APPROACHING
-                         || state.phase == LiftButtonsBase.LanternPhase.ARRIVED) && enableApproachFlash);
+            LiftButtonsBase.LanternState state = blockEntity.getLanternState(
+                    trackPosition, HitachiGHLLanternPolicy.GHL668);
 
-            if (state.downActive && (!useFlash || flash)) {
+            if (state.downActive) {
                 lanternDown.activate();
             }
-            if (state.upActive && (!useFlash || flash)) {
+            if (state.upActive) {
                 lanternUp.activate();
             }
-            if (state.justTriggered) {
-                InitClient.REGISTRY_CLIENT.sendPacketToServer(new PacketLanternSoundInstruction(blockPos, "hitachi_ca_lantern_2"));
+            if (state.justTriggered && state.soundCue != null) {
+                InitClient.REGISTRY_CLIENT.sendPacketToServer(new PacketLanternSoundInstruction(blockPos, state.soundCue));
             }
         });
 

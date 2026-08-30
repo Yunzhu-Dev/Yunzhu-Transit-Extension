@@ -26,5 +26,15 @@ public enum DisplayDirectionMode implements DisplayDirectionPolicy {
                     ? state.getMovementDirection()
                     : LiftDirection.NONE;
         }
+    },
+    /**
+     * Independent/driver service: show travel while moving, then show only the
+     * direction of an actual queued stop beyond the current floor.
+     */
+    INDEPENDENT {
+        @Override
+        public LiftDirection getDirection(LiftDisplayState state) {
+            return state.isMoving() ? state.getMovementDirection() : state.getNextQueuedDirection();
+        }
     }
 }

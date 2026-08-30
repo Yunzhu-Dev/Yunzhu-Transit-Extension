@@ -22,7 +22,7 @@ public class YteMain implements Utilities {
 
     public static final int MILLISECONDS_PER_TICK = 10;
 
-    public YteMain(Path rootPath, boolean threadedSimulation, String... dimensions) {
+    public YteMain(Path rootPath, boolean threadedSimulation, String... dimensions) {// 使用可变参数传入维度，不限制维度数量
         final ObjectArrayList<YteSimulator> tempSimulators = new ObjectArrayList<>();
 
         YteCoreLogger.info("YTE server loading files...");
@@ -32,7 +32,7 @@ public class YteMain implements Utilities {
 
         simulators = new ObjectImmutableList<>(tempSimulators);
 
-        if (threadedSimulation) {
+        if (threadedSimulation) {//暂时无法触发
             scheduledExecutorService = Executors.newScheduledThreadPool(simulators.size());
             simulators.forEach(simulator ->
                     scheduledExecutorService.scheduleAtFixedRate(
@@ -44,7 +44,7 @@ public class YteMain implements Utilities {
         YteCoreLogger.info("YTE server started with dimensions {}", Arrays.toString(dimensions));
     }
 
-    public void manualTick() {
+    public void manualTick() {//目前用这个触发周期保存
         simulators.forEach(YteSimulator::tick);
     }
 

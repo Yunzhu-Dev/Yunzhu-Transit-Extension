@@ -20,6 +20,7 @@ import top.xfunny.mod.client.view.view_group.FrameLayout;
 import top.xfunny.mod.client.view.view_group.LinearLayout;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
+import top.xfunny.mod.lift.policy.MitsubishiNexWayLanternPolicy;
 import top.xfunny.mod.packet.PacketLanternSoundInstruction;
 
 import java.util.Comparator;
@@ -162,10 +163,6 @@ public class RenderMitsubishiNexWayLantern1Vertical<T extends LiftButtonsBase.Bl
 
         final ObjectArrayList<ObjectObjectImmutablePair<BlockPos, Lift>> sortedPositionsAndLifts = new ObjectArrayList<>();
 
-        final boolean enableCallFlash = true;
-        final boolean enableApproachFlash = false;
-        final boolean flash = (System.currentTimeMillis() % 1000) < 500;
-
         blockEntity.forEachTrackPosition(trackPosition -> {
             line.RenderLine(holdingLinker, trackPosition);
 
@@ -173,21 +170,20 @@ public class RenderMitsubishiNexWayLantern1Vertical<T extends LiftButtonsBase.Bl
                 sortedPositionsAndLifts.add(new ObjectObjectImmutablePair<>(trackPosition, lift));
             });
 
-            LiftButtonsBase.LanternState state = blockEntity.getLanternState(trackPosition);
-            final boolean useFlash = (state.phase == LiftButtonsBase.LanternPhase.CALL_REGISTERED && enableCallFlash)
-                    || ((state.phase == LiftButtonsBase.LanternPhase.APPROACHING
-                         || state.phase == LiftButtonsBase.LanternPhase.ARRIVED) && enableApproachFlash);
+            LiftButtonsBase.LanternState state = blockEntity.getLanternState(
+                    trackPosition, MitsubishiNexWayLanternPolicy.INSTANCE);
 
-            if (state.downActive && (!useFlash || flash)) {
+            if (state.downActive) {
                 downLanternLeft.activate();
                 downLanternRight.activate();
             }
-            if (state.upActive && (!useFlash || flash)) {
+            if (state.upActive) {
                 upLanternLeft.activate();
                 upLanternRight.activate();
             }
-            if (state.justTriggered) {
-                InitClient.REGISTRY_CLIENT.sendPacketToServer(new PacketLanternSoundInstruction(blockPos, "mitsubishi_nexway_lantern_1_down"));
+            if (state.justTriggered && state.soundCue != null) {
+                InitClient.REGISTRY_CLIENT.sendPacketToServer(
+                        new PacketLanternSoundInstruction(blockPos, state.soundCue));
             }
         });
 

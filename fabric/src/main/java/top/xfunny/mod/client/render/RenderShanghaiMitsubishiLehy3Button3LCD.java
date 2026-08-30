@@ -230,7 +230,8 @@ public class RenderShanghaiMitsubishiLehy3Button3LCD extends BlockEntityRenderer
                 numberLayout.setBasicsAttributes(world, blockPos);
                 numberLayout.setWidth(LayoutSize.WRAP_CONTENT);
                 numberLayout.setHeight(LayoutSize.WRAP_CONTENT);
-                numberLayout.setMargin(i == 1 ? 0.35F / 16 : 0, 1.57F / 16, 0, 0);
+                boolean needMargin = count > 1 && (reverseRendering ? i == 0 : i == 1);
+                numberLayout.setMargin(needMargin ? 0.35F / 16 : 0, 1.57F / 16, 0, 0);
                 numberLayout.setBackgroundColor(0xFF111111);
 
                 numberLayout.addChild(liftArrowView);

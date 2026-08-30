@@ -26,6 +26,8 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
     protected long doorRunDelayMs;
     protected String doorCurve;
     protected double recoverySpeed = DEFAULT_RECOVERY_SPEED;
+    protected String arrivalLanternTriggerMode;
+    protected String serviceMode;
     protected String liftNumber;
     protected long maxDoorOpenMs;
 
@@ -50,6 +52,8 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
     private static final String KEY_DOOR_CURVE = "door_curve";
     private static final String KEY_RECOVERY_SPEED = "recovery_speed";
     private static final String KEY_MAX_DOOR_OPEN_MS = "max_door_open_ms";
+    private static final String KEY_ARRIVAL_LANTERN_TRIGGER_MODE = "arrival_lantern_trigger_mode";
+    private static final String KEY_SERVICE_MODE = "service_mode";
     private static final String KEY_LIFT_NUMBER = "lift_number";
 
     public static final double DEFAULT_SPEED = 10.0;
@@ -93,6 +97,8 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
     public static final long DEFAULT_MAX_DOOR_OPEN_MS = 30000;
     public static final long MIN_MAX_DOOR_OPEN_MS = 30000;
     public static final long MAX_MAX_DOOR_OPEN_MS = 60000;
+    public static final String DEFAULT_ARRIVAL_LANTERN_TRIGGER_MODE = "DECELERATION";
+    public static final String DEFAULT_SERVICE_MODE = "NORMAL";
     public static final String DEFAULT_LIFT_NUMBER = "";
 
     protected YteLiftConfigSchema(long liftId, double speed, double acceleration, double adoDistance, double levellingDistance, double levellingSpeed) {
@@ -118,13 +124,34 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
             String motionProfile, boolean doorHoldEnabled) {
         this(liftId, speed, downSpeed, acceleration, downAcceleration, directionParametersLinked,
                 adoDistance, levellingDistance, levellingSpeed, motionProfile, doorHoldEnabled,
-                DEFAULT_DOOR_BUTTON_LIGHT_MODE, DEFAULT_FLOOR_CANCEL_MODE, false, DEFAULT_LIFT_NUMBER);
+                DEFAULT_DOOR_BUTTON_LIGHT_MODE, DEFAULT_FLOOR_CANCEL_MODE, false,
+                DEFAULT_ARRIVAL_LANTERN_TRIGGER_MODE, DEFAULT_SERVICE_MODE, DEFAULT_LIFT_NUMBER);
     }
 
     protected YteLiftConfigSchema(long liftId, double speed, double downSpeed, double acceleration, double downAcceleration,
             boolean directionParametersLinked, double adoDistance, double levellingDistance, double levellingSpeed,
             String motionProfile, boolean doorHoldEnabled, String doorButtonLightMode, String floorCancelMode,
             boolean floorCancelWhileMoving, String liftNumber) {
+        this(liftId, speed, downSpeed, acceleration, downAcceleration, directionParametersLinked,
+                adoDistance, levellingDistance, levellingSpeed, motionProfile, doorHoldEnabled,
+                doorButtonLightMode, floorCancelMode, floorCancelWhileMoving,
+                DEFAULT_ARRIVAL_LANTERN_TRIGGER_MODE, DEFAULT_SERVICE_MODE, liftNumber);
+    }
+
+    protected YteLiftConfigSchema(long liftId, double speed, double downSpeed, double acceleration, double downAcceleration,
+            boolean directionParametersLinked, double adoDistance, double levellingDistance, double levellingSpeed,
+            String motionProfile, boolean doorHoldEnabled, String doorButtonLightMode, String floorCancelMode,
+            boolean floorCancelWhileMoving, String arrivalLanternTriggerMode, String liftNumber) {
+        this(liftId, speed, downSpeed, acceleration, downAcceleration, directionParametersLinked,
+                adoDistance, levellingDistance, levellingSpeed, motionProfile, doorHoldEnabled,
+                doorButtonLightMode, floorCancelMode, floorCancelWhileMoving,
+                arrivalLanternTriggerMode, DEFAULT_SERVICE_MODE, liftNumber);
+    }
+
+    protected YteLiftConfigSchema(long liftId, double speed, double downSpeed, double acceleration, double downAcceleration,
+            boolean directionParametersLinked, double adoDistance, double levellingDistance, double levellingSpeed,
+            String motionProfile, boolean doorHoldEnabled, String doorButtonLightMode, String floorCancelMode,
+            boolean floorCancelWhileMoving, String arrivalLanternTriggerMode, String serviceMode, String liftNumber) {
         this(liftId, speed, downSpeed, acceleration, downAcceleration, directionParametersLinked,
                 adoDistance, levellingDistance, levellingSpeed, motionProfile, doorHoldEnabled,
                 doorButtonLightMode, floorCancelMode, floorCancelWhileMoving,
@@ -156,6 +183,8 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         this.doorDwellMs = doorDwellMs;
         this.doorRunDelayMs = doorRunDelayMs;
         this.doorCurve = doorCurve;
+        this.arrivalLanternTriggerMode = arrivalLanternTriggerMode;
+        this.serviceMode = serviceMode;
         this.liftNumber = liftNumber;
         this.maxDoorOpenMs = maxDoorOpenMs;
     }
@@ -179,6 +208,8 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         doorDwellMs = DEFAULT_DOOR_DWELL_MS;
         doorRunDelayMs = DEFAULT_DOOR_RUN_DELAY_MS;
         doorCurve = DEFAULT_DOOR_CURVE;
+        arrivalLanternTriggerMode = DEFAULT_ARRIVAL_LANTERN_TRIGGER_MODE;
+        serviceMode = DEFAULT_SERVICE_MODE;
         liftNumber = DEFAULT_LIFT_NUMBER;
         recoverySpeed = DEFAULT_RECOVERY_SPEED;
         maxDoorOpenMs = DEFAULT_MAX_DOOR_OPEN_MS;
@@ -206,6 +237,9 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         doorDwellMs = readerBase.getLong(KEY_DOOR_DWELL_MS, DEFAULT_DOOR_DWELL_MS);
         doorRunDelayMs = readerBase.getLong(KEY_DOOR_RUN_DELAY_MS, DEFAULT_DOOR_RUN_DELAY_MS);
         doorCurve = readerBase.getString(KEY_DOOR_CURVE, DEFAULT_DOOR_CURVE);
+        arrivalLanternTriggerMode = readerBase.getString(
+                KEY_ARRIVAL_LANTERN_TRIGGER_MODE, DEFAULT_ARRIVAL_LANTERN_TRIGGER_MODE);
+        serviceMode = readerBase.getString(KEY_SERVICE_MODE, DEFAULT_SERVICE_MODE);
         liftNumber = readerBase.getString(KEY_LIFT_NUMBER, DEFAULT_LIFT_NUMBER);
         recoverySpeed = clampRecoverySpeed(readerBase.getDouble(KEY_RECOVERY_SPEED, DEFAULT_RECOVERY_SPEED));
         maxDoorOpenMs = clampMaxDoorOpenMs(readerBase.getLong(KEY_MAX_DOOR_OPEN_MS, DEFAULT_MAX_DOOR_OPEN_MS));
@@ -234,6 +268,8 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         writerBase.writeString(KEY_DOOR_CURVE, doorCurve);
         writerBase.writeDouble(KEY_RECOVERY_SPEED, recoverySpeed);
         writerBase.writeLong(KEY_MAX_DOOR_OPEN_MS, maxDoorOpenMs);
+        writerBase.writeString(KEY_ARRIVAL_LANTERN_TRIGGER_MODE, arrivalLanternTriggerMode);
+        writerBase.writeString(KEY_SERVICE_MODE, serviceMode);
         writerBase.writeString(KEY_LIFT_NUMBER, liftNumber);
     }
 

@@ -60,10 +60,10 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
     @Unique private long yte$closeDoorLightUntil;
     @Unique private int yte$lastFloorClickIndex = -1;
     @Unique private long yte$lastFloorClickTime;
-    @Unique private boolean yte$lastFloorClickWasSelected;
     @Unique private int yte$heldFloorIndex = -1;
     @Unique private long yte$floorHoldStartTime;
     @Unique private boolean yte$floorHoldArmed;
+    @Unique private boolean yte$floorHoldPointerInside;
 
     @Inject(method = "lambda$new$0", at = @At("TAIL"))
     private void yte$getRealFloorDetailsForSelection(
@@ -86,7 +86,7 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
                 TextHelper.literal("▶◀"), button -> yte$sendDoorCommand(LiftDoorState.Command.CLOSE));
     }
 
-    @Inject(method = "onPress", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "onPress", at = @At("HEAD"))
     private void yte$handleFloorButtonPress(
             DashboardListItem ignoredItem, int index, CallbackInfo ci) {
         final Lift lift = MinecraftClientData.getLift(liftId);
@@ -97,26 +97,6 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
         final MixinLiftSchema schema = (MixinLiftSchema) lift;
         final int selectedFloor = lift.getFloorIndex(org.mtr.mod.Init.blockPosToPosition(
                 floorLevels.get(floorLevels.size() - index - 1)));
-        final boolean selected = lift.hasInstruction(selectedFloor).contains(LiftDirection.NONE);
-        final long currentTime = System.currentTimeMillis();
-        final LiftFloorCancelMode cancelMode = YteLiftConfigStore.getFloorCancelMode(liftId);
-
-        if (cancelMode == LiftFloorCancelMode.DOUBLE_CLICK) {
-            if (selected && yte$lastFloorClickWasSelected && yte$lastFloorClickIndex == index
-                    && currentTime - yte$lastFloorClickTime <= YTE_DOUBLE_CLICK_WINDOW) {
-                yte$sendFloorCancellation(selectedFloor);
-                yte$resetFloorClickTracking();
-                ci.cancel();
-                return;
-            }
-            yte$lastFloorClickIndex = index;
-            yte$lastFloorClickTime = currentTime;
-            yte$lastFloorClickWasSelected = selected;
-        } else if (selected) {
-            yte$heldFloorIndex = index;
-            yte$floorHoldStartTime = currentTime;
-            yte$floorHoldArmed = true;
-        }
 
         final int currentFloor = lift.getFloorIndex(lift.getCurrentFloor().getPosition());
         if (selectedFloor == currentFloor
@@ -226,8 +206,54 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
                 yte$startDoorButtonPress(command);
                 return true;
             }
+
+            if (yte$isFloorListPosition(mouseX, mouseY)) {
+                final Lift lift = MinecraftClientData.getLift(liftId);
+                final int selectionIndex = selectionList.getHoverItemIndex();
+                if (lift != null && selectionIndex >= 0 && selectionIndex < floorLevels.size()) {
+                    final int floorIndex = yte$getFloorIndex(lift, selectionIndex);
+                    final boolean selected = lift.hasInstruction(floorIndex).contains(LiftDirection.NONE);
+                    if (YteLiftConfigStore.getFloorCancelMode(liftId) == LiftFloorCancelMode.DOUBLE_CLICK) {
+                        if (!selected) {
+                            yte$resetFloorClickTracking();
+                            return super.mouseClicked2(mouseX, mouseY, button);
+                        }
+                        final long currentTime = System.currentTimeMillis();
+                        if (yte$lastFloorClickIndex == selectionIndex
+                                && currentTime - yte$lastFloorClickTime <= YTE_DOUBLE_CLICK_WINDOW) {
+                            yte$sendFloorCancellation(floorIndex);
+                            yte$resetFloorClickTracking();
+                            return true;
+                        }
+                        yte$lastFloorClickIndex = selectionIndex;
+                        yte$lastFloorClickTime = currentTime;
+                        // The first click of the cancellation gesture only arms
+                        // the double-click; do not send another normal car call.
+                        return true;
+                    } else if (selected) {
+                        yte$heldFloorIndex = selectionIndex;
+                        yte$floorHoldStartTime = System.currentTimeMillis();
+                        yte$floorHoldArmed = true;
+                        yte$floorHoldPointerInside = true;
+                        // A short press on an already selected floor is a no-op;
+                        // holding it long enough sends the cancellation instead.
+                        return true;
+                    }
+                }
+            }
         }
         return super.mouseClicked2(mouseX, mouseY, button);
+    }
+
+    @Inject(method = "mouseMoved2", at = @At("TAIL"))
+    private void yte$trackFloorHoldPointer(double mouseX, double mouseY, CallbackInfo ci) {
+        if (yte$floorHoldArmed) {
+            yte$floorHoldPointerInside = yte$isFloorListPosition(mouseX, mouseY)
+                    && selectionList.getHoverItemIndex() == yte$heldFloorIndex;
+            if (!yte$floorHoldPointerInside) {
+                yte$resetFloorHold();
+            }
+        }
     }
 
     @Override
@@ -263,6 +289,12 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
     }
 
     @Unique
+    private boolean yte$isFloorListPosition(double mouseX, double mouseY) {
+        return mouseX >= selectionList.x && mouseX < selectionList.x + selectionList.width
+                && mouseY >= selectionList.y + 24 && mouseY < selectionList.y + selectionList.height;
+    }
+
+    @Unique
     private void yte$startDoorButtonPress(LiftDoorState.Command command) {
         final long currentTime = System.currentTimeMillis();
         if (yte$pressedDoorCommand != null) {
@@ -279,11 +311,26 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
         if (yte$pressedDoorCommand == null) {
             return;
         }
+        if (yte$pressedDoorCommand == LiftDoorControlState.Command.CLOSE) {
+            yte$releaseCloseDoorButton();
+        }
         if (YteLiftConfigStore.getDoorButtonLightMode(liftId) == LiftDoorButtonLightMode.TIMED) {
             yte$setDoorLightUntil(yte$pressedDoorCommand, currentTime + YTE_TIMED_LIGHT_DURATION);
         }
         yte$pressedDoorCommand = null;
         yte$updateDoorButtonLights(currentTime);
+    }
+
+    @Unique
+    private void yte$releaseCloseDoorButton() {
+        if (!YteLiftConfigStore.getServiceMode(liftId).acceptsHallCalls()) {
+            final Lift lift = MinecraftClientData.getLift(liftId);
+            if (lift != null && lift.getDoorValue() > 0) {
+                yte$applyClientOpenCommand();
+            }
+            InitClient.REGISTRY_CLIENT.sendPacketToServer(
+                    new PacketLiftDoorControl(liftId, LiftDoorControlState.Command.RELEASE_CLOSE));
+        }
     }
 
     @Unique
@@ -334,12 +381,10 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
 
     @Unique
     private void yte$cancelHeldFloorIfAllowed(Lift lift) {
-        if (lift != null && ((MixinLiftSchema) lift).getSpeed() == 0
+        if (lift != null && yte$floorHoldPointerInside
                 && yte$heldFloorIndex >= 0 && yte$heldFloorIndex < floorLevels.size()) {
             final int floorIndex = yte$getFloorIndex(lift, yte$heldFloorIndex);
-            if (lift.hasInstruction(floorIndex).contains(LiftDirection.NONE)) {
-                yte$sendFloorCancellation(floorIndex);
-            }
+            yte$sendFloorCancellation(floorIndex);
         }
         yte$resetFloorHold();
     }
@@ -359,7 +404,6 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
     private void yte$resetFloorClickTracking() {
         yte$lastFloorClickIndex = -1;
         yte$lastFloorClickTime = 0;
-        yte$lastFloorClickWasSelected = false;
     }
 
     @Unique
@@ -367,6 +411,7 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
         yte$heldFloorIndex = -1;
         yte$floorHoldStartTime = 0;
         yte$floorHoldArmed = false;
+        yte$floorHoldPointerInside = false;
     }
 
     @Unique
@@ -414,7 +459,16 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
         if (lift == null || !yte$isStoppedAtFloor(lift)) {
             return;
         }
+        final long singleDoorMoveTime = org.mtr.core.data.Vehicle.DOOR_MOVE_TIME / 2;
+        final long closeStartCoolDown = 500 + singleDoorMoveTime;
+        final float doorValue = Math.max(0, Math.min(lift.getDoorValue(), 1));
 
+        if (doorValue >= 1) {
+            LiftDoorControlState.beginClientOpenPrediction(liftId, doorValue, singleDoorMoveTime);
+        } else if (doorValue > 0 && coolDown <= closeStartCoolDown) {
+            LiftDoorControlState.beginClientOpenPrediction(liftId, doorValue, singleDoorMoveTime);
+        } else if (doorValue <= 0 && coolDown <= 500) {
+            LiftDoorControlState.beginClientOpenPrediction(liftId, doorValue, singleDoorMoveTime);
         final MixinLiftSchema schema = (MixinLiftSchema) lift;
         final YteLiftConfigStore.DoorParams p = YteLiftConfigStore.getDoorParams(liftId);
         final long coolDown = schema.getStoppingCoolDown();

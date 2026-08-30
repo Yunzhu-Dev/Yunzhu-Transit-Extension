@@ -8,6 +8,7 @@ import org.mtr.mapping.holder.World;
 import org.mtr.mod.Init;
 import org.mtr.mod.InitClient;
 import top.xfunny.mod.util.ClientGetLiftDetails;
+import top.xfunny.mod.config.YteLiftConfigStore;
 
 public class LiftArrowView extends ImageView {
     private Lift lift;
@@ -18,6 +19,9 @@ public class LiftArrowView extends ImageView {
 
     @Override
     public void render() {
+        if (YteLiftConfigStore.getServiceMode(lift.getId()).hidesHallDisplay()) {
+            return;
+        }
         float gameTick = InitClient.getGameTick();
         ObjectObjectImmutablePair<LiftDirection, ObjectObjectImmutablePair<String, String>> liftDetails = ClientGetLiftDetails.getLiftDetails(world, lift, Init.positionToBlockPos(lift.getCurrentFloor().getPosition()));
         final LiftDirection liftDirection = liftDetails.left();

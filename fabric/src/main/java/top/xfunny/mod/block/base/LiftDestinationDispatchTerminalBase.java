@@ -376,6 +376,7 @@ public abstract class LiftDestinationDispatchTerminalBase extends BlockExtension
 
             trackPositions.forEach(trackPosition -> {
                 MinecraftClientData.getInstance().lifts.forEach(lift -> {
+                    if (!YteLiftConfigStore.getServiceMode(lift.getId()).acceptsHallCalls()) return;
                     final int callingFloorIdx = lift.getFloorIndex(Init.blockPosToPosition(trackPosition));
                     if (callingFloorIdx < 0) return;
 

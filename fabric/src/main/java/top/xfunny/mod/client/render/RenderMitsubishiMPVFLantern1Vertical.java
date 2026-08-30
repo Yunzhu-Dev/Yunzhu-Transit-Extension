@@ -23,6 +23,7 @@ import top.xfunny.mod.client.view.view_group.FrameLayout;
 import top.xfunny.mod.client.view.view_group.LinearLayout;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
+import top.xfunny.mod.lift.policy.MitsubishiMPVFLanternPolicy;
 import top.xfunny.mod.packet.PacketLanternSoundInstruction;
 
 import java.util.Comparator;
@@ -105,9 +106,6 @@ public class RenderMitsubishiMPVFLantern1Vertical<T extends LiftButtonsBase.Bloc
 
         final ObjectArrayList<ObjectObjectImmutablePair<BlockPos, Lift>> sortedPositionsAndLifts = new ObjectArrayList<>();
 
-        final boolean enableCallFlash = false;
-        final boolean enableApproachFlash = false;
-
         blockEntity.forEachTrackPosition(trackPosition -> {
             line.RenderLine(holdingLinker, trackPosition);
 
@@ -115,7 +113,8 @@ public class RenderMitsubishiMPVFLantern1Vertical<T extends LiftButtonsBase.Bloc
                 sortedPositionsAndLifts.add(new ObjectObjectImmutablePair<>(trackPosition, lift));
             });
 
-            LiftButtonsBase.LanternState state = blockEntity.getLanternState(trackPosition);
+            LiftButtonsBase.LanternState state = blockEntity.getLanternState(
+                    trackPosition, MitsubishiMPVFLanternPolicy.INSTANCE);
 
             if (state.downActive) {
                 downLantern.activate();
@@ -123,8 +122,8 @@ public class RenderMitsubishiMPVFLantern1Vertical<T extends LiftButtonsBase.Bloc
             if (state.upActive) {
                 upLantern.activate();
             }
-            if (state.justTriggered) {
-                InitClient.REGISTRY_CLIENT.sendPacketToServer(new PacketLanternSoundInstruction(blockPos, "mitsubishi_mp_lantern_1"));
+            if (state.justTriggered && state.soundCue != null) {
+                InitClient.REGISTRY_CLIENT.sendPacketToServer(new PacketLanternSoundInstruction(blockPos, state.soundCue));
             }
         });
 

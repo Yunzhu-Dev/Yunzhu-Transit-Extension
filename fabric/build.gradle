@@ -17,6 +17,7 @@ dependencies {
     minecraft "com.mojang:minecraft:${minecraftVersion}"
     mappings "net.fabricmc:yarn:${buildTools.getYarnVersion()}:v2"
     modImplementation "net.fabricmc:fabric-loader:${buildTools.getFabricVersion()}"
+    include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:0.5.5")))
     modImplementation "net.fabricmc.fabric-api:fabric-api:${buildTools.getFabricApiVersion()}"
     modImplementation "org.mtr:MTR-fabric:${mtrVersion}+${minecraftVersion}-server"
     modApi("com.terraformersmc:modmenu:${buildTools.getModMenuVersion()}") { exclude group: "net.fabricmc", module: "fabric-loader" }
@@ -69,7 +70,6 @@ build {
         buildTools.copyBuildFile()
     }
 }
-
 
 
 

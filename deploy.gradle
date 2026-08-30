@@ -12,7 +12,7 @@
 // ---------- 通用 ----------
 def defaultMcVersions = "1.16.5,1.17.1,1.18.2,1.19.2,1.19.4,1.20.1,1.20.4"
 def defaultLoaders    = "fabric,forge"
-def defaultMtrVersion = "4.0.4"
+def defaultMtrVersion = "4.0.5"
 
 // ============================================================
 // deployForTesting — MTR 自动下载 + 智能匹配部署

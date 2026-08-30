@@ -29,6 +29,8 @@ import top.xfunny.mod.util.ClientGetLiftDetails;
 import top.xfunny.mod.util.ReverseRendering;
 
 import java.util.Comparator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class RenderShanghaiMitsubishiLehy3Button2 extends BlockEntityRenderer<ShanghaiMitsubishiLehy3Button2.BlockEntity> implements DirectionHelper, IGui, IBlock {
 
@@ -207,8 +209,9 @@ public class RenderShanghaiMitsubishiLehy3Button2 extends BlockEntityRenderer<Sh
                 liftFloorDisplayView.setWidth(1.4F / 16);
                 liftFloorDisplayView.setHeight(1.7F / 16);
                 liftFloorDisplayView.setMargin(0, 0, 0.2F / 16, 0);
-                liftFloorDisplayView.setLetterSpacing(-10);
                 liftFloorDisplayView.setTextAlign(TextView.HorizontalTextAlign.RIGHT);
+                liftFloorDisplayView.setLetterSpacing(-10);
+
 
 
                 final LiftArrowView liftArrowView = new LiftArrowView();

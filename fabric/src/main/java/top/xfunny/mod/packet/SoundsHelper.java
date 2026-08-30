@@ -237,7 +237,7 @@ public final class SoundsHelper {
                         blockPos,
                         SoundEvents.MITSUBISHI_NEXWAY_BUTTON_1.get(),
                         SoundCategory.BLOCKS,
-                        1.0F,
+                        0.4F,
                         1.0F
                 );
                 break;

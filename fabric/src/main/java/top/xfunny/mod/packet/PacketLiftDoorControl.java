@@ -24,6 +24,10 @@ public final class PacketLiftDoorControl extends PacketHandler {
         command = commandInt == 0 ? LiftDoorState.Command.OPEN
                 : commandInt == 1 ? LiftDoorState.Command.CLOSE
                 : LiftDoorState.Command.HOLD_OPEN;
+        command = commandInt == 0 ? LiftDoorControlState.Command.OPEN
+                : commandInt == 1 ? LiftDoorControlState.Command.CLOSE
+                : commandInt == 2 ? LiftDoorControlState.Command.HOLD_OPEN
+                : LiftDoorControlState.Command.RELEASE_CLOSE;
         stoppingCoolDown = packetBufferReceiver.readLong();
         resetIdleDirection = packetBufferReceiver.readBoolean();
     }
@@ -48,6 +52,9 @@ public final class PacketLiftDoorControl extends PacketHandler {
         packetBufferSender.writeLong(liftId);
         packetBufferSender.writeInt(command == LiftDoorState.Command.OPEN ? 0
                 : command == LiftDoorState.Command.CLOSE ? 1 : 2);
+        packetBufferSender.writeInt(command == LiftDoorControlState.Command.OPEN ? 0
+                : command == LiftDoorControlState.Command.CLOSE ? 1
+                : command == LiftDoorControlState.Command.HOLD_OPEN ? 2 : 3);
         packetBufferSender.writeLong(stoppingCoolDown);
         packetBufferSender.writeBoolean(resetIdleDirection);
     }
@@ -65,6 +72,8 @@ public final class PacketLiftDoorControl extends PacketHandler {
         final Lift lift = MinecraftClientData.getLift(liftId);
         if (lift != null) {
             if (stoppingCoolDown >= 0) {
+                ((MixinLiftSchema) lift).setStoppingCoolDown(LiftDoorControlState.reconcileClientOpenCoolDown(
+                        liftId, stoppingCoolDown));
                 ((MixinLiftSchema) lift).setStoppingCoolDown(stoppingCoolDown);
             }
             if (resetIdleDirection) {

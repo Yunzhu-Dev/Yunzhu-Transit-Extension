@@ -6,6 +6,7 @@ import org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectObjectImmutablePair
 import org.mtr.mapping.holder.BlockPos;
 import org.mtr.mapping.holder.World;
 import org.mtr.mod.Init;
+import top.xfunny.mod.config.YteLiftConfigStore;
 import top.xfunny.mod.util.ClientGetLiftDetails;
 
 import java.awt.*;
@@ -19,7 +20,8 @@ public class LiftFloorDisplayView extends TextView {
     public void render() {
         formatFloorText();
 
-        if (!noFloorNumber || !noFloorDisplay) {
+        if (!YteLiftConfigStore.getServiceMode(lift.getId()).hidesHallDisplay()
+                && (!noFloorNumber || !noFloorDisplay)) {
             super.render();
         }
     }

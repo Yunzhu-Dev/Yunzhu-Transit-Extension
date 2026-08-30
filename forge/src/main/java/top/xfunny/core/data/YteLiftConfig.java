@@ -3,9 +3,11 @@ package top.xfunny.core.data;
 import org.mtr.core.serializer.ReaderBase;
 import top.xfunny.core.generated.data.YteLiftConfigSchema;
 import top.xfunny.mod.lift.DoorMotionCurve;
+import top.xfunny.mod.lift.LiftArrivalLanternTriggerMode;
 import top.xfunny.mod.lift.LiftDoorButtonLightMode;
 import top.xfunny.mod.lift.LiftFloorCancelMode;
 import top.xfunny.mod.lift.LiftMotionProfile;
+import top.xfunny.mod.lift.LiftServiceMode;
 
 public class YteLiftConfig extends YteLiftConfigSchema {
 
@@ -35,16 +37,40 @@ public class YteLiftConfig extends YteLiftConfigSchema {
             LiftMotionProfile motionProfile, boolean doorHoldEnabled) {
         this(liftId, upSpeed, downSpeed, upAcceleration, downAcceleration, directionParametersLinked,
                 adoDistance, levellingDistance, levellingSpeed, motionProfile, doorHoldEnabled,
-                LiftDoorButtonLightMode.MOMENTARY, LiftFloorCancelMode.DOUBLE_CLICK, false, "");
+                LiftDoorButtonLightMode.MOMENTARY, LiftFloorCancelMode.DOUBLE_CLICK, false,
+                LiftArrivalLanternTriggerMode.DECELERATION, "");
     }
 
     public YteLiftConfig(long liftId, double upSpeed, double downSpeed, double upAcceleration, double downAcceleration,
             boolean directionParametersLinked, double adoDistance, double levellingDistance, double levellingSpeed,
             LiftMotionProfile motionProfile, boolean doorHoldEnabled, LiftDoorButtonLightMode doorButtonLightMode,
             LiftFloorCancelMode floorCancelMode, boolean floorCancelWhileMoving, String liftNumber) {
+        this(liftId, upSpeed, downSpeed, upAcceleration, downAcceleration, directionParametersLinked,
+                adoDistance, levellingDistance, levellingSpeed, motionProfile, doorHoldEnabled,
+                doorButtonLightMode, floorCancelMode, floorCancelWhileMoving,
+                LiftArrivalLanternTriggerMode.DECELERATION, liftNumber);
+    }
+
+    public YteLiftConfig(long liftId, double upSpeed, double downSpeed, double upAcceleration, double downAcceleration,
+            boolean directionParametersLinked, double adoDistance, double levellingDistance, double levellingSpeed,
+            LiftMotionProfile motionProfile, boolean doorHoldEnabled, LiftDoorButtonLightMode doorButtonLightMode,
+            LiftFloorCancelMode floorCancelMode, boolean floorCancelWhileMoving,
+            LiftArrivalLanternTriggerMode arrivalLanternTriggerMode, String liftNumber) {
+        this(liftId, upSpeed, downSpeed, upAcceleration, downAcceleration, directionParametersLinked,
+                adoDistance, levellingDistance, levellingSpeed, motionProfile, doorHoldEnabled,
+                doorButtonLightMode, floorCancelMode, floorCancelWhileMoving,
+                arrivalLanternTriggerMode, LiftServiceMode.NORMAL, liftNumber);
+    }
+
+    public YteLiftConfig(long liftId, double upSpeed, double downSpeed, double upAcceleration, double downAcceleration,
+            boolean directionParametersLinked, double adoDistance, double levellingDistance, double levellingSpeed,
+            LiftMotionProfile motionProfile, boolean doorHoldEnabled, LiftDoorButtonLightMode doorButtonLightMode,
+            LiftFloorCancelMode floorCancelMode, boolean floorCancelWhileMoving,
+            LiftArrivalLanternTriggerMode arrivalLanternTriggerMode, LiftServiceMode serviceMode, String liftNumber) {
         super(liftId, upSpeed, downSpeed, upAcceleration, downAcceleration, directionParametersLinked,
                 adoDistance, levellingDistance, levellingSpeed, motionProfile.name(), doorHoldEnabled,
-                doorButtonLightMode.name(), floorCancelMode.name(), floorCancelWhileMoving, liftNumber);
+                doorButtonLightMode.name(), floorCancelMode.name(), floorCancelWhileMoving,
+                arrivalLanternTriggerMode.name(), serviceMode.name(), liftNumber);
     }
 
     public YteLiftConfig(long liftId, double upSpeed, double downSpeed, double upAcceleration, double downAcceleration,
@@ -110,6 +136,14 @@ public class YteLiftConfig extends YteLiftConfigSchema {
 
     public DoorMotionCurve getDoorCurve() { return DoorMotionCurve.fromSerializedName(doorCurve); }
 
+    public LiftArrivalLanternTriggerMode getArrivalLanternTriggerMode() {
+        return LiftArrivalLanternTriggerMode.fromSerializedName(arrivalLanternTriggerMode);
+    }
+
+    public LiftServiceMode getServiceMode() {
+        return LiftServiceMode.fromSerializedName(serviceMode);
+    }
+
     public String getLiftNumber() { return liftNumber; }
 
     public double getRecoverySpeed() { return recoverySpeed; }
@@ -142,6 +176,14 @@ public class YteLiftConfig extends YteLiftConfigSchema {
 
     public void setFloorCancelWhileMovingAllowed(boolean floorCancelWhileMoving) {
         this.floorCancelWhileMoving = floorCancelWhileMoving;
+    }
+
+    public void setArrivalLanternTriggerMode(LiftArrivalLanternTriggerMode arrivalLanternTriggerMode) {
+        this.arrivalLanternTriggerMode = arrivalLanternTriggerMode.name();
+    }
+
+    public void setServiceMode(LiftServiceMode serviceMode) {
+        this.serviceMode = serviceMode.name();
     }
 
     public void setLiftNumber(String liftNumber) {

@@ -15,7 +15,16 @@ import org.mtr.mod.packet.PacketPressLiftButton;
 import top.xfunny.mod.*;
 import top.xfunny.mod.Items;
 import top.xfunny.mod.keymapping.DefaultButtonsKeyMapping;
+import top.xfunny.mod.config.YteLiftConfigStore;
+import top.xfunny.mod.lift.LiftArrivalLanternContext;
+import top.xfunny.mod.lift.LiftArrivalLanternDecision;
+import top.xfunny.mod.lift.LiftArrivalLanternDisplayPhase;
+import top.xfunny.mod.lift.LiftArrivalLanternAssignmentProvider;
+import top.xfunny.mod.lift.LiftArrivalLanternFlashPattern;
+import top.xfunny.mod.lift.LiftArrivalLanternPolicy;
+import top.xfunny.mod.lift.LiftArrivalLanternState;
 import top.xfunny.mod.lift.LiftDisplayDirectionState;
+import top.xfunny.mod.lift.LiftDisplayState;
 import top.xfunny.mod.lift.LiftFloorRegistry;
 import top.xfunny.mod.lift.LiftLanternController;
 import top.xfunny.mod.util.TransformPositionX;
@@ -94,6 +103,17 @@ public abstract class LiftButtonsBase extends BlockExtension implements Directio
 
                 if (unlocked) {
                     if (world.isClient() && !focusButton.equals("null")) {
+                        final boolean[] availableHallLift = {false};
+                        data.trackPositions.forEach(trackPosition -> MinecraftClientData.getInstance().lifts.forEach(lift -> {
+                            if (lift.getFloorIndex(Init.blockPosToPosition(trackPosition)) >= 0
+                                    && YteLiftConfigStore.getServiceMode(lift.getId()).acceptsHallCalls()) {
+                                availableHallLift[0] = true;
+                            }
+                        }));
+                        if (!availableHallLift[0]) {
+                            return ActionResult.FAIL;
+                        }
+
                         ObjectOpenHashSet<BlockPos> connectedLanternPositions = data.getLiftButtonPositions();
                         LiftButtonDescriptor descriptor = new LiftButtonDescriptor(false, false);
                         data.trackPositions.forEach(trackPosition -> LiftButtonsBase.hasButtonsClient(trackPosition, descriptor, (floor, lift) -> {
@@ -233,13 +253,28 @@ public abstract class LiftButtonsBase extends BlockExtension implements Directio
         public final boolean justTriggered;
         /** 最近一部已登记本层指令的电梯距离本层的楼层数，无相关电梯时为 -1 */
         public final int distanceToNearestLift;
+        /** Policy-selected flash pattern; legacy renderers may ignore it. */
+        public final LiftArrivalLanternFlashPattern flashPattern;
+        /** Optional policy-selected sound id/cue for future brand strategies. */
+        @Nullable public final String soundCue;
+        public final long phaseStartMillis;
 
         LanternState(boolean upActive, boolean downActive, LanternPhase phase, boolean justTriggered, int distanceToNearestLift) {
+            this(upActive, downActive, phase, justTriggered, distanceToNearestLift,
+                    LiftArrivalLanternFlashPattern.STEADY, null, 0);
+        }
+
+        LanternState(boolean upActive, boolean downActive, LanternPhase phase, boolean justTriggered,
+                int distanceToNearestLift, LiftArrivalLanternFlashPattern flashPattern,
+                @Nullable String soundCue, long phaseStartMillis) {
             this.upActive = upActive;
             this.downActive = downActive;
             this.phase = phase;
             this.justTriggered = justTriggered;
             this.distanceToNearestLift = distanceToNearestLift;
+            this.flashPattern = flashPattern;
+            this.soundCue = soundCue;
+            this.phaseStartMillis = phaseStartMillis;
         }
     }
 
@@ -257,9 +292,10 @@ public abstract class LiftButtonsBase extends BlockExtension implements Directio
         /** @deprecated 请使用 {@link #getLanternState} 的 justTriggered 替代。保留以兼容未迁移的 Screen 渲染类。 */
         @Deprecated
         public boolean lastDownActive = false;
-        /** 用于边沿检测的上一帧状态，按 trackPosition 独立存储（避免多楼层共享导致声音重叠） */
-        private final java.util.Map<BlockPos, boolean[]> lanternPrevState = new java.util.HashMap<>();
+        /** 每个轨道楼层、每部电梯最后观察到的触发序号，用于保证到站音只播放一次。 */
+        private final java.util.Map<BlockPos, java.util.Map<Long, Long>> lanternTriggerSequences = new java.util.HashMap<>();
         private LiftDirection pressedButtonDirection;
+        private long pressedButtonAtMillis;
         private DefaultButtonsKeyMapping keyMapping = new DefaultButtonsKeyMapping();
 
         public BlockEntityBase(BlockEntityType<?> type, BlockPos blockPos, BlockState blockState) {
@@ -351,48 +387,100 @@ public abstract class LiftButtonsBase extends BlockExtension implements Directio
          * @return 到站灯状态，绝不会为 null
          */
         public LanternState getLanternState(BlockPos trackPosition) {
+            return getLanternState(trackPosition, LiftArrivalLanternPolicy.DEFAULT);
+        }
+
+        /**
+         * Policy extension point for brand-specific advance notice, flash and
+         * sound strategies. The no-policy overload preserves current behavior.
+         */
+        public LanternState getLanternState(BlockPos trackPosition, LiftArrivalLanternPolicy policy) {
+            return getLanternState(trackPosition, policy, LiftArrivalLanternAssignmentProvider.NONE);
+        }
+
+        public LanternState getLanternState(BlockPos trackPosition, LiftArrivalLanternPolicy policy,
+                LiftArrivalLanternAssignmentProvider assignmentProvider) {
             boolean upActive = false;
             boolean downActive = false;
             LanternPhase phase = LanternPhase.IDLE;
             int minDistance = Integer.MAX_VALUE;
+            boolean justTriggered = false;
+            LiftArrivalLanternFlashPattern selectedFlashPattern = LiftArrivalLanternFlashPattern.STEADY;
+            String selectedSoundCue = null;
+            long selectedPhaseStartMillis = 0;
+            final long currentMillis = System.currentTimeMillis();
+            final java.util.Map<Long, Long> seenTriggerSequences = lanternTriggerSequences.computeIfAbsent(
+                    trackPosition, ignored -> new java.util.HashMap<>());
 
             for (Lift lift : MinecraftClientData.getInstance().lifts) {
+                if (YteLiftConfigStore.getServiceMode(lift.getId()).hidesHallDisplay()) {
+                    continue;
+                }
                 final int floorIndex = lift.getFloorIndex(Init.blockPosToPosition(trackPosition));
                 if (floorIndex < 0) continue;
 
-                final boolean doorOpen = lift.getDoorValue() != 0;
+                final LiftArrivalLanternState arrivalState = LiftArrivalLanternState.get(lift.getId());
                 final int currentLiftFloorIdx = lift.getFloorIndex(lift.getCurrentFloor().getPosition());
-                final boolean atThisFloor = (currentLiftFloorIdx == floorIndex);
                 final int distance = Math.abs(currentLiftFloorIdx - floorIndex);
-
-                boolean hasUp = false;
-                boolean hasDown = false;
-                for (LiftDirection dir : lift.hasInstruction(floorIndex)) {
-                    if (dir == LiftDirection.UP) hasUp = true;
-                    if (dir == LiftDirection.DOWN) hasDown = true;
+                final LiftArrivalLanternContext context = new LiftArrivalLanternContext(
+                        LiftDisplayState.get(lift.getId()), arrivalState,
+                        YteLiftConfigStore.getArrivalLanternTriggerMode(lift.getId()), floorIndex, distance,
+                        pressedButtonDirection == null ? LiftDirection.NONE : pressedButtonDirection,
+                        pressedButtonAtMillis, currentMillis,
+                        assignmentProvider == null ? null : assignmentProvider.getAssignment(lift.getId(), floorIndex));
+                final LiftArrivalLanternDecision decision = policy == null
+                        ? LiftArrivalLanternDecision.inactive() : policy.evaluate(context);
+                if (decision == null || !decision.isActive()) {
+                    continue;
                 }
 
-                if (hasUp || hasDown) {
-                    phase = (doorOpen && atThisFloor) ? LanternPhase.ARRIVED : LanternPhase.APPROACHING;
-                    upActive = upActive || hasUp;
-                    downActive = downActive || hasDown;
-                    minDistance = Math.min(minDistance, distance);
-                } else if (pressedButtonDirection != null && doorOpen && atThisFloor) {
-                    if (phase.ordinal() < LanternPhase.CALL_REGISTERED.ordinal()) {
-                        phase = LanternPhase.CALL_REGISTERED;
+                final LiftDirection direction = decision.getDirection();
+                final boolean lightVisible = decision.getFlashPattern().isLit(
+                        currentMillis, decision.getPhaseStartMillis());
+
+                if (lightVisible && direction == LiftDirection.UP) {
+                    upActive = true;
+                } else if (lightVisible && direction == LiftDirection.DOWN) {
+                    downActive = true;
+                }
+                final LanternPhase decisionPhase = yte$toLegacyLanternPhase(decision.getPhase());
+                if (decisionPhase.ordinal() > phase.ordinal()) {
+                    phase = decisionPhase;
+                    selectedFlashPattern = decision.getFlashPattern();
+                    selectedSoundCue = decision.getSoundCue();
+                    selectedPhaseStartMillis = decision.getPhaseStartMillis();
+                } else if (selectedSoundCue == null && decision.getSoundCue() != null) {
+                    selectedSoundCue = decision.getSoundCue();
+                }
+                minDistance = Math.min(minDistance, distance);
+
+                final long eventSequence = decision.getEventSequence();
+                if (eventSequence > 0) {
+                    final Long previousSequence = seenTriggerSequences.put(lift.getId(), eventSequence);
+                    if (previousSequence == null || previousSequence != eventSequence) {
+                        justTriggered = true;
                     }
-                    if (pressedButtonDirection == LiftDirection.UP) upActive = true;
-                    if (pressedButtonDirection == LiftDirection.DOWN) downActive = true;
                 }
             }
 
-            // 边沿检测：按 trackPosition 独立追踪，避免多轨道楼层共享状态导致声音重叠
-            final boolean[] prev = lanternPrevState.computeIfAbsent(trackPosition, k -> new boolean[]{false, false});
-            final boolean justTriggered = (upActive && !prev[0]) || (downActive && !prev[1]);
-            prev[0] = upActive;
-            prev[1] = downActive;
+            return new LanternState(upActive, downActive, phase, justTriggered,
+                    minDistance == Integer.MAX_VALUE ? -1 : minDistance,
+                    selectedFlashPattern, selectedSoundCue, selectedPhaseStartMillis);
+        }
 
-            return new LanternState(upActive, downActive, phase, justTriggered, minDistance == Integer.MAX_VALUE ? -1 : minDistance);
+        private static LanternPhase yte$toLegacyLanternPhase(LiftArrivalLanternDisplayPhase phase) {
+            switch (phase) {
+                case CALL_REGISTERED:
+                    return LanternPhase.CALL_REGISTERED;
+                case APPROACHING:
+                    return LanternPhase.APPROACHING;
+                case ARRIVED:
+                case CLOSING:
+                    return LanternPhase.ARRIVED;
+                case IDLE:
+                default:
+                    return LanternPhase.IDLE;
+            }
         }
 
         @Override
@@ -402,6 +490,9 @@ public abstract class LiftButtonsBase extends BlockExtension implements Directio
         @Override
         public ObjectOpenHashSet<BlockPos> getLiftButtonPositions() { return liftButtonPositions; }
         public LiftDirection getPressedButtonDirection() { return pressedButtonDirection; }
-        public void setPressedButtonDirection(LiftDirection direction) { this.pressedButtonDirection = direction; }
+        public void setPressedButtonDirection(LiftDirection direction) {
+            pressedButtonDirection = direction;
+            pressedButtonAtMillis = System.currentTimeMillis();
+        }
     }
 }

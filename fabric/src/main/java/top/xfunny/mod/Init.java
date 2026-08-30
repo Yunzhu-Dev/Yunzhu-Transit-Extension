@@ -92,20 +92,22 @@ public final class Init implements Utilities {
             currentStep++;
         }
 
-        // 注册 YTE 数据体系生命周期
+        // 注册 YTE 数据体系生命周期   初始化
         REGISTRY.eventRegistry.registerServerStarted(minecraftServer -> {
             Init.minecraftServer = minecraftServer;
             WORLD_ID_LIST.clear();
             MinecraftServerHelper.iterateWorlds(minecraftServer, serverWorld ->
                     WORLD_ID_LIST.add(getWorldId(new World(serverWorld.data))));
             lastSavedMillis = System.currentTimeMillis();
-            yteMain = new YteMain(
+            yteMain = new YteMain(//todo:threadedSimulation值目前永久为false，未来可以考虑改为可配置项，以支持多线程读写
                     minecraftServer.getSavePath(WorldSavePath.getRootMapped()).resolve("yte"),
                     false,
                     WORLD_ID_LIST.toArray(new String[0]));
         });
 
+
         REGISTRY.eventRegistry.registerStartServerTick(() -> {
+            // 固定时间周期保存yte数据
             if (yteMain != null) {
                 yteMain.manualTick();
                 final long currentMillis = System.currentTimeMillis();
@@ -117,6 +119,7 @@ public final class Init implements Utilities {
         });
 
         REGISTRY.eventRegistry.registerPlayerDisconnect((minecraftServer, serverPlayerEntity) -> {
+            // 玩家退出后进行数据保存
             if (yteMain != null) {
                 yteMain.save();
             }
@@ -124,6 +127,7 @@ public final class Init implements Utilities {
 
         REGISTRY.eventRegistry.registerServerStopping(minecraftServer -> {
             Init.minecraftServer = null;
+            // 关服时进行数据保存
             LiftDoorState.clearQueues();
             LiftModeState.clearQueues();
             if (yteMain != null) {
