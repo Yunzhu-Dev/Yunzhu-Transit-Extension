@@ -3,6 +3,7 @@ package top.xfunny.core.data;
 import org.mtr.libraries.it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import top.xfunny.mod.config.YteLiftConfigStore;
+import top.xfunny.mod.lift.LiftModeState;
 
 public abstract class YteData {
 
@@ -20,7 +21,10 @@ public abstract class YteData {
                         config.getLevellingDistance(), config.getLevellingSpeed(), config.getMotionProfile(),
                         config.isDoorHoldEnabled(), config.getDoorButtonLightMode(), config.getFloorCancelMode(),
                         config.isFloorCancelWhileMovingAllowed(), config.getArrivalLanternTriggerMode(),
-                        config.getServiceMode());
+                        config.isFiremanLift(), config.getFiremanOperation(), config.getFireRecallFloor());
+                // 服务模式路由进 LiftModeState（双端镜像；保护态内部自动跳过）
+                LiftModeState.setServiceMode(config.getId(),
+                        LiftModeState.parseMode(config.getServiceMode()));
                 top.xfunny.mod.config.YteLiftConfigStore.setLiftNumber(config.getId(), config.getLiftNumber());
                 YteLiftConfigStore.putDoorParams(
                         config.getId(), config.getDoorOpenMs(), config.getDoorCloseMs(),

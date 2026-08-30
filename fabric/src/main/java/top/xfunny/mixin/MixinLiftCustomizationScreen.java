@@ -33,8 +33,8 @@ import top.xfunny.mod.lift.DoorMotionCurve;
 import top.xfunny.mod.lift.LiftArrivalLanternTriggerMode;
 import top.xfunny.mod.lift.LiftDoorButtonLightMode;
 import top.xfunny.mod.lift.LiftFloorCancelMode;
+import top.xfunny.mod.lift.FiremanOperationType;
 import top.xfunny.mod.lift.LiftMotionProfile;
-import top.xfunny.mod.lift.LiftServiceMode;
 
 import java.util.Locale;
 
@@ -123,6 +123,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique private WidgetShorterSlider yte$sliderLevellingSpeed;
     @Unique private ButtonWidgetExtension yte$professionalModeButton;
     @Unique private ButtonWidgetExtension yte$directionLinkButton;
+    @Unique private ButtonWidgetExtension yte$firemanLiftButton;
+    @Unique private ButtonWidgetExtension yte$firemanOperationButton;
     @Unique private ButtonWidgetExtension yte$motionProfileButton;
     @Unique private ButtonWidgetExtension yte$doorHoldButton;
     @Unique private ButtonWidgetExtension yte$doorButtonLightModeButton;
@@ -148,6 +150,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique private TextFieldWidgetExtension yte$recoverySpeedField;
     @Unique private TextFieldWidgetExtension yte$maxDoorOpenMsField;
     @Unique private TextFieldWidgetExtension yte$liftNumberField;
+    @Unique private TextFieldWidgetExtension yte$fireRecallFloorField;
     @Unique private WidgetShorterSlider yte$sliderRecoverySpeed;
     @Unique private WidgetShorterSlider yte$sliderMaxDoorOpenMs;
 
@@ -198,8 +201,10 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique private LiftFloorCancelMode yte$lastSentFloorCancelMode = LiftFloorCancelMode.DOUBLE_CLICK;
     @Unique private LiftArrivalLanternTriggerMode yte$arrivalLanternTriggerMode = LiftArrivalLanternTriggerMode.DECELERATION;
     @Unique private LiftArrivalLanternTriggerMode yte$lastSentArrivalLanternTriggerMode = LiftArrivalLanternTriggerMode.DECELERATION;
-    @Unique private LiftServiceMode yte$serviceMode = LiftServiceMode.NORMAL;
-    @Unique private LiftServiceMode yte$lastSentServiceMode = LiftServiceMode.NORMAL;
+    /** 服务模式（LiftMode 名）：NORMAL/INDEPENDENT/ATTENDANT 三态循环。 */
+    @Unique private static final String[] SERVICE_MODE_CYCLE = {"NORMAL", "INDEPENDENT", "ATTENDANT"};
+    @Unique private String yte$serviceMode = "NORMAL";
+    @Unique private String yte$lastSentServiceMode = "NORMAL";
     @Unique private String yte$liftNumber = "";
     @Unique private String yte$lastSentLiftNumber = "";
     @Unique private long yte$doorOpenMs;
@@ -217,6 +222,12 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique private double yte$lastSentAdoDistance = -1;
     @Unique private double yte$lastSentLevellingDistance = -1;
     @Unique private double yte$lastSentLevellingSpeed = -1;
+    @Unique private boolean yte$firemanLift;
+    @Unique private boolean yte$lastSentFiremanLift;
+    @Unique private FiremanOperationType yte$firemanOperation = FiremanOperationType.HOLD_DOOR_BUTTON;
+    @Unique private FiremanOperationType yte$lastSentFiremanOperation = FiremanOperationType.HOLD_DOOR_BUTTON;
+    @Unique private String yte$fireRecallFloor = YteLiftConfig.DEFAULT_FIRE_RECALL_FLOOR;
+    @Unique private String yte$lastSentFireRecallFloor = YteLiftConfig.DEFAULT_FIRE_RECALL_FLOOR;
     @Unique private final double[] yte$easyModeValues = new double[7];
     @Unique private final int[] yte$easyModeSliderAnchors = new int[7];
     @Unique private final boolean[] yte$easyModeSliderTouched = new boolean[7];
@@ -251,8 +262,15 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$floorCancelMode = config == null ? LiftFloorCancelMode.DOUBLE_CLICK : config.getFloorCancelMode();
         yte$arrivalLanternTriggerMode = config == null
                 ? LiftArrivalLanternTriggerMode.DECELERATION : config.getArrivalLanternTriggerMode();
-        yte$serviceMode = config == null ? LiftServiceMode.NORMAL : config.getServiceMode();
+        yte$serviceMode = config == null || config.getServiceMode() == null
+                ? "NORMAL" : config.getServiceMode();
         yte$liftNumber = config == null ? "" : config.getLiftNumber();
+        yte$firemanLift = config != null && config.isFiremanLift();
+        yte$lastSentFiremanLift = yte$firemanLift;
+        yte$firemanOperation = config == null ? FiremanOperationType.HOLD_DOOR_BUTTON : config.getFiremanOperation();
+        yte$lastSentFiremanOperation = yte$firemanOperation;
+        yte$fireRecallFloor = config == null ? YteLiftConfig.DEFAULT_FIRE_RECALL_FLOOR : config.getFireRecallFloor();
+        yte$lastSentFireRecallFloor = yte$fireRecallFloor;
         final double currentAdoDistance = config != null ? config.getAdoDistance() : YteLiftConfig.DEFAULT_ADO_DISTANCE;
         final double currentLevellingDistance = config != null ? config.getLevellingDistance() : YteLiftConfig.DEFAULT_LEVELLING_DISTANCE;
         final double currentLevellingSpeed = config != null ? config.getLevellingSpeed() : YteLiftConfig.DEFAULT_LEVELLING_SPEED;
@@ -313,6 +331,10 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                 TextHelper.literal(""), button -> yte$toggleProfessionalMode());
         yte$directionLinkButton = new ButtonWidgetExtension(0, 0, 0, IGui.SQUARE_SIZE,
                 TextHelper.literal(""), button -> yte$toggleDirectionParametersLinked());
+        yte$firemanLiftButton = new ButtonWidgetExtension(0, 0, 0, IGui.SQUARE_SIZE,
+                TextHelper.literal(""), button -> yte$toggleFiremanLift());
+        yte$firemanOperationButton = new ButtonWidgetExtension(0, 0, 0, IGui.SQUARE_SIZE,
+                TextHelper.literal(""), button -> yte$toggleFiremanOperation());
         yte$motionProfileButton = new ButtonWidgetExtension(0, 0, 0, IGui.SQUARE_SIZE,
                 TextHelper.literal(""), button -> yte$toggleMotionProfile());
         yte$doorHoldButton = new ButtonWidgetExtension(0, 0, 0, IGui.SQUARE_SIZE,
@@ -354,6 +376,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$maxDoorOpenMsField = yte$createNumberField(currentMaxDoorOpenMs);
         yte$liftNumberField = yte$createLiftNumberField();
         yte$liftNumberField.setText2(yte$liftNumber);
+        yte$fireRecallFloorField = yte$createLiftNumberField();
+        yte$fireRecallFloorField.setText2(yte$fireRecallFloor);
 
         yte$lastSentSpeed = currentSpeed;
         yte$lastSentAccel = currentAccel;
@@ -403,6 +427,9 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
 
         addChild(new ClickableWidget(yte$professionalModeButton));
         addChild(new ClickableWidget(yte$directionLinkButton));
+        addChild(new ClickableWidget(yte$firemanLiftButton));
+        addChild(new ClickableWidget(yte$firemanOperationButton));
+        addChild(new ClickableWidget(yte$fireRecallFloorField));
         addChild(new ClickableWidget(yte$motionProfileButton));
         addChild(new ClickableWidget(yte$doorHoldButton));
         addChild(new ClickableWidget(yte$doorButtonLightModeButton));
@@ -527,6 +554,9 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
             case TAB_MOTION:
                 yte$positionFullWidth(yte$directionLinkButton, 1);
                 yte$positionFullWidth(yte$motionProfileButton, 2);
+                yte$positionFullWidth(yte$firemanLiftButton, 12);
+                yte$positionFullWidth(yte$firemanOperationButton, 13);
+                yte$positionField(yte$fireRecallFloorField, 15);
                 yte$positionSlider(yte$sliderSpeed, 4);
                 yte$positionField(yte$speedField, 4);
                 yte$positionSlider(yte$sliderAcceleration, 6);
@@ -561,8 +591,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                 yte$positionField(yte$recoverySpeedField, 14);
                 yte$positionSlider(yte$sliderMaxDoorOpenMs, 16);
                 yte$positionField(yte$maxDoorOpenMsField, 16);
-                yte$positionFullWidth(yte$arrivalLanternTriggerModeButton, 4);
-                yte$positionFullWidth(yte$serviceModeButton, 5);
+                yte$positionFullWidth(yte$arrivalLanternTriggerModeButton, 17);
+                yte$positionFullWidth(yte$serviceModeButton, 18);
                 break;
             default:
                 break;
@@ -589,12 +619,11 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
             case TAB_BASE:
                 return 14;
             case TAB_MOTION:
-                return yte$directionParametersLinked ? 6 : 10;
+                return 15;
             case TAB_LEVEL:
                 return 6;
             case TAB_DOOR:
-                return 17;
-                return 5;
+                return 18;
             default:
                 return 1;
         }
@@ -670,6 +699,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                     yte$drawModeLabel(graphicsHolder, "gui.yte.lift_down_speed", "gui.yte.lift_down_speed_value", values[1], 7);
                     yte$drawModeLabel(graphicsHolder, "gui.yte.lift_down_acceleration", "gui.yte.lift_down_acceleration_value", values[3], 9);
                 }
+                graphicsHolder.drawText(TextHelper.translatable("gui.yte.lift_fire_recall_floor"), 0,
+                        yte$contentY(14) + IGui.TEXT_PADDING, IGui.ARGB_WHITE, false, GraphicsHolder.getDefaultLight());
                 break;
             case TAB_LEVEL:
                 yte$drawModeLabel(graphicsHolder, "gui.yte.lift_ado_distance", "gui.yte.lift_ado_distance_value", values[4], 1);
@@ -752,6 +783,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         final double recoverySpeed = values[11];
         final long maxDoorOpenMs = (long) values[12];
         final String liftNumber = yte$liftNumberField.getText2().trim();
+        final String fireRecallFloor = yte$fireRecallFloorField.getText2().trim();
 
         if (upSpeed != yte$lastSentSpeed || downSpeed != yte$lastSentDownSpeed
                 || upAccel != yte$lastSentAccel || downAccel != yte$lastSentDownAccel
@@ -767,8 +799,11 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                 || yte$doorCurve != yte$lastSentDoorCurve
                 || recoverySpeed != yte$lastSentRecoverySpeed
                 || maxDoorOpenMs != yte$lastSentMaxDoorOpenMs
+                || yte$firemanLift != yte$lastSentFiremanLift
+                || yte$firemanOperation != yte$lastSentFiremanOperation
+                || !fireRecallFloor.equals(yte$lastSentFireRecallFloor)
                 || yte$arrivalLanternTriggerMode != yte$lastSentArrivalLanternTriggerMode
-                || yte$serviceMode != yte$lastSentServiceMode
+                || !yte$serviceMode.equals(yte$lastSentServiceMode)
                 || !liftNumber.equals(yte$lastSentLiftNumber)) {
             yte$lastSentSpeed = upSpeed;
             yte$lastSentDownSpeed = downSpeed;
@@ -793,22 +828,25 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
             yte$lastSentDoorCurve = yte$doorCurve;
             yte$lastSentRecoverySpeed = recoverySpeed;
             yte$lastSentMaxDoorOpenMs = maxDoorOpenMs;
+            yte$lastSentFiremanLift = yte$firemanLift;
+            yte$lastSentFiremanOperation = yte$firemanOperation;
+            yte$fireRecallFloor = fireRecallFloor;
+            yte$lastSentFireRecallFloor = fireRecallFloor;
 
             final long liftId = lift.getId();
             final YteLiftConfig config = new YteLiftConfig(liftId, upSpeed, downSpeed, upAccel, downAccel,
                     yte$directionParametersLinked, adoDistance, levellingDistance, levellingSpeed, yte$motionProfile,
                     yte$doorHoldEnabled, yte$doorButtonLightMode, yte$floorCancelMode, false,
-                    yte$arrivalLanternTriggerMode, yte$serviceMode, liftNumber);
-                    yte$doorHoldEnabled, yte$doorButtonLightMode, yte$floorCancelMode, false,
-                    doorOpenMs, doorCloseMs, doorDwellMs, doorRunDelayMs, yte$doorCurve, liftNumber);
+                    yte$arrivalLanternTriggerMode, yte$serviceMode,
+                    doorOpenMs, doorCloseMs, doorDwellMs, doorRunDelayMs, yte$doorCurve, liftNumber,
+                    yte$firemanLift, yte$firemanOperation.name(), fireRecallFloor);
             YteLiftConfigStore.put(liftId, upSpeed, downSpeed, upAccel, downAccel,
                     adoDistance, levellingDistance, levellingSpeed, yte$motionProfile, yte$doorHoldEnabled,
-                    yte$doorButtonLightMode, yte$floorCancelMode, false);
+                    yte$doorButtonLightMode, yte$floorCancelMode, false, yte$arrivalLanternTriggerMode,
+                    yte$firemanLift, yte$firemanOperation, fireRecallFloor);
             YteLiftConfigStore.putDoorParams(liftId, doorOpenMs, doorCloseMs, doorDwellMs, doorRunDelayMs, yte$doorCurve);
             YteLiftConfigStore.putRecoverySpeed(liftId, recoverySpeed);
             YteLiftConfigStore.putMaxDoorOpenMs(liftId, maxDoorOpenMs);
-                    yte$doorButtonLightMode, yte$floorCancelMode, false, yte$arrivalLanternTriggerMode,
-                    yte$serviceMode);
             YteLiftConfigStore.setLiftNumber(liftId, liftNumber);
 
             final YteUpdateDataRequest request = new YteUpdateDataRequest(
@@ -874,6 +912,18 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     }
 
     @Unique
+    private void yte$toggleFiremanLift() {
+        yte$firemanLift = !yte$firemanLift;
+        yte$updateModeWidgets();
+    }
+
+    @Unique
+    private void yte$toggleFiremanOperation() {
+        yte$firemanOperation = yte$firemanOperation.next();
+        yte$updateModeWidgets();
+    }
+
+    @Unique
     private void yte$toggleDirectionParametersLinked() {
         final double upSpeed = yte$professionalMode
                 ? yte$parseNumber(yte$speedField, yte$lastSentSpeed, YteLiftConfig.MIN_SPEED, YteLiftConfig.MAX_SPEED)
@@ -930,7 +980,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
 
     @Unique
     private void yte$toggleServiceMode() {
-        yte$serviceMode = yte$serviceMode.next();
+        final int index = Math.max(java.util.Arrays.asList(SERVICE_MODE_CYCLE).indexOf(yte$serviceMode), 0);
+        yte$serviceMode = SERVICE_MODE_CYCLE[(index + 1) % SERVICE_MODE_CYCLE.length];
         yte$updateModeWidgets();
     }
 
@@ -1051,6 +1102,9 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$professionalModeButton.setVisibleMapped(motionTab || levelTab);
         yte$directionLinkButton.setVisibleMapped(motionTab);
         yte$motionProfileButton.setVisibleMapped(motionTab);
+        yte$firemanLiftButton.setVisibleMapped(motionTab);
+        yte$firemanOperationButton.setVisibleMapped(motionTab);
+        yte$fireRecallFloorField.setVisibleMapped(motionTab);
 
         // 门与楼层标签
         yte$doorHoldButton.setVisibleMapped(doorTab);
@@ -1099,6 +1153,11 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$directionLinkButton.setMessage2(new Text(TextHelper.translatable(yte$directionParametersLinked
                 ? "gui.yte.lift_direction_link_on"
                 : "gui.yte.lift_direction_link_off").data));
+        yte$firemanLiftButton.setMessage2(new Text(TextHelper.translatable(yte$firemanLift
+                ? "gui.yte.lift_fireman_lift_on"
+                : "gui.yte.lift_fireman_lift_off").data));
+        yte$firemanOperationButton.setMessage2(new Text(TextHelper.translatable(
+                yte$firemanOperation.getTranslationKey()).data));
         yte$motionProfileButton.setMessage2(new Text(TextHelper.translatable(
                 yte$motionProfile.getTranslationKey()).data));
         yte$doorHoldButton.setMessage2(new Text(TextHelper.translatable(yte$doorHoldEnabled
@@ -1111,7 +1170,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$arrivalLanternTriggerModeButton.setMessage2(new Text(TextHelper.translatable(
                 yte$arrivalLanternTriggerMode.getTranslationKey()).data));
         yte$serviceModeButton.setMessage2(new Text(TextHelper.translatable(
-                yte$serviceMode.getTranslationKey()).data));
+                "gui.yte.lift_service_mode_" + yte$serviceMode.toLowerCase(Locale.ROOT)).data));
     }
 
     @Unique

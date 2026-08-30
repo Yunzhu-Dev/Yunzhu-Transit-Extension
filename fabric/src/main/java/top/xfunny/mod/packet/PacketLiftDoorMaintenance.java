@@ -65,12 +65,12 @@ public final class PacketLiftDoorMaintenance extends PacketHandler {
 		((LiftDoorMaintenance) entity.data).yte$setMaintenanceOpen(open, liftId, durationMs);
 
 		if (open) {
-			// 上锁（安全回路断开）：急停 + 弃全部内外呼，进入故障隔离
-			LiftModeState.lock(liftId);
+			// 开门：进入急停（安全回路断开 + EMERGENCY_STOP 隔离），弃全部内外呼
+			LiftModeState.triggerEmergencyStop(liftId);
 		} else {
-			// 解锁：等层门关门动画播完（配置 closeMs）后自动就近平层救援
+			// 关门：解锁，等层门关门动画播完（配置 closeMs）后自动进入 AUTO_RECOVERY 就近平层救援
 			LiftModeState.unlock(liftId);
-			LiftModeState.requestMode(liftId, LiftModeState.LiftMode.MANUAL_DOOR_RECOVERY,
+			LiftModeState.requestMode(liftId, LiftModeState.LiftMode.AUTO_RECOVERY,
 					YteLiftConfigStore.getDoorParams(liftId).closeMs);
 		}
 		MinecraftServerHelper.iteratePlayers(minecraftServer, player ->
@@ -84,10 +84,14 @@ public final class PacketLiftDoorMaintenance extends PacketHandler {
 		if (clientWorld == null) {
 			return;
 		}
-		// 镜像联锁到客户端：本地模拟同样冻结，避免被服务端逐帧同步拽回（“闪回”）
-		// ponytail: 客户端仅镜像锁定标志，不走 lock/unlock API——instructionPurgePending
-		// 只由服务端消费，客户端误置会残留；指令清空在下方手动完成
+		// 镜像联锁与模式到客户端：本地模拟同样冻结，避免被服务端逐帧同步拽回（“闪回”）
+		// ponytail: 客户端仅镜像锁定标志与 mode，不走 lock/unlock/requestMode API——
+		// instructionPurgePending/modePending 只由服务端消费，客户端误置会残留；
+		// 指令清空在下方手动完成
 		LiftModeState.getOrCreate(liftId).maintenanceLocked = open;
+		LiftModeState.getOrCreate(liftId).mode = open
+				? LiftModeState.LiftMode.EMERGENCY_STOP
+				: LiftModeState.LiftMode.AUTO_RECOVERY;
 		// 同步清空客户端指令副本：服务端上锁即弃全部内外呼，客户端提前清空
 		// 可在广播到达时立刻停止朝旧目标模拟（服务端 purge 下一 tick 才生效）
 		final Lift clientLift = MinecraftClientData.getLift(liftId);

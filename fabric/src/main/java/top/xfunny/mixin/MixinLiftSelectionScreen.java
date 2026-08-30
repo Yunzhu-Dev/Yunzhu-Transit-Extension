@@ -1,10 +1,13 @@
 package top.xfunny.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import org.mtr.core.data.Lift;
 import org.mtr.core.data.LiftDirection;
 import org.mtr.core.data.LiftFloor;
-import org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectObjectImmutablePair;
+import org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectObjectImmutablePair;
 import org.mtr.mapping.holder.BlockPos;
 import org.mtr.mapping.holder.ClickableWidget;
 import org.mtr.mapping.holder.ClientWorld;
@@ -23,13 +26,16 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import top.xfunny.mod.lift.FiremanOperationType;
 import top.xfunny.mod.lift.LiftDoorButtonLightMode;
 import top.xfunny.mod.lift.LiftDoorState;
 import top.xfunny.mod.lift.LiftDisplayDirectionState;
 import top.xfunny.mod.lift.LiftFloorCancelMode;
+import top.xfunny.mod.lift.LiftModeState;
 import top.xfunny.mod.client.InitClient;
 import top.xfunny.mod.client.screen.widget.LiftSelectionButtonWidget;
 import top.xfunny.mod.config.YteLiftConfigStore;
+import top.xfunny.mod.packet.PacketLiftCarCall;
 import top.xfunny.mod.packet.PacketLiftDoorControl;
 import top.xfunny.mod.packet.PacketLiftFloorCancel;
 import top.xfunny.mod.util.GetLiftDetails;
@@ -60,9 +66,18 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
     @Unique private long yte$closeDoorLightUntil;
     @Unique private int yte$lastFloorClickIndex = -1;
     @Unique private long yte$lastFloorClickTime;
+    @Unique private boolean yte$lastFloorClickWasSelected;
     @Unique private int yte$heldFloorIndex = -1;
     @Unique private long yte$floorHoldStartTime;
     @Unique private boolean yte$floorHoldArmed;
+    /** 消防员长按楼层键（HOLD_FLOOR_BUTTON）登记+关门 中，松开时未出发则重开门 */
+    @Unique private boolean yte$firemanFloorPressed;
+    /** 类型2延迟登记：长按的楼层索引，完全关门后登记（-1 无） */
+    @Unique private int yte$firemanHeldFloorIndex = -1;
+    /** 类型2延迟登记：长按行的目标楼层号（LiftInstruction.floor） */
+    @Unique private int yte$firemanHeldFloorTarget;
+    /** 类型2延迟登记：登记包已发出、等待服务端指令同步回客户端（行灯保持常亮桥接空窗） */
+    @Unique private boolean yte$firemanRegistrationSent;
     @Unique private boolean yte$floorHoldPointerInside;
 
     @Inject(method = "lambda$new$0", at = @At("TAIL"))
@@ -97,6 +112,49 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
         final MixinLiftSchema schema = (MixinLiftSchema) lift;
         final int selectedFloor = lift.getFloorIndex(org.mtr.mod.Init.blockPosToPosition(
                 floorLevels.get(floorLevels.size() - index - 1)));
+        final boolean selected = lift.hasInstruction(selectedFloor).contains(LiftDirection.NONE);
+        final long currentTime = System.currentTimeMillis();
+        final LiftFloorCancelMode cancelMode = YteLiftConfigStore.getFloorCancelMode(liftId);
+        final boolean firemanMode = LiftModeState.getFireMode(liftId) == LiftModeState.FireMode.FIREMAN_MODE;
+
+        // 消防员模式：出发后无法取消楼层（双击取消禁用，服务端亦拦截）
+        if (firemanMode) {
+            final FiremanOperationType operation = YteLiftConfigStore.getFiremanOperation(liftId);
+            if (operation == FiremanOperationType.HOLD_FLOOR_BUTTON) {
+                // 类型2：长按楼层键驱动关门，完全关门后才登记该层（松开未关则重开门）
+                yte$firemanHeldFloorIndex = index;
+                yte$firemanHeldFloorTarget = selectedFloor;
+                yte$firemanFloorPressed = true;
+                yte$firemanRegistrationSent = false;
+                yte$sendDoorCommand(LiftDoorState.Command.CLOSE);
+                ci.cancel();
+                return;
+            }
+            // 类型1：关门后才能登记楼层（门未关时点击无效）
+            if (operation == FiremanOperationType.HOLD_DOOR_BUTTON && lift.getDoorValue() != 0) {
+                ci.cancel();
+                return;
+            }
+            // 类型3 / 类型1门已关：MTR onPress 正常登记
+            return;
+        }
+
+        if (cancelMode == LiftFloorCancelMode.DOUBLE_CLICK) {
+            if (selected && yte$lastFloorClickWasSelected && yte$lastFloorClickIndex == index
+                    && currentTime - yte$lastFloorClickTime <= YTE_DOUBLE_CLICK_WINDOW) {
+                yte$sendFloorCancellation(selectedFloor);
+                yte$resetFloorClickTracking();
+                ci.cancel();
+                return;
+            }
+            yte$lastFloorClickIndex = index;
+            yte$lastFloorClickTime = currentTime;
+            yte$lastFloorClickWasSelected = selected;
+        } else if (selected) {
+            yte$heldFloorIndex = index;
+            yte$floorHoldStartTime = currentTime;
+            yte$floorHoldArmed = true;
+        }
 
         final int currentFloor = lift.getFloorIndex(lift.getCurrentFloor().getPosition());
         if (selectedFloor == currentFloor
@@ -128,6 +186,22 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
 
         yte$lastHoldEnabled = YteLiftConfigStore.isDoorHoldEnabled(liftId);
         yte$updateDoorButtonLayout(buttonY);
+    }
+
+    /** 类型2：按住未登记期间行亮（注入 MTR tick2 行灯判定，hasInstruction 返回副本可安全修改）；
+     * 登记在途（sent）期间保持常亮桥接同步空窗；服务端指令到达后由 hasInstruction 原生常亮、到站熄灭。 */
+    @ModifyExpressionValue(
+            method = "tick2",
+            at = @At(value = "INVOKE",
+                    target = "Lorg/mtr/core/data/Lift;hasInstruction(I)Lorg/mtr/libraries/it/unimi/dsi/fastutil/objects/ObjectArraySet;")
+    )
+    private ObjectArraySet<LiftDirection> yte$lightHeldFloorRow(
+            ObjectArraySet<LiftDirection> original, @Local(ordinal = 0) int floorLevelIndex) {
+        if ((yte$firemanFloorPressed || yte$firemanRegistrationSent) && yte$firemanHeldFloorIndex >= 0
+                && floorLevelIndex == floorLevels.size() - 1 - yte$firemanHeldFloorIndex) {
+            original.add(LiftDirection.NONE);
+        }
+        return original;
     }
 
     @Inject(method = "tick2", at = @At("TAIL"))
@@ -168,6 +242,25 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
             }
         }
 
+        // 类型2：门完全关闭后自动登记长按的楼层；登记在途期间行灯保持常亮，
+        // 直到服务端指令同步回客户端（hasInstruction）或电梯出发后交给原生行灯
+        if (yte$firemanHeldFloorIndex >= 0 && lift != null) {
+            if (((MixinLiftSchema) lift).getSpeed() != 0) {
+                // 已出发：登记必然生效，交给原生行灯
+                yte$firemanHeldFloorIndex = -1;
+                yte$firemanRegistrationSent = false;
+            } else if (!yte$firemanRegistrationSent && lift.getDoorValue() == 0) {
+                InitClient.REGISTRY_CLIENT.sendPacketToServer(
+                        new PacketLiftCarCall(liftId, yte$firemanHeldFloorTarget));
+                yte$firemanRegistrationSent = true;
+            } else if (yte$firemanRegistrationSent
+                    && lift.hasInstruction(yte$firemanHeldFloorTarget).contains(LiftDirection.NONE)) {
+                // 真实指令已同步到客户端：交给原生行灯
+                yte$firemanHeldFloorIndex = -1;
+                yte$firemanRegistrationSent = false;
+            }
+        }
+
         yte$updateDoorButtonLights(currentTime);
     }
 
@@ -203,6 +296,19 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
         if (button == 0) {
             final LiftDoorState.Command command = yte$getDoorCommandAt(mouseX, mouseY);
             if (command != null) {
+                // 类型2（HOLD_FLOOR_BUTTON）：关门键屏蔽——关门由长按楼层键驱动
+                if (command == LiftDoorState.Command.CLOSE
+                        && LiftModeState.getFireMode(liftId) == LiftModeState.FireMode.FIREMAN_MODE
+                        && YteLiftConfigStore.getFiremanOperation(liftId) == FiremanOperationType.HOLD_FLOOR_BUTTON) {
+                    return true;
+                }
+                // 类型3（REGISTER_TO_CLOSE）：未登记楼层时关门无效（开门不受限）
+                if (command == LiftDoorState.Command.CLOSE
+                        && LiftModeState.getFireMode(liftId) == LiftModeState.FireMode.FIREMAN_MODE
+                        && YteLiftConfigStore.getFiremanOperation(liftId) == FiremanOperationType.REGISTER_TO_CLOSE
+                        && yte$firemanInstructionsEmpty()) {
+                    return true;
+                }
                 yte$startDoorButtonPress(command);
                 return true;
             }
@@ -259,14 +365,53 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
     @Override
     public boolean mouseReleased2(double mouseX, double mouseY, int button) {
         if (button == 0 && yte$pressedDoorCommand != null) {
+            // 消防员模式：未完成即松开 → 从当前位置反向（关门中松开重开门；开门中松开继续关门）
+            if (LiftModeState.getFireMode(liftId) == LiftModeState.FireMode.FIREMAN_MODE) {
+                yte$reverseDoorIfIncomplete(yte$pressedDoorCommand);
+            }
             yte$finishDoorButtonPress(System.currentTimeMillis());
             return true;
         }
         final boolean handled = super.mouseReleased2(mouseX, mouseY, button);
         if (button == 0) {
+            // 类型2（HOLD_FLOOR_BUTTON）：完全关门登记后松开不干预；未登记即松开则取消意图并重开门
+            if (yte$firemanFloorPressed) {
+                yte$firemanFloorPressed = false;
+                if (LiftModeState.getFireMode(liftId) == LiftModeState.FireMode.FIREMAN_MODE
+                        && YteLiftConfigStore.getFiremanOperation(liftId) == FiremanOperationType.HOLD_FLOOR_BUTTON
+                        && yte$firemanHeldFloorIndex >= 0 && !yte$firemanRegistrationSent) {
+                    yte$firemanHeldFloorIndex = -1;
+                    final Lift lift = MinecraftClientData.getLift(liftId);
+                    if (lift != null && ((MixinLiftSchema) lift).getSpeed() == 0) {
+                        yte$sendDoorCommand(LiftDoorState.Command.OPEN);
+                    }
+                }
+            }
             yte$resetFloorHold();
         }
         return handled;
+    }
+
+    @Unique
+    private boolean yte$firemanInstructionsEmpty() {
+        final Lift lift = MinecraftClientData.getLift(liftId);
+        return lift == null || ((MixinLiftSchema) lift).getInstructions().isEmpty();
+    }
+
+    /** 消防员模式：门未完成（0 < doorValue < 1）时松开按钮 → 从当前位置反向。 */
+    @Unique
+    private void yte$reverseDoorIfIncomplete(LiftDoorState.Command command) {
+        final Lift lift = MinecraftClientData.getLift(liftId);
+        if (lift == null) {
+            return;
+        }
+        final float doorValue = lift.getDoorValue();
+        if (doorValue <= 0 || doorValue >= 1) {
+            return;
+        }
+        yte$sendDoorCommand(command == LiftDoorState.Command.CLOSE
+                ? LiftDoorState.Command.OPEN
+                : LiftDoorState.Command.CLOSE);
     }
 
     @Unique
@@ -311,26 +456,11 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
         if (yte$pressedDoorCommand == null) {
             return;
         }
-        if (yte$pressedDoorCommand == LiftDoorControlState.Command.CLOSE) {
-            yte$releaseCloseDoorButton();
-        }
         if (YteLiftConfigStore.getDoorButtonLightMode(liftId) == LiftDoorButtonLightMode.TIMED) {
             yte$setDoorLightUntil(yte$pressedDoorCommand, currentTime + YTE_TIMED_LIGHT_DURATION);
         }
         yte$pressedDoorCommand = null;
         yte$updateDoorButtonLights(currentTime);
-    }
-
-    @Unique
-    private void yte$releaseCloseDoorButton() {
-        if (!YteLiftConfigStore.getServiceMode(liftId).acceptsHallCalls()) {
-            final Lift lift = MinecraftClientData.getLift(liftId);
-            if (lift != null && lift.getDoorValue() > 0) {
-                yte$applyClientOpenCommand();
-            }
-            InitClient.REGISTRY_CLIENT.sendPacketToServer(
-                    new PacketLiftDoorControl(liftId, LiftDoorControlState.Command.RELEASE_CLOSE));
-        }
     }
 
     @Unique
@@ -459,16 +589,6 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
         if (lift == null || !yte$isStoppedAtFloor(lift)) {
             return;
         }
-        final long singleDoorMoveTime = org.mtr.core.data.Vehicle.DOOR_MOVE_TIME / 2;
-        final long closeStartCoolDown = 500 + singleDoorMoveTime;
-        final float doorValue = Math.max(0, Math.min(lift.getDoorValue(), 1));
-
-        if (doorValue >= 1) {
-            LiftDoorControlState.beginClientOpenPrediction(liftId, doorValue, singleDoorMoveTime);
-        } else if (doorValue > 0 && coolDown <= closeStartCoolDown) {
-            LiftDoorControlState.beginClientOpenPrediction(liftId, doorValue, singleDoorMoveTime);
-        } else if (doorValue <= 0 && coolDown <= 500) {
-            LiftDoorControlState.beginClientOpenPrediction(liftId, doorValue, singleDoorMoveTime);
         final MixinLiftSchema schema = (MixinLiftSchema) lift;
         final YteLiftConfigStore.DoorParams p = YteLiftConfigStore.getDoorParams(liftId);
         final long coolDown = schema.getStoppingCoolDown();

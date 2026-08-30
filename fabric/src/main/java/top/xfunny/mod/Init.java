@@ -83,6 +83,8 @@ public final class Init implements Utilities {
             REGISTRY.registerPacket(PacketLiftFloorCancel.class, PacketLiftFloorCancel::new);
             REGISTRY.registerPacket(PacketLiftDoorMaintenance.class, PacketLiftDoorMaintenance::new);
             REGISTRY.registerPacket(PacketLiftDoorCurtain.class, PacketLiftDoorCurtain::new);
+            REGISTRY.registerPacket(PacketLiftFireMode.class, PacketLiftFireMode::new);
+            REGISTRY.registerPacket(PacketLiftCarCall.class, PacketLiftCarCall::new);
         });
 
         int currentStep = 1;
@@ -131,8 +133,11 @@ public final class Init implements Utilities {
             LiftDoorState.clearQueues();
             LiftModeState.clearQueues();
             if (yteMain != null) {
+                // 先停止并落盘（含电梯状态持久化），再清内存队列——顺序反了会把空状态写进文件
                 yteMain.stop();
             }
+            LiftDoorState.clearQueues();
+            LiftModeState.clearQueues();
         });
 
         LOGGER.info("Yunzhu Transit Extension initialized successfully in {} ms.", System.currentTimeMillis() - startTime);
@@ -152,6 +157,14 @@ public final class Init implements Utilities {
                     REGISTRY.sendPacketToClient(player,
                             new PacketLiftDoorControl(liftId, LiftDoorState.Command.OPEN,
                                     stoppingCoolDown, resetIdleDirection)));
+        }
+    }
+
+    public static void sendLiftFireModeState(long liftId, LiftModeState.LiftMode mode, boolean fireman) {
+        if (minecraftServer != null) {
+            MinecraftServerHelper.iteratePlayers(minecraftServer, player ->
+                    REGISTRY.sendPacketToClient(player,
+                            new PacketLiftFireMode(liftId, false, mode.ordinal(), fireman)));
         }
     }
 

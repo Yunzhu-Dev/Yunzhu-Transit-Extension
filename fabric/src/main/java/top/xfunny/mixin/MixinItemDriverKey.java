@@ -68,9 +68,10 @@ public abstract class MixinItemDriverKey {
 		((LiftDoorMaintenance) blockEntity.data).yte$setMaintenanceOpen(open, liftId, durationMs);
 		// 本地立即联锁：点击视角电梯即刻急停/解锁，不等服务端广播往返；
 		// 同时清空本地指令副本，与服务端“上锁即弃全部内外呼”对齐。
-		// ponytail: 客户端仅镜像锁定标志（同 PacketLiftDoorMaintenance.runClient），
-		// 服务端才走 lock/unlock/requestMode 完整流程
 		LiftModeState.getOrCreate(liftId).maintenanceLocked = open;
+		LiftModeState.getOrCreate(liftId).mode = open
+				? LiftModeState.LiftMode.EMERGENCY_STOP
+				: LiftModeState.LiftMode.AUTO_RECOVERY;
 		final Lift localLift = MinecraftClientData.getLift(liftId);
 		if (localLift != null) {
 			((MixinLiftSchema) localLift).getInstructions().clear();
