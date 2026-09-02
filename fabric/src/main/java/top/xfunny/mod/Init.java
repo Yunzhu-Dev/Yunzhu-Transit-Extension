@@ -128,6 +128,7 @@ public final class Init implements Utilities {
 
         REGISTRY.eventRegistry.registerServerStopping(minecraftServer -> {
             Init.minecraftServer = null;
+            // 关服时进行数据保存
             if (yteMain != null) {
                 yteMain.stop();
             }
