@@ -243,11 +243,9 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
             }
         }
 
-        // 类型2：门完全关闭后自动登记长按的楼层；登记在途期间行灯保持常亮，
         // 直到服务端指令同步回客户端（hasInstruction）或电梯出发后交给原生行灯
         if (yte$firemanHeldFloorIndex >= 0 && lift != null) {
             if (((MixinLiftSchema) lift).getSpeed() != 0) {
-                // 已出发：登记必然生效，交给原生行灯
                 yte$firemanHeldFloorIndex = -1;
                 yte$firemanRegistrationSent = false;
             } else if (!yte$firemanRegistrationSent && lift.getDoorValue() == 0) {
@@ -256,7 +254,6 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
                 yte$firemanRegistrationSent = true;
             } else if (yte$firemanRegistrationSent
                     && lift.hasInstruction(yte$firemanHeldFloorTarget).contains(LiftDirection.NONE)) {
-                // 真实指令已同步到客户端：交给原生行灯
                 yte$firemanHeldFloorIndex = -1;
                 yte$firemanRegistrationSent = false;
             }
@@ -297,13 +294,6 @@ public abstract class MixinLiftSelectionScreen extends MTRScreenBase {
         if (button == 0) {
             final LiftDoorState.Command command = yte$getDoorCommandAt(mouseX, mouseY);
             if (command != null) {
-                // 类型2（HOLD_FLOOR_BUTTON）：关门键屏蔽——关门由长按楼层键驱动
-                if (command == LiftDoorState.Command.CLOSE
-                        && LiftModeState.getFireMode(liftId) == LiftModeState.FireMode.FIREMAN_MODE
-                        && YteLiftConfigStore.getFiremanOperation(liftId) == FiremanOperationType.HOLD_FLOOR_BUTTON) {
-                    return true;
-                }
-                // 类型3（REGISTER_TO_CLOSE）：未登记楼层时关门无效（开门不受限）
                 if (command == LiftDoorState.Command.CLOSE
                         && LiftModeState.getFireMode(liftId) == LiftModeState.FireMode.FIREMAN_MODE
                         && YteLiftConfigStore.getFiremanOperation(liftId) == FiremanOperationType.REGISTER_TO_CLOSE
