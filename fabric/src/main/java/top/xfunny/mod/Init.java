@@ -29,7 +29,6 @@ public final class Init implements Utilities {
     public static final String MOD_ID = "yte";
     public static final Logger LOGGER = LogManager.getLogger("Yunzhu Transit Extension");
     public static final Registry REGISTRY = new Registry();
-    public static int HAS_UPDATE = -1;
 
     private static YteMain yteMain;
     @Nullable
@@ -129,11 +128,7 @@ public final class Init implements Utilities {
 
         REGISTRY.eventRegistry.registerServerStopping(minecraftServer -> {
             Init.minecraftServer = null;
-            // 关服时进行数据保存
-            LiftDoorState.clearQueues();
-            LiftModeState.clearQueues();
             if (yteMain != null) {
-                // 先停止并落盘（含电梯状态持久化），再清内存队列——顺序反了会把空状态写进文件
                 yteMain.stop();
             }
             LiftDoorState.clearQueues();

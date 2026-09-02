@@ -19,10 +19,11 @@ public abstract class MixinBlockLiftButtons {
 
     @Inject(
             method = "onUse2",
-            at = @At("HEAD")
+            at = @At("HEAD"),
+            cancellable = true
     )
     private void yte$linkerItemsPass(BlockState state, World world, BlockPos pos, PlayerEntity player,
-            Hand hand, BlockHitResult hit, CallbackInfoReturnable cir) {
+            Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cir) {
         if (player.isHolding(Items.YTE_LIFT_BUTTONS_LINK_CONNECTOR.get()) ||
                 player.isHolding(Items.YTE_LIFT_BUTTONS_LINK_REMOVER.get()) ||
                 player.isHolding(Items.YTE_GROUP_LIFT_BUTTONS_LINK_CONNECTOR.get()) ||
