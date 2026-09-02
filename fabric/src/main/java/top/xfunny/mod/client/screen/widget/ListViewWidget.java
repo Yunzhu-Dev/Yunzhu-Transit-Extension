@@ -6,6 +6,7 @@ import org.mtr.mapping.holder.MutableText;
 import org.mtr.mapping.mapper.ClickableWidgetExtension;
 import org.mtr.mapping.mapper.GraphicsHolder;
 import org.mtr.mapping.mapper.GuiDrawing;
+import top.xfunny.mod.client.screen.ClipStack;
 import top.xfunny.mod.client.screen.GuiHelper;
 
 import java.util.ArrayList;
@@ -40,9 +41,28 @@ public class ListViewWidget extends ClickableWidgetExtension {
         add(new ContentItem(text, widget));
     }
 
+    /**
+     * 纯文字条目（无内嵌控件）。
+     */
+    public ContentItem addText(MutableText text) {
+        final ContentItem item = new ContentItem(text, null);
+        add(item);
+        return item;
+    }
+
+    /**
+     * 纯文字条目，指定对齐方式。
+     */
+    public ContentItem addText(MutableText text, ContentItem.Alignment alignment) {
+        return addText(text).setAlignment(alignment);
+    }
+
+
+    public ContentItem addText(MutableText title, MutableText value) {
+        return addText(title).setAlignment(ContentItem.Alignment.JUSTIFIED).setValue(value);
+    }
+
     public void add(BaseListItem listItem) {
-        // O(1) 增量定位，renderContent 每帧会再次修正滚动位置
-        listItem.positionChanged(getX2() + width - scrollbarWidth() - ENTRY_PADDING, getY2() + totalEntryHeight - (int) currentScroll);
         entryList.add(listItem);
         totalEntryHeight += listItem.height;
         setScroll(currentScroll);
@@ -60,41 +80,54 @@ public class ListViewWidget extends ClickableWidgetExtension {
 
     @Override
     public void render(@NotNull GraphicsHolder graphicsHolder, int mouseX, int mouseY, float tickDelta) {
-        GuiHelper.drawRectangle(new GuiDrawing(graphicsHolder), getX2(), getY2(), width, height, 0x4C4C4C4C);
-        // vanilla 无 scissor 映射，经 GuiHelper 裁剪列表内容区（含滚动条）
-        GuiHelper.enableScissor(graphicsHolder, getX2(), getY2(), getX2() + width, getY2() + height);
+        GuiDrawing guiDrawing = new GuiDrawing(graphicsHolder);
+        GuiHelper.drawRectangle(guiDrawing, getX2(), getY2(), width, height, 0x4C4C4C4C);
+        positionWidgets();
+
+        final int contentWidth = width - scrollbarWidth();
+        // 内嵌控件由 vanilla 在本列表之后渲染（children 正序），不经过此处裁剪；
+        // 视口外的控件靠 positionWidgets 的 hidden() 消除残影与误点击。
+        ClipStack.push(getX2(), getY2(), contentWidth, height);
         try {
-            renderContent(graphicsHolder, mouseX, mouseY, tickDelta);
-            renderScrollBar(graphicsHolder, mouseX, mouseY, tickDelta);
+            int incY = 0;
+            for (BaseListItem listItem : entryList) {
+                final int entryY = getY2() + incY - (int) currentScroll;
+                if (entryY + listItem.height > getY2() && entryY < getY2() + height) {
+                    listItem.draw(graphicsHolder, getX2(), entryY, contentWidth, mouseX, mouseY, tickDelta);
+                }
+                incY += listItem.height;
+            }
         } finally {
-            GuiHelper.disableScissor(graphicsHolder);
+            ClipStack.pop();
         }
+        renderScrollBar(graphicsHolder, mouseX, mouseY, tickDelta);
     }
 
-    public void renderContent(GraphicsHolder graphicsHolder, int mouseX, int mouseY, float tickDelta) {
-        GuiDrawing guiDrawing = new GuiDrawing(graphicsHolder);
+    /**
+     * 每帧统一布局：条目定位含滚动偏移，视口外条目 hidden()（隐藏内嵌控件）。
+     */
+    private void positionWidgets() {
+        final int contentWidth = width - scrollbarWidth();
         int incY = 0;
-        int scrollbarWidth = scrollbarWidth();
-        int listItemWidth = width - scrollbarWidth;
-
         for (BaseListItem listItem : entryList) {
-            int entryY = getY2() + incY - (int) currentScroll;
-            // 只要 Item 和列表视口有交集就显示其控件，交给 scissor 裁切，而不是整颗消失
-            // TODO: GuiHelper 在 1.19.2 及更早可能无 scissor 并永久降级，此时半截 item 的控件会画出列表外；
-            //       需要暴露 GuiHelper.isScissorAvailable()，不可用时对内嵌控件回退到 fullyVisible 才渲染。
-            boolean partiallyVisible = entryY + listItem.height > getY2() && entryY < getY2() + height;
-            listItem.setWidgetVisible(partiallyVisible);
-            if (partiallyVisible) {
-                listItem.positionChanged(getX2() + listItemWidth - ENTRY_PADDING, entryY);
-                listItem.draw(graphicsHolder, guiDrawing, getX2(), entryY, listItemWidth, listItem.height, mouseX, mouseY, true, tickDelta);
+            final int entryY = getY2() + incY - (int) currentScroll;
+            final boolean intersectsViewport = entryY + listItem.height > getY2() && entryY < getY2() + height;
+            if (intersectsViewport) {
+                listItem.shown();
+                listItem.positionChanged(getX2(), entryY, contentWidth);
+            } else {
+                listItem.hidden();
             }
             incY += listItem.height;
         }
     }
 
-    // TODO: 鼠标不在列表区域内时不应滚动。Screen 会向所有 child 广播滚轮事件，这里应加 isMouseOver2(mouseX, mouseY) 守卫。
+    // Screen 会向所有 child 广播滚轮事件，必须以指针在列表内为前提，避免多列表互抢或越界滚动。
     @Override
     public boolean mouseScrolled2(double mouseX, double mouseY, double amount) {
+        if (!isMouseOver2(mouseX, mouseY)) {
+            return false;
+        }
         double oldScroll = currentScroll;
         if (contentOverflowed()) {
             amount *= 26;
@@ -105,25 +138,11 @@ public class ListViewWidget extends ClickableWidgetExtension {
 
     @Override
     public boolean mouseClicked2(double mouseX, double mouseY, int button) {
-        // 只有点在滚动条 thumb 上才开启拖拽，并记录 grab offset，避免 thumb 跳到鼠标中心
+        // 内嵌控件是 Screen 真子控件，由 vanilla 按 bounds 命中分发（后加入者先命中）；这里只处理滚动条拖拽。
         if (button == 0 && contentOverflowed() && isScrollbarThumbHover(mouseX, mouseY)) {
             scrollbarDragging = true;
             scrollbarDragOffset = mouseY - getScrollbarThumbY();
             return true;
-        }
-
-        // 内嵌控件不再作为 Screen child，由 ListViewWidget 手动分发点击
-        // TODO: 目前对 entryList 全量分发，依赖底层 mouseClicked2 自行检查 visible/active；
-        //       更稳的做法是与 renderContent 用同一套 entryY/partiallyVisible 计算，只分发给当前可见 item。
-        if (isMouseOver2(mouseX, mouseY)) {
-            for (BaseListItem listItem : entryList) {
-                if (listItem instanceof ContentItem) {
-                    MappedWidget widget = ((ContentItem) listItem).widget;
-                    if (widget != null && widget.mouseClicked(mouseX, mouseY, button)) {
-                        return true;
-                    }
-                }
-            }
         }
         return false;
     }
