@@ -53,33 +53,15 @@ public class ModUpload {
 
 
 
-					 //Modrinth
-					final Map<String, DependencyType> dependenciesModrinth = new HashMap<String, DependencyType>();
-					dependenciesModrinth.put("XKPAmI6u", DependencyType.REQUIRED);
-					do {
-					} while (!new ModId("nqMdKn6A", ModProvider.MODRINTH).uploadFile(
-							modVersionUpperCase,
-							modVersionUpperCase,
-							changelog,
-							dependenciesModrinth,
-							ReleaseStatus.BETA,
-							Collections.singleton(minecraftVersion),
-							Collections.singleton(modLoader),
-							false,
-							Files.newInputStream(filePath),
-							fileName,
-							args[1]
-					));
-
-					// CurseForge
-//					final Map<String, DependencyType> dependenciesCurseForge = new HashMap<>();
-//					dependenciesCurseForge.put("minecraft-transit-railway", DependencyType.REQUIRED);//mtr依赖
+//					 //Modrinth
+//					final Map<String, DependencyType> dependenciesModrinth = new HashMap<String, DependencyType>();
+//					dependenciesModrinth.put("XKPAmI6u", DependencyType.REQUIRED);
 //					do {
-//					} while (!new ModId("1421375", ModProvider.CURSE_FORGE).uploadFile(
-//							"",
+//					} while (!new ModId("nqMdKn6A", ModProvider.MODRINTH).uploadFile(
+//							modVersionUpperCase,
 //							modVersionUpperCase,
 //							changelog,
-//							dependenciesCurseForge,
+//							dependenciesModrinth,
 //							ReleaseStatus.BETA,
 //							Collections.singleton(minecraftVersion),
 //							Collections.singleton(modLoader),
@@ -88,6 +70,24 @@ public class ModUpload {
 //							fileName,
 //							args[1]
 //					));
+
+					 //CurseForge
+					final Map<String, DependencyType> dependenciesCurseForge = new HashMap<>();
+					dependenciesCurseForge.put("minecraft-transit-railway", DependencyType.REQUIRED);//mtr依赖
+					do {
+					} while (!new ModId("1421375", ModProvider.CURSE_FORGE).uploadFile(
+							"",
+							modVersionUpperCase,
+							changelog,
+							dependenciesCurseForge,
+							ReleaseStatus.BETA,
+							Collections.singleton(minecraftVersion),
+							Collections.singleton(modLoader),
+							false,
+							Files.newInputStream(filePath),
+							fileName,
+							args[1]
+					));
 				}
 			}
 		}
