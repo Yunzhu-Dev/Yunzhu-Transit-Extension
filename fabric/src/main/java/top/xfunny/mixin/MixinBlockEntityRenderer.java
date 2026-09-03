@@ -3,26 +3,26 @@ package top.xfunny.mixin;
 import org.mtr.mapping.holder.BlockPos;
 import org.mtr.mapping.holder.ClientPlayerEntity;
 import org.mtr.mapping.holder.HitResult;
+import org.mtr.mapping.holder.Identifier;
 import org.mtr.mapping.holder.MinecraftClient;
 import org.mtr.mapping.holder.Vector3d;
 import org.mtr.mapping.holder.World;
+import org.mtr.mapping.mapper.BlockEntityExtension;
 import org.mtr.mapping.mapper.BlockEntityRenderer;
 import org.mtr.mapping.mapper.GraphicsHolder;
 import org.mtr.mod.render.MainRenderer;
 import org.mtr.mod.render.QueuedRenderLayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.xfunny.mod.client.hint.ConnectionHintRenderer;
 
-import java.util.function.Consumer;
-
 /**
- * 通过 @ModifyArg 包装 GraphicsHolder.createInstanceSafe 的 Consumer 参数，
- * 在每次方块实体渲染后检查是否需要显示提示，通过 MainRenderer.scheduleRender
- * 以独立的 GraphicsHolder 在目标方块上方渲染标签。
+ * 方块实体渲染前后处理：HEAD 距离裁剪（32 格外跳过渲染）、TAIL 连接提示调度。
  * <p>
+ * ponytail: 原 @ModifyVariable/@ModifyArg 方案的目标 createInstanceSafe 缺方法描述符
+ * （yarn 原生参数类型，双平台无法书写），改为混入 lambda$render$0——参数全为映射层类型，
  * 零 MC 原生类型引用，双平台源码兼容。
  */
 @Mixin(value = BlockEntityRenderer.class, remap = false)
@@ -33,80 +33,59 @@ public class MixinBlockEntityRenderer {
     /** 距离裁剪：32 格以外的方块跳过渲染 */
     private static final float MAX_RENDER_DISTANCE_SQ = 32 * 32;
 
-    /** ThreadLocal 不好跨 @ModifyVariable → @ModifyArg 传递，直接用实例字段（渲染单线程） */
-    private org.mtr.mapping.mapper.BlockEntityExtension currentEntity;
-
-    @ModifyVariable(method = "render",
-            at = @At(value = "INVOKE", target = "Lorg/mtr/mapping/mapper/GraphicsHolder;createInstanceSafe", remap = false),
-            index = 1, remap = false)
-    private org.mtr.mapping.mapper.BlockEntityExtension captureEntity(org.mtr.mapping.mapper.BlockEntityExtension entity) {
-        this.currentEntity = entity;
-        return entity;
+    @Inject(method = "lambda$render$0", at = @At("HEAD"), cancellable = true)
+    private void yte$cullFarEntities(BlockEntityExtension entity, float tickDelta, int light, int overlay,
+            GraphicsHolder graphicsHolder, CallbackInfo ci) {
+        final BlockPos pos = entity.getPos2();
+        if (pos == null) {
+            return;
+        }
+        final ClientPlayerEntity player = MinecraftClient.getInstance().getPlayerMapped();
+        if (player == null) {
+            return;
+        }
+        final double dx = pos.getX() + 0.5 - player.getPos().getXMapped();
+        final double dy = pos.getY() + 0.5 - player.getPos().getYMapped();
+        final double dz = pos.getZ() + 0.5 - player.getPos().getZMapped();
+        if (dx * dx + dy * dy + dz * dz > MAX_RENDER_DISTANCE_SQ) {
+            ci.cancel();
+        }
     }
 
-    @ModifyArg(
-            method = "render",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lorg/mtr/mapping/mapper/GraphicsHolder;createInstanceSafe",
-                    remap = false
-            ),
-            index = 2,
-            remap = false
-    )
-    private Consumer<GraphicsHolder> wrapConsumer(Consumer<GraphicsHolder> original) {
-        // 距离裁剪：32 格外不渲染
-        final org.mtr.mapping.mapper.BlockEntityExtension entity = this.currentEntity;
-        if (entity != null) {
-            final BlockPos pos = entity.getPos2();
-            if (pos != null) {
-                final ClientPlayerEntity player = MinecraftClient.getInstance().getPlayerMapped();
-                if (player != null) {
-                    final double dx = pos.getX() + 0.5 - player.getPos().getXMapped();
-                    final double dy = pos.getY() + 0.5 - player.getPos().getYMapped();
-                    final double dz = pos.getZ() + 0.5 - player.getPos().getZMapped();
-                    if (dx * dx + dy * dy + dz * dz > MAX_RENDER_DISTANCE_SQ) {
-                        return gh -> {}; // no-op
-                    }
-                }
-            }
-        }
+    @Inject(method = "lambda$render$0", at = @At("TAIL"))
+    private void yte$afterRender(BlockEntityExtension entity, float tickDelta, int light, int overlay,
+            GraphicsHolder graphicsHolder, CallbackInfo ci) {
+        // 检查是否需要渲染提示，只调度一次
+        final MinecraftClient client = MinecraftClient.getInstance();
+        if (client.getPlayerMapped() == null) return;
 
-        return gh -> {
-            original.accept(gh);
+        final HitResult hit = client.getCrosshairTargetMapped();
+        if (hit == null) return;
 
-            // 检查是否需要渲染提示，只调度一次
-            final MinecraftClient client = MinecraftClient.getInstance();
-            if (client.getPlayerMapped() == null) return;
+        final BlockPos hitPos = getTargetBlockPos(hit);
+        if (hitPos == null) return;
 
-            final HitResult hit = client.getCrosshairTargetMapped();
-            if (hit == null) return;
+        final ConnectionHintRenderer.HintInfo info =
+                ConnectionHintRenderer.getHintsAt(hitPos);
+        if (info == null) return;
 
-            final BlockPos hitPos = getTargetBlockPos(hit);
-            if (hitPos == null) return;
+        // even → odd：标签显示在 odd 方块上方
+        final ClientPlayerEntity player = client.getPlayerMapped();
+        final World world = player.getEntityWorld();
+        final BlockPos displayPos = ConnectionHintRenderer.getDisplayPos(world, hitPos);
 
-            final ConnectionHintRenderer.HintInfo info =
-                    ConnectionHintRenderer.getHintsAt(hitPos);
-            if (info == null) return;
-
-            // even → odd：标签显示在 odd 方块上方
-            final ClientPlayerEntity player = client.getPlayerMapped();
-            final World world = player.getEntityWorld();
-            final BlockPos displayPos = ConnectionHintRenderer.getDisplayPos(world, hitPos);
-
-            // 通过 MainRenderer 独立调度渲染，使用唯一 key 防止重复
-            MainRenderer.cancelRender(new org.mtr.mapping.holder.Identifier(
-                    top.xfunny.mod.Init.MOD_ID, HINT_RENDER_KEY));
-            MainRenderer.scheduleRender(
-                    new org.mtr.mapping.holder.Identifier(
-                            top.xfunny.mod.Init.MOD_ID, HINT_RENDER_KEY),
-                    false,
-                    QueuedRenderLayer.EXTERIOR,
-                    (graphicsHolder, cameraOffset) ->
-                            ConnectionHintRenderer.renderLabel(graphicsHolder, cameraOffset,
-                                    displayPos, info)
-            );
-        };
+        // 通过 MainRenderer 独立调度渲染，使用唯一 key 防止重复
+        MainRenderer.cancelRender(new Identifier(
+                top.xfunny.mod.Init.MOD_ID, HINT_RENDER_KEY));
+        MainRenderer.scheduleRender(
+                new Identifier(
+                        top.xfunny.mod.Init.MOD_ID, HINT_RENDER_KEY),
+                false,
+                QueuedRenderLayer.EXTERIOR,
+                (gh, cameraOffset) ->
+                        ConnectionHintRenderer.renderLabel(gh, cameraOffset,
+                                displayPos, info)
+        );
     }
 
     private static BlockPos getTargetBlockPos(HitResult hit) {

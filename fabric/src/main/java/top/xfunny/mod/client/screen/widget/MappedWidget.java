@@ -26,6 +26,7 @@ public class MappedWidget {
                 @Override public int getHeight2() { return cast.getHeight2(); }
                 @Override public void setWidth2(int width) { cast.setWidth2(width); }
                 @Override public boolean getActiveMapped() { return cast.getActiveMapped(); }
+                @Override public void setActiveMapped(boolean active) { cast.setActiveMapped(active); }
                 @Override public void setVisibleMapped(boolean visible) { cast.setVisibleMapped(visible); }
                 @Override public void render(GraphicsHolder graphicsHolder, int mouseX, int mouseY, float tickDelta) { cast.render(graphicsHolder, mouseX, mouseY, tickDelta); }
                 @Override public boolean mouseClicked2(double mouseX, double mouseY, int button) { return cast.mouseClicked2(mouseX, mouseY, button); }
@@ -41,6 +42,7 @@ public class MappedWidget {
                 @Override public int getHeight2() { return cast.getHeight2(); }
                 @Override public void setWidth2(int width) { cast.setWidth2(width); }
                 @Override public boolean getActiveMapped() { return cast.getActiveMapped(); }
+                @Override public void setActiveMapped(boolean active) { cast.setActiveMapped(active); }
                 @Override public void setVisibleMapped(boolean visible) { cast.setVisibleMapped(visible); }
                 @Override public void render(GraphicsHolder graphicsHolder, int mouseX, int mouseY, float tickDelta) { cast.render(graphicsHolder, mouseX, mouseY, tickDelta); }
                 @Override public boolean mouseClicked2(double mouseX, double mouseY, int button) { return cast.mouseClicked2(mouseX, mouseY, button); }
@@ -56,6 +58,7 @@ public class MappedWidget {
                 @Override public int getHeight2() { return cast.getHeight2(); }
                 @Override public void setWidth2(int width) { cast.setWidth2(width); }
                 @Override public boolean getActiveMapped() { return cast.getActiveMapped(); }
+                @Override public void setActiveMapped(boolean active) { cast.setActiveMapped(active); }
                 @Override public void setVisibleMapped(boolean visible) { cast.setVisibleMapped(visible); }
                 @Override public void render(GraphicsHolder graphicsHolder, int mouseX, int mouseY, float tickDelta) { cast.render(graphicsHolder, mouseX, mouseY, tickDelta); }
                 @Override public boolean mouseClicked2(double mouseX, double mouseY, int button) { return cast.mouseClicked2(mouseX, mouseY, button); }
@@ -71,6 +74,7 @@ public class MappedWidget {
                 @Override public int getHeight2() { return cast.getHeight2(); }
                 @Override public void setWidth2(int width) { cast.setWidth2(width); }
                 @Override public boolean getActiveMapped() { return cast.getActiveMapped(); }
+                @Override public void setActiveMapped(boolean active) { cast.setActiveMapped(active); }
                 @Override public void setVisibleMapped(boolean visible) { cast.setVisibleMapped(visible); }
                 @Override public void render(GraphicsHolder graphicsHolder, int mouseX, int mouseY, float tickDelta) { cast.render(graphicsHolder, mouseX, mouseY, tickDelta); }
                 @Override public boolean mouseClicked2(double mouseX, double mouseY, int button) { return cast.mouseClicked2(mouseX, mouseY, button); }
@@ -86,6 +90,7 @@ public class MappedWidget {
                 @Override public int getHeight2() { return cast.getHeight2(); }
                 @Override public void setWidth2(int width) { cast.setWidth2(width); }
                 @Override public boolean getActiveMapped() { return cast.getActiveMapped(); }
+                @Override public void setActiveMapped(boolean active) { cast.setActiveMapped(active); }
                 @Override public void setVisibleMapped(boolean visible) { cast.setVisibleMapped(visible); }
                 @Override public void render(GraphicsHolder graphicsHolder, int mouseX, int mouseY, float tickDelta) { cast.render(graphicsHolder, mouseX, mouseY, tickDelta); }
                 @Override public boolean mouseClicked2(double mouseX, double mouseY, int button) { return cast.mouseClicked2(mouseX, mouseY, button); }
@@ -136,6 +141,10 @@ public class MappedWidget {
         access.setVisibleMapped(value);
     }
 
+    public void setActive(boolean active) {
+        access.setActiveMapped(active);
+    }
+
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         return access.mouseClicked2(mouseX, mouseY, button);
     }
@@ -149,6 +158,7 @@ public class MappedWidget {
         int getHeight2();
         void setWidth2(int width);
         boolean getActiveMapped();
+        void setActiveMapped(boolean active);
         void setVisibleMapped(boolean visible);
         void render(GraphicsHolder graphicsHolder, int mouseX, int mouseY, float tickDelta);
         boolean mouseClicked2(double mouseX, double mouseY, int button);

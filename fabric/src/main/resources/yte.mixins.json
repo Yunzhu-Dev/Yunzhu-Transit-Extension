@@ -21,7 +21,8 @@
     "MixinRenderLifts",
     "MixinLiftDoorBlockEntity",
     "MixinLiftSelectionScreen",
-    "MixinLiftCustomizationScreen"
+    "MixinLiftCustomizationScreen",
+    "MixinItemDriverKey"
   ],
   "server": [],
   "injectors": {

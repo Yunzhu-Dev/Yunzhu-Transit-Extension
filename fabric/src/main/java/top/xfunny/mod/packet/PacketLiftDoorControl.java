@@ -9,34 +9,33 @@ import org.mtr.core.data.Lift;
 import org.mtr.mod.client.MinecraftClientData;
 import top.xfunny.mixin.MixinLiftSchema;
 import top.xfunny.mod.lift.LiftDisplayDirectionState;
-import top.xfunny.mod.lift.LiftDoorControlState;
+import top.xfunny.mod.lift.LiftDoorState;
 
 public final class PacketLiftDoorControl extends PacketHandler {
 
     private final long liftId;
-    private final LiftDoorControlState.Command command;
+    private final LiftDoorState.Command command;
     private final long stoppingCoolDown;
     private final boolean resetIdleDirection;
 
     public PacketLiftDoorControl(PacketBufferReceiver packetBufferReceiver) {
         liftId = packetBufferReceiver.readLong();
         final int commandInt = packetBufferReceiver.readInt();
-        command = commandInt == 0 ? LiftDoorControlState.Command.OPEN
-                : commandInt == 1 ? LiftDoorControlState.Command.CLOSE
-                : commandInt == 2 ? LiftDoorControlState.Command.HOLD_OPEN
-                : LiftDoorControlState.Command.RELEASE_CLOSE;
+        command = commandInt == 0 ? LiftDoorState.Command.OPEN
+                : commandInt == 1 ? LiftDoorState.Command.CLOSE
+                : LiftDoorState.Command.HOLD_OPEN;
         stoppingCoolDown = packetBufferReceiver.readLong();
         resetIdleDirection = packetBufferReceiver.readBoolean();
     }
 
-    public PacketLiftDoorControl(long liftId, LiftDoorControlState.Command command) {
+    public PacketLiftDoorControl(long liftId, LiftDoorState.Command command) {
         this.liftId = liftId;
         this.command = command;
         stoppingCoolDown = -1;
         resetIdleDirection = false;
     }
 
-    public PacketLiftDoorControl(long liftId, LiftDoorControlState.Command command,
+    public PacketLiftDoorControl(long liftId, LiftDoorState.Command command,
             long stoppingCoolDown, boolean resetIdleDirection) {
         this.liftId = liftId;
         this.command = command;
@@ -47,28 +46,26 @@ public final class PacketLiftDoorControl extends PacketHandler {
     @Override
     public void write(PacketBufferSender packetBufferSender) {
         packetBufferSender.writeLong(liftId);
-        packetBufferSender.writeInt(command == LiftDoorControlState.Command.OPEN ? 0
-                : command == LiftDoorControlState.Command.CLOSE ? 1
-                : command == LiftDoorControlState.Command.HOLD_OPEN ? 2 : 3);
+        packetBufferSender.writeInt(command == LiftDoorState.Command.OPEN ? 0
+                : command == LiftDoorState.Command.CLOSE ? 1 : 2);
         packetBufferSender.writeLong(stoppingCoolDown);
         packetBufferSender.writeBoolean(resetIdleDirection);
     }
 
     @Override
     public void runServer(MinecraftServer minecraftServer, ServerPlayerEntity serverPlayerEntity) {
-        LiftDoorControlState.request(liftId, command);
+        LiftDoorState.request(liftId, command);
     }
 
     @Override
     public void runClient() {
-        if (command != LiftDoorControlState.Command.OPEN && command != LiftDoorControlState.Command.HOLD_OPEN) {
+        if (command != LiftDoorState.Command.OPEN && command != LiftDoorState.Command.HOLD_OPEN) {
             return;
         }
         final Lift lift = MinecraftClientData.getLift(liftId);
         if (lift != null) {
             if (stoppingCoolDown >= 0) {
-                ((MixinLiftSchema) lift).setStoppingCoolDown(LiftDoorControlState.reconcileClientOpenCoolDown(
-                        liftId, stoppingCoolDown));
+                ((MixinLiftSchema) lift).setStoppingCoolDown(stoppingCoolDown);
             }
             if (resetIdleDirection) {
                 LiftDisplayDirectionState.get(liftId).resetForIdleDoorCycle();

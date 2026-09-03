@@ -2,6 +2,8 @@ package top.xfunny.core.data;
 
 import org.mtr.libraries.it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import top.xfunny.mod.config.YteLiftConfigStore;
+import top.xfunny.mod.lift.LiftModeState;
 
 public abstract class YteData {
 
@@ -13,14 +15,22 @@ public abstract class YteData {
             liftConfigIdMap.clear();
             liftConfigs.forEach(config -> {
                 liftConfigIdMap.put(config.getId(), config);
-                top.xfunny.mod.config.YteLiftConfigStore.put(
+                YteLiftConfigStore.put(
                         config.getId(), config.getUpSpeed(), config.getDownSpeed(),
                         config.getUpAcceleration(), config.getDownAcceleration(), config.getAdoDistance(),
                         config.getLevellingDistance(), config.getLevellingSpeed(), config.getMotionProfile(),
                         config.isDoorHoldEnabled(), config.getDoorButtonLightMode(), config.getFloorCancelMode(),
                         config.isFloorCancelWhileMovingAllowed(), config.getArrivalLanternTriggerMode(),
-                        config.getServiceMode());
+                        config.isFiremanLift(), config.getFiremanOperation(), config.getFireRecallFloor());
+                // 服务模式路由进 LiftModeState（双端镜像；保护态内部自动跳过）
+                LiftModeState.setServiceMode(config.getId(),
+                        LiftModeState.parseMode(config.getServiceMode()));
                 top.xfunny.mod.config.YteLiftConfigStore.setLiftNumber(config.getId(), config.getLiftNumber());
+                YteLiftConfigStore.putDoorParams(
+                        config.getId(), config.getDoorOpenMs(), config.getDoorCloseMs(),
+                        config.getDoorDwellMs(), config.getDoorRunDelayMs(), config.getDoorCurve());
+                YteLiftConfigStore.putRecoverySpeed(config.getId(), config.getRecoverySpeed());
+                YteLiftConfigStore.putMaxDoorOpenMs(config.getId(), config.getMaxDoorOpenMs());
             });
         } catch (Exception e) {
             YteCoreLogger.error("YteData sync error", e);
