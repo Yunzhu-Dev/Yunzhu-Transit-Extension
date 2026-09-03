@@ -35,19 +35,6 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
     private static final long YTE_ARRIVAL_DIRECTION_DELAY = 100;
 
     @Unique
-    private static final long YTE_DOOR_CLOSED_DELAY = 500;
-
-    @Unique
-    private static final long YTE_SINGLE_DOOR_MOVE_TIME = Vehicle.DOOR_MOVE_TIME / 2;
-
-    /** 门完全打开时对应的 stoppingCoolDown（= 停站时间 - 单次开门时间） */
-    @Unique
-    private static final long YTE_DOOR_FULL_OPEN_COOL_DOWN = YTE_LIFT_STOPPING_TIME - YTE_SINGLE_DOOR_MOVE_TIME;
-
-    @Unique
-    private static final long YTE_DOOR_CLOSE_PROTECTION_TIME = 300;
-
-    @Unique
     private int yte$motionTargetFloor = Integer.MIN_VALUE;
 
     @Unique
