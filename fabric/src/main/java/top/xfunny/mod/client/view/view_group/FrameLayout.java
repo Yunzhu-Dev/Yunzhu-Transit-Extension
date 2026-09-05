@@ -8,9 +8,9 @@ import org.mtr.mapping.holder.World;
 import org.mtr.mapping.mapper.GraphicsHolder;
 import org.mtr.mod.Init;
 import org.mtr.mod.client.IDrawing;
-import org.mtr.mod.render.MainRenderer;
 import org.mtr.mod.render.QueuedRenderLayer;
 import org.mtr.mod.render.StoredMatrixTransformations;
+import top.xfunny.mod.client.view.DirectRenderer;
 import top.xfunny.mod.client.view.Gravity;
 import top.xfunny.mod.client.view.LayoutSize;
 import top.xfunny.mod.client.view.RenderView;
@@ -62,15 +62,11 @@ public class FrameLayout implements RenderView {
             storedMatrixTransformations1.add(graphicsHolder -> {
                 graphicsHolder.translate(0, 0, -0.6 * SMALL_OFFSET);
             });
-            MainRenderer.scheduleRender(
-                    new Identifier(Init.MOD_ID, "textures/block/white.png"),
-                    false,
-                    QueuedRenderLayer.LIGHT_TRANSLUCENT,
-                    (graphicsHolder, offset) -> {
-                        storedMatrixTransformations1.transform(graphicsHolder, offset);
-                        IDrawing.drawTexture(graphicsHolder, x, y, width, height, 0, 0, 1, 1, Direction.UP, backgroundColor, 15);
-                        graphicsHolder.pop();
-                    });
+            final GraphicsHolder graphicsHolder = DirectRenderer.prepare(QueuedRenderLayer.EXTERIOR, new Identifier(Init.MOD_ID, "textures/block/white.png"), storedMatrixTransformations1);
+            if (graphicsHolder != null) {
+                IDrawing.drawTexture(graphicsHolder, x, y, width, height, 0, 0, 1, 1, Direction.UP, backgroundColor, 15);
+                graphicsHolder.pop();
+            }
         }
 
         StoredMatrixTransformations storedMatrixTransformations2 = storedMatrixTransformations.copy();

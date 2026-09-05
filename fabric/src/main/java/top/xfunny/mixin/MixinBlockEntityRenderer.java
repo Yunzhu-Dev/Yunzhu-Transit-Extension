@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import top.xfunny.mod.client.hint.ConnectionHintRenderer;
+import top.xfunny.mod.client.view.DirectRenderer;
 
 import java.util.function.Consumer;
 
@@ -72,8 +73,18 @@ public class MixinBlockEntityRenderer {
             }
         }
 
+        final boolean isYteRenderer = this.getClass().getName().startsWith("top.xfunny");
+
         return gh -> {
-            original.accept(gh);
+            // 阴影通道跳过 yte 方块实体的重渲染（按钮/面板/厅灯/屏幕是自发光件，不应投阴影）
+            if (!(isYteRenderer && DirectRenderer.shadowPass)) {
+                DirectRenderer.setGraphicsHolder(gh);
+                try {
+                    original.accept(gh);
+                } finally {
+                    DirectRenderer.setGraphicsHolder(null);
+                }
+            }
 
             // 检查是否需要渲染提示，只调度一次
             final MinecraftClient client = MinecraftClient.getInstance();

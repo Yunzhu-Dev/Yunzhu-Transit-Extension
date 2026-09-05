@@ -7,7 +7,6 @@ import org.mtr.mapping.holder.World;
 import org.mtr.mapping.mapper.GraphicsHolder;
 import org.mtr.mod.block.IBlock;
 import org.mtr.mod.client.IDrawing;
-import org.mtr.mod.render.MainRenderer;
 import org.mtr.mod.render.QueuedRenderLayer;
 import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.client.client_data.DynamicResource;
@@ -78,26 +77,17 @@ public class TextView implements RenderView {
         float offset1;
         if (text.length() > displayTextLength && adaptMode == AdaptMode.ASPECT_FILL) {
             offset1 = (gameTick * scrollSpeed) % 1;
-            MainRenderer.scheduleRender(
-                    texture.identifier,
-                    false,
-                    QueuedRenderLayer.LIGHT_TRANSLUCENT,
-                    (graphicsHolder, offset) -> {
-                        storedMatrixTransformations1.transform(graphicsHolder, offset);
-                        IDrawing.drawTexture(graphicsHolder, textX, textY, fixedWidth, textHeight, offset1 + fixedWidth / textWidth, 1, offset1, 0, Direction.UP, ARGB_WHITE, GraphicsHolder.getDefaultLight());
-                        graphicsHolder.pop();
-                    });
+            final GraphicsHolder graphicsHolder = DirectRenderer.prepare(QueuedRenderLayer.LIGHT_TRANSLUCENT, texture.identifier, storedMatrixTransformations1);
+            if (graphicsHolder != null) {
+                IDrawing.drawTexture(graphicsHolder, textX, textY, fixedWidth, textHeight, offset1 + fixedWidth / textWidth, 1, offset1, 0, Direction.UP, ARGB_WHITE, GraphicsHolder.getDefaultLight());
+                graphicsHolder.pop();
+            }
         } else {
-            MainRenderer.scheduleRender(
-                    texture.identifier,
-                    false,
-                    QueuedRenderLayer.LIGHT_TRANSLUCENT,
-                    (graphicsHolder, offset) -> {
-                        storedMatrixTransformations1.transform(graphicsHolder, offset);
-                        IDrawing.drawTexture(graphicsHolder, textX, textY, textWidth, textHeight, 1, 1, 0, 0, Direction.UP, ARGB_WHITE, GraphicsHolder.getDefaultLight());
-                        graphicsHolder.pop();
-                    }
-            );
+            final GraphicsHolder graphicsHolder = DirectRenderer.prepare(QueuedRenderLayer.LIGHT_TRANSLUCENT, texture.identifier, storedMatrixTransformations1);
+            if (graphicsHolder != null) {
+                IDrawing.drawTexture(graphicsHolder, textX, textY, textWidth, textHeight, 1, 1, 0, 0, Direction.UP, ARGB_WHITE, GraphicsHolder.getDefaultLight());
+                graphicsHolder.pop();
+            }
         }
     }
 

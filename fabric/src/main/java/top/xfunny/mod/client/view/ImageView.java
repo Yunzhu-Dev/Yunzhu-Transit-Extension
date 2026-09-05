@@ -5,7 +5,6 @@ import org.mtr.mapping.mapper.GraphicsHolder;
 import org.mtr.mod.InitClient;
 import org.mtr.mod.block.IBlock;
 import org.mtr.mod.client.IDrawing;
-import org.mtr.mod.render.MainRenderer;
 import org.mtr.mod.render.QueuedRenderLayer;
 import org.mtr.mod.render.StoredMatrixTransformations;
 
@@ -188,44 +187,35 @@ public class ImageView implements RenderView {
         // --- 动画计算逻辑 End ---
 
         if (shouldRender && renderTexture != null) {
-            // 必须在 lambda 外部捕获 final 变量，但这里的 renderTexture 已经是局部变量，可以直接传入 scheduleRender
-            Identifier finalRenderTexture = renderTexture;
+            final float[] yawRotationResult = new float[2];
 
-            // 调度渲染
-            MainRenderer.scheduleRender(
-                    finalRenderTexture, // 使用计算出的动态贴图
-                    false,
-                    queuedRenderLayer,
-                    (graphicsHolder, offset) -> {
-                        float[] yawRotationResult = new float[2];
+            if (needYawRotate) {
+                final float[] scaled = scale(gameTick);
+                yawRotationResult[0] = scaled[0];
+                yawRotationResult[1] = scaled[1];
+            }
 
-                        if (needYawRotate) {
-                            yawRotationResult = scale(gameTick);
-                        }
+            final float width2 = yawRotationResult[0] == 0 ? width : yawRotationResult[0];
+            final float x2 = yawRotationResult[1] == 0 ? x : yawRotationResult[1];
 
-                        float width2 = yawRotationResult[0] == 0 ? width : yawRotationResult[0];
-                        float x2 = yawRotationResult[1] == 0 ? x : yawRotationResult[1];
-
-                        // 应用矩阵变换
-                        storedMatrixTransformations1.transform(graphicsHolder, offset);
-                        // 绘制纹理
-                        IDrawing.drawTexture(
-                                graphicsHolder,
-                                x2,
-                                y,
-                                width2,
-                                height,
-                                uv[0],
-                                uv[1],
-                                uv[2],
-                                uv[3],
-                                facing,
-                                color,
-                                light
-                        );
-                        graphicsHolder.pop();
-                    }
-            );
+            final GraphicsHolder graphicsHolder = DirectRenderer.prepare(queuedRenderLayer, renderTexture, storedMatrixTransformations1);
+            if (graphicsHolder != null) {
+                IDrawing.drawTexture(
+                        graphicsHolder,
+                        x2,
+                        y,
+                        width2,
+                        height,
+                        uv[0],
+                        uv[1],
+                        uv[2],
+                        uv[3],
+                        facing,
+                        color,
+                        light
+                );
+                graphicsHolder.pop();
+            }
         }
 
     }

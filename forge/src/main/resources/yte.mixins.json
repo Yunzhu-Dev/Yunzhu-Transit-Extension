@@ -16,6 +16,7 @@
   "client": [
     "MixinBlockEntityRenderer",
     "MixinDynamicTextureCache",
+    "MixinMainRenderer",
     "MixinRenderLiftButtons",
     "MixinRenderLiftPanel",
     "MixinRenderLifts",

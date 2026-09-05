@@ -57,7 +57,7 @@ public class RenderKoneMButton2 extends BlockEntityRenderer<KoneMButton2.BlockEn
         final boolean holdingLinker = PlayerHelper.isHolding(PlayerEntity.cast(clientPlayerEntity), item -> item.data instanceof YteLiftButtonsLinker || item.data instanceof YteGroupLiftButtonsLinker);
         LiftButtonsBase.LiftButtonDescriptor buttonDescriptor = new LiftButtonsBase.LiftButtonDescriptor(false, false);
 
-        final StoredMatrixTransformations storedMatrixTransformations1 = new StoredMatrixTransformations(blockPos.getX() + 0.5, blockPos.getY(), blockPos.getZ() + 0.5);
+        final StoredMatrixTransformations storedMatrixTransformations1 = new StoredMatrixTransformations(0.5, 0, 0.5);
         storedMatrixTransformations1.add(graphicsHolder -> {
             graphicsHolder.rotateYDegrees(-facing.asRotation());
             graphicsHolder.translate(0, 0, 7.9F / 16 - SMALL_OFFSET);

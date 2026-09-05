@@ -1,9 +1,9 @@
 package top.xfunny.mod.client.view;
 
 import org.mtr.mapping.holder.*;
+import org.mtr.mapping.mapper.GraphicsHolder;
 import org.mtr.mod.block.BlockLiftTrackFloor;
 import org.mtr.mod.block.IBlock;
-import org.mtr.mod.render.MainRenderer;
 import org.mtr.mod.render.QueuedRenderLayer;
 import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.block.base.LiftButtonsBase;
@@ -17,7 +17,7 @@ public class LineComponent {
 
     public void RenderLine(Boolean holdingLinker, BlockPos trackPosition) {
         final StoredMatrixTransformations storedMatrixTransformations =
-                new StoredMatrixTransformations(blockPos.getX() + 0.5, blockPos.getY(), blockPos.getZ() + 0.5);
+                new StoredMatrixTransformations(0.5, 0, 0.5);
 
         if (world.getBlockState(trackPosition).getBlock().data instanceof BlockLiftTrackFloor) {
             final Vector3d srcCenter = getCollisionBoxCenter(blockPos);
@@ -34,7 +34,7 @@ public class LineComponent {
 
     public void RenderLine(Boolean holdingLinker, BlockPos buttonPosition, Boolean isLantern) {
         final StoredMatrixTransformations storedMatrixTransformations =
-                new StoredMatrixTransformations(blockPos.getX() + 0.5, blockPos.getY(), blockPos.getZ() + 0.5);
+                new StoredMatrixTransformations(0.5, 0, 0.5);
 
         final Block targetBlock = world.getBlockState(buttonPosition).getBlock();
         if (targetBlock.data instanceof LiftButtonsBase
@@ -98,8 +98,8 @@ public class LineComponent {
     public void RenderLiftObjectLink(StoredMatrixTransformations storedMatrixTransformations,
                                      Vector3d position1, Vector3d position2, boolean holdingLinker) {
         if (holdingLinker) {
-            MainRenderer.scheduleRender(QueuedRenderLayer.LINES, (graphicsHolder, offset) -> {
-                storedMatrixTransformations.transform(graphicsHolder, offset);
+            final GraphicsHolder graphicsHolder = DirectRenderer.prepare(QueuedRenderLayer.LINES, storedMatrixTransformations);
+            if (graphicsHolder != null) {
                 graphicsHolder.drawLineInWorld(
                         (float) position1.getXMapped(),
                         (float) position1.getYMapped(),
@@ -110,15 +110,15 @@ public class LineComponent {
                         0xFF00FF00
                 );
                 graphicsHolder.pop();
-            });
+            }
         }
     }
 
     public void RenderButtonObjectLink(StoredMatrixTransformations storedMatrixTransformations,
                                         Vector3d position1, Vector3d position2, boolean holdingLinker) {
         if (holdingLinker) {
-            MainRenderer.scheduleRender(QueuedRenderLayer.LINES, (graphicsHolder, offset) -> {
-                storedMatrixTransformations.transform(graphicsHolder, offset);
+            final GraphicsHolder graphicsHolder = DirectRenderer.prepare(QueuedRenderLayer.LINES, storedMatrixTransformations);
+            if (graphicsHolder != null) {
                 graphicsHolder.drawLineInWorld(
                         (float) position1.getXMapped(),
                         (float) position1.getYMapped(),
@@ -129,7 +129,7 @@ public class LineComponent {
                         0xFFFFFF17
                 );
                 graphicsHolder.pop();
-            });
+            }
         }
     }
 }

@@ -53,7 +53,7 @@ public class RenderSchindlerMSeriesScreen1<T extends LiftButtonsBase.BlockEntity
         }
 
         // 基础矩阵变换：旋转和贴平表面
-        final StoredMatrixTransformations storedMatrixTransformations = new StoredMatrixTransformations(blockPos.getX() + 0.5, blockPos.getY(), blockPos.getZ() + 0.5);
+        final StoredMatrixTransformations storedMatrixTransformations = new StoredMatrixTransformations(0.5, 0, 0.5);
         StoredMatrixTransformations storedMatrixTransformations1 = storedMatrixTransformations.copy();
         storedMatrixTransformations1.add(graphicsHolder1 -> {
             graphicsHolder1.rotateYDegrees(-facing.asRotation());

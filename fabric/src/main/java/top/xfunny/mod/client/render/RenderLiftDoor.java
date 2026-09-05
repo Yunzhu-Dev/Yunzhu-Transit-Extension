@@ -10,9 +10,9 @@ import org.mtr.mod.block.BlockAPGDoor;
 import org.mtr.mod.block.BlockPSDAPGDoorBase;
 import org.mtr.mod.block.IBlock;
 import org.mtr.mod.data.IGui;
-import org.mtr.mod.render.MainRenderer;
 import org.mtr.mod.render.QueuedRenderLayer;
 import org.mtr.mod.render.StoredMatrixTransformations;
+import top.xfunny.mod.client.view.DirectRenderer;
 
 public class RenderLiftDoor<T extends BlockAPGDoor.BlockEntityBase> extends BlockEntityRenderer<T> implements IGui, IBlock {
 
@@ -45,7 +45,7 @@ public class RenderLiftDoor<T extends BlockAPGDoor.BlockEntityBase> extends Bloc
         final double open = Math.min(entity.getDoorValue(), type >= 3 ? 0.75F : 1);//todo
 
 
-        final StoredMatrixTransformations storedMatrixTransformations = new StoredMatrixTransformations(0.5 + entity.getPos2().getX(), entity.getPos2().getY(), 0.5 + entity.getPos2().getZ());
+        final StoredMatrixTransformations storedMatrixTransformations = new StoredMatrixTransformations(0.5, 0, 0.5);
         storedMatrixTransformations.add(graphicsHolderNew -> {
             graphicsHolderNew.rotateYDegrees(-facing.asRotation());
             graphicsHolderNew.rotateXDegrees(180);
@@ -56,80 +56,37 @@ public class RenderLiftDoor<T extends BlockAPGDoor.BlockEntityBase> extends Bloc
         switch (type) {
             case 0:
             case 3:
-                MainRenderer.scheduleRender(new Identifier(String.format("yte:textures/block/schindler_qks9_door_%s_%s_1.png", half ? "top" : "bottom", side ? "right" : "left")), false, QueuedRenderLayer.EXTERIOR, (graphicsHolderNew, offset) -> {
-                    storedMatrixTransformations.transform(graphicsHolderNew, offset);
-                    (side ? MODEL_LIFT_RIGHT : MODEL_LIFT_LEFT).render(graphicsHolderNew, light, overlay, 1, 1, 1, 1);
-                    graphicsHolderNew.pop();
-                });
-                if (half && !unlocked) {
-                    MainRenderer.scheduleRender(new Identifier(Init.MOD_ID, "textures/block/sign/door_not_in_use.png"), false, QueuedRenderLayer.EXTERIOR, (graphicsHolderNew, offset) -> {
-                        storedMatrixTransformations.transform(graphicsHolderNew, offset);
-                        graphicsHolderNew.translate(side ? 0.125 : -0.125, 0, 0);
-                        MODEL_PSD_DOOR_LOCKED.render(graphicsHolderNew, light, overlay, 1, 1, 1, 1);
-                        graphicsHolderNew.pop();
-                    });
-                }
+                renderDoor(new Identifier(String.format("yte:textures/block/schindler_qks9_door_%s_%s_1.png", half ? "top" : "bottom", side ? "right" : "left")), storedMatrixTransformations, side, half, unlocked, light, overlay);
                 break;
             case 5:
-                MainRenderer.scheduleRender(new Identifier(String.format("yte:textures/block/mitsubishi_nexway_door_%s_%s_1.png", half ? "top" : "bottom", side ? "right" : "left")), false, QueuedRenderLayer.EXTERIOR, (graphicsHolderNew, offset) -> {
-                    storedMatrixTransformations.transform(graphicsHolderNew, offset);
-                    (side ? MODEL_LIFT_RIGHT : MODEL_LIFT_LEFT).render(graphicsHolderNew, light, overlay, 1, 1, 1, 1);
-                    graphicsHolderNew.pop();
-                });
-                if (half && !unlocked) {
-                    MainRenderer.scheduleRender(new Identifier(Init.MOD_ID, "textures/block/sign/door_not_in_use.png"), false, QueuedRenderLayer.EXTERIOR, (graphicsHolderNew, offset) -> {
-                        storedMatrixTransformations.transform(graphicsHolderNew, offset);
-                        graphicsHolderNew.translate(side ? 0.125 : -0.125, 0, 0);
-                        MODEL_PSD_DOOR_LOCKED.render(graphicsHolderNew, light, overlay, 1, 1, 1, 1);
-                        graphicsHolderNew.pop();
-                    });
-                }
+                renderDoor(new Identifier(String.format("yte:textures/block/mitsubishi_nexway_door_%s_%s_1.png", half ? "top" : "bottom", side ? "right" : "left")), storedMatrixTransformations, side, half, unlocked, light, overlay);
                 break;
             case 6:
-                MainRenderer.scheduleRender(new Identifier(String.format("yte:textures/block/kone_m_door_%s_%s_1.png", half ? "top" : "bottom", side ? "right" : "left")), false, QueuedRenderLayer.EXTERIOR, (graphicsHolderNew, offset) -> {
-                    storedMatrixTransformations.transform(graphicsHolderNew, offset);
-                    (side ? MODEL_LIFT_RIGHT : MODEL_LIFT_LEFT).render(graphicsHolderNew, light, overlay, 1, 1, 1, 1);
-                    graphicsHolderNew.pop();
-                });
-                if (half && !unlocked) {
-                    MainRenderer.scheduleRender(new Identifier(Init.MOD_ID, "textures/block/sign/door_not_in_use.png"), false, QueuedRenderLayer.EXTERIOR, (graphicsHolderNew, offset) -> {
-                        storedMatrixTransformations.transform(graphicsHolderNew, offset);
-                        graphicsHolderNew.translate(side ? 0.125 : -0.125, 0, 0);
-                        MODEL_PSD_DOOR_LOCKED.render(graphicsHolderNew, light, overlay, 1, 1, 1, 1);
-                        graphicsHolderNew.pop();
-                    });
-                }
+                renderDoor(new Identifier(String.format("yte:textures/block/kone_m_door_%s_%s_1.png", half ? "top" : "bottom", side ? "right" : "left")), storedMatrixTransformations, side, half, unlocked, light, overlay);
                 break;
             case 7:
-                MainRenderer.scheduleRender(new Identifier(String.format("yte:textures/block/hitachi_b85_door_%s_%s_1.png", half ? "top" : "bottom", side ? "right" : "left")), false, QueuedRenderLayer.EXTERIOR, (graphicsHolderNew, offset) -> {
-                    storedMatrixTransformations.transform(graphicsHolderNew, offset);
-                    (side ? MODEL_LIFT_RIGHT : MODEL_LIFT_LEFT).render(graphicsHolderNew, light, overlay, 1, 1, 1, 1);
-                    graphicsHolderNew.pop();
-                });
-                if (half && !unlocked) {
-                    MainRenderer.scheduleRender(new Identifier(Init.MOD_ID, "textures/block/sign/door_not_in_use.png"), false, QueuedRenderLayer.EXTERIOR, (graphicsHolderNew, offset) -> {
-                        storedMatrixTransformations.transform(graphicsHolderNew, offset);
-                        graphicsHolderNew.translate(side ? 0.125 : -0.125, 0, 0);
-                        MODEL_PSD_DOOR_LOCKED.render(graphicsHolderNew, light, overlay, 1, 1, 1, 1);
-                        graphicsHolderNew.pop();
-                    });
-                }
+                renderDoor(new Identifier(String.format("yte:textures/block/hitachi_b85_door_%s_%s_1.png", half ? "top" : "bottom", side ? "right" : "left")), storedMatrixTransformations, side, half, unlocked, light, overlay);
                 break;
             case 8:
-                MainRenderer.scheduleRender(new Identifier(String.format("yte:textures/block/otis_e411_us_door_%s_%s_1.png", half ? "top" : "bottom", side ? "right" : "left")), false, QueuedRenderLayer.EXTERIOR, (graphicsHolderNew, offset) -> {
-                    storedMatrixTransformations.transform(graphicsHolderNew, offset);
-                    (side ? MODEL_LIFT_RIGHT : MODEL_LIFT_LEFT).render(graphicsHolderNew, light, overlay, 1, 1, 1, 1);
-                    graphicsHolderNew.pop();
-                });
-                if (half && !unlocked) {
-                    MainRenderer.scheduleRender(new Identifier(Init.MOD_ID, "textures/block/sign/door_not_in_use.png"), false, QueuedRenderLayer.EXTERIOR, (graphicsHolderNew, offset) -> {
-                        storedMatrixTransformations.transform(graphicsHolderNew, offset);
-                        graphicsHolderNew.translate(side ? 0.125 : -0.125, 0, 0);
-                        MODEL_PSD_DOOR_LOCKED.render(graphicsHolderNew, light, overlay, 1, 1, 1, 1);
-                        graphicsHolderNew.pop();
-                    });
-                }
+                renderDoor(new Identifier(String.format("yte:textures/block/otis_e411_us_door_%s_%s_1.png", half ? "top" : "bottom", side ? "right" : "left")), storedMatrixTransformations, side, half, unlocked, light, overlay);
                 break;
+        }
+    }
+
+    private void renderDoor(Identifier doorTexture, StoredMatrixTransformations storedMatrixTransformations, boolean side, boolean half, boolean unlocked, int light, int overlay) {
+        final GraphicsHolder graphicsHolder = DirectRenderer.prepare(QueuedRenderLayer.EXTERIOR, doorTexture, storedMatrixTransformations);
+        if (graphicsHolder != null) {
+            (side ? MODEL_LIFT_RIGHT : MODEL_LIFT_LEFT).render(graphicsHolder, light, overlay, 1, 1, 1, 1);
+            graphicsHolder.pop();
+        }
+
+        if (half && !unlocked) {
+            final GraphicsHolder lockedGraphicsHolder = DirectRenderer.prepare(QueuedRenderLayer.EXTERIOR, new Identifier(Init.MOD_ID, "textures/block/sign/door_not_in_use.png"), storedMatrixTransformations);
+            if (lockedGraphicsHolder != null) {
+                lockedGraphicsHolder.translate(side ? 0.125 : -0.125, 0, 0);
+                MODEL_PSD_DOOR_LOCKED.render(lockedGraphicsHolder, light, overlay, 1, 1, 1, 1);
+                lockedGraphicsHolder.pop();
+            }
         }
     }
 

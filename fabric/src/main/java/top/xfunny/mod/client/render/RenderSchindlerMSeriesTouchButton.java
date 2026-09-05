@@ -61,7 +61,7 @@ public class RenderSchindlerMSeriesTouchButton extends BlockEntityRenderer<Schin
 
         // 创建一个存储矩阵转换的实例，用于后续的渲染操作
         // 参数为方块的中心位置坐标 (x, y, z)
-        final StoredMatrixTransformations storedMatrixTransformations1 = new StoredMatrixTransformations(blockPos.getX() + 0.5, blockPos.getY(), blockPos.getZ() + 0.5);
+        final StoredMatrixTransformations storedMatrixTransformations1 = new StoredMatrixTransformations(0.5, 0, 0.5);
         storedMatrixTransformations1.add(graphicsHolder -> {
             graphicsHolder.rotateYDegrees(-facing.asRotation());
             graphicsHolder.translate(0, 0, 7.9F / 16 - SMALL_OFFSET);
