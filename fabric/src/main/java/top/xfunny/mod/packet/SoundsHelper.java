@@ -353,6 +353,16 @@ public final class SoundsHelper {
                         1.0F
                 );
                 break;
+            case "hitachi_ylgw_button_1":
+                serverPlayerEntity.getEntityWorld().playSound(
+                        null,
+                        blockPos,
+                        SoundEvents.HITACHI_YLGW_BUTTON_1.get(),
+                        SoundCategory.BLOCKS,
+                        0.8F,
+                        1.0F
+                );
+                break;
         }
     }
 }
