@@ -59,7 +59,7 @@ Yunzhu Transit Extension（模组 ID：`yte`）是 Minecraft Transit Railway（M
 
 `deployForTesting` 可能从 Modrinth 下载 MTR，`testLaunch` 会执行外部 PowerShell 启动脚本，`fullTest` 会部署后再启动验证。它们不是纯单元测试，不能在未确认用户的外部目录、网络下载和客户端启动意图时盲目运行。`buildAllVersions` 会为每一个版本启动子 Gradle 进程，耗时和资源开销均较高。
 
-本仓库未发现独立的 Java 单元测试源集；质量验证以可编译性、资源/注册一致性和真实客户端/服务器冒烟验证为主。
+质量验证以可编译性、资源/注册一致性和真实客户端/服务器冒烟验证为主。`fabric/src/test/java/top/xfunny/mod/client/font/` 中的 `FontFeaturesTest` 和 `UnicodeFontAnimationTest` 是不依赖测试库的字体回归 main 程序，须按 `FONT_FEATURES.md` 手动编译运行；Gradle 默认 test 不会执行这些 main。
 
 ### 终端与长运行进程约束
 
@@ -95,6 +95,10 @@ Yunzhu Transit Extension（模组 ID：`yte`）是 Minecraft Transit Railway（M
 ### 客户端
 
 `top.xfunny.mod.client.InitClient` 负责客户端配置、临时状态清理、渲染层、方块实体渲染器、client packet 和加入服务器后的初始化。所有 `net.minecraft` UI/渲染访问、动态纹理、客户端缓存、屏幕和 renderer 都必须留在 client-only 路径，避免被专用服务器类加载。
+
+AWT 动态文字的 `TextView.setFontFeatures(ss01, cv01)` 使用 `client.font.FontFeatures` 中的非枚举 `FontFeature` 常量，支持 SS/CV 的 GSUB Type 1 单替换、Type 3 候选替换及其 Type 7 包装；CV 编号写为 `cv02(2)`，默认候选为 1，不提供字符串启用接口。解析器使用 latn（不存在时 DFLT）的默认 LangSys，不是完整 shaping 引擎；限制及测试见 `FONT_FEATURES.md`。`FontList` 将原始 Font 对象绑定到同一资源的解析结果；渲染线程取得不可变结果后交给 worker。纹理键必须包含字体资源/重载代数和启用特性及候选编号，不能退回只按文字缓存。
+
+`TextView.setFontAnimation("E064", "E080", 1)` 是独立的 Unicode 连续范围动画，包含首尾，速度单位为每秒帧数。配置后默认停止，`startFontAnimation()` 从首帧启动（播放中重复调用不重置），`stopFontAnimation()` 停止并恢复普通文字、保留配置。按启动后的 MTR 客户端经过时间选择帧字符，复用普通文字纹理缓存，不能把播放时间加入纹理键。每帧重建 View 时使用 `setFontAnimation(blockEntity, first, last, fps)`，内部按弱引用 owner 与稳定纹理 ID 保存独立播放状态；先设置 texture ID，停用时显式停止。高级调用可绑定自行持有的 `FontAnimation`，按屏幕生命周期停止/释放，不能让不同屏幕意外共享可变播放对象。`clearFontAnimation()` 恢复普通文字；继承 view 的运行模式隐藏逻辑不变。
 
 ### 网络与数据
 

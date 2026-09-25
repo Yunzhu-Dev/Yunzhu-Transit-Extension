@@ -3,8 +3,12 @@ package top.xfunny.mod.client.resource;
 import org.mtr.mapping.holder.Identifier;
 import org.mtr.mapping.mapper.ResourceManagerHelper;
 import top.xfunny.mod.Init;
+import top.xfunny.mod.client.font.GsubParser;
 
 import java.awt.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.IdentityHashMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -15,10 +19,16 @@ public class FontList {
     public static FontList instance = new FontList();
 
     private final Map<String, Font> fonts = new HashMap<>();
+    private final Map<Font, GsubParser> substitutions = new IdentityHashMap<>();
+    private final Map<Font, String> resourceKeys = new IdentityHashMap<>();
+    private long generation;
     private boolean fontsLoaded = false;
 
     public void FontReload() {
         fonts.clear();
+        substitutions.clear();
+        resourceKeys.clear();
+        generation++;
         fontsLoaded = false;
     }
 
@@ -62,9 +72,9 @@ public class FontList {
             loadFont("hitachi-led-dot_matrix", "font/hitachi-dot-matrix-regular.ttf"); // 待弃用
             loadFont("hitachi-led-dot_matrix_small_pafc", "font/hitachi-dot-matrix-small-pafc.ttf"); // 待弃用
             loadFont("hitachi-led-dot_matrix_small", "font/hitachi-dot-matrix-small-generic.ttf"); // 待弃用
-            loadFont("hitachi-bxsclc5", "font/hitachi-bxsclc5-led.ttf"); // 暂不可用
-            loadFont("hitachi-bxsclc5-compact", "font/hitachi-bxsclc5-led-compact.ttf"); // 暂不可用
-            loadFont("hitachi-bxsclc5-pafc-compact", "font/hitachi-bxsclc5-led-pafc-compact.ttf"); // 深圳 PAFC 使用，暂不可用
+            loadFont("hitachi-bxsclc5", "font/hitachi-bxsclc5-led.ttf"); //ss01 为窄体特性，cv01为1，cv02为G（候选2同时影响L），cv03为P，cv04为7，cv05为B
+            loadFont("hitachi-bxsclc5-compact", "font/hitachi-bxsclc5-led-compact.ttf");
+            loadFont("hitachi-bxsclc5-pafc-compact", "font/hitachi-bxsclc5-led-pafc-compact.ttf"); // 深圳 PAFC 使用
             loadFont("hitachi-lcd-seg", "font/hitachi-hip31-lcd.ttf");
             loadFont("hitachi-japan-lcd", "font/hitachi-hip32-lcd.ttf");
             loadFont("hitachi-hip43", "font/hitachi-hip43-lcd.ttf"); // SCLC-LCD4、HIP-27 使用此字体
@@ -92,10 +102,22 @@ public class FontList {
     private void loadFont(String fontName, String resourcePath) {
         ResourceManagerHelper.readResource(new Identifier(Init.MOD_ID, resourcePath), inputStream -> {
             try {
-                Font font = Font.createFont(Font.TRUETYPE_FONT, inputStream);
+                final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                final byte[] chunk = new byte[8192];
+                int count;
+                while ((count = inputStream.read(chunk)) != -1) buffer.write(chunk, 0, count);
+                final byte[] bytes = buffer.toByteArray();
+                Font font = Font.createFont(Font.TRUETYPE_FONT, new ByteArrayInputStream(bytes));
                 GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
                 ge.registerFont(font);
                 fonts.put(fontName, font);
+                resourceKeys.put(font, generation + ":" + resourcePath);
+                try {
+                    substitutions.put(font, GsubParser.parse(bytes,
+                            message -> LOGGER.warn("Font {}: {}", fontName, message)));
+                } catch (IllegalArgumentException e) {
+                    LOGGER.warn("Invalid GSUB data for font {}; SS/CV disabled", fontName, e);
+                }
             } catch (Exception e) {
                 LOGGER.error("Invalid font file: {}", fontName, e);
             }
@@ -122,5 +144,14 @@ public class FontList {
             }
         }
         return new Font("Arial", Font.PLAIN, 12);
+    }
+
+    // Read on the render thread and capture the immutable parser before scheduling workers.
+    public GsubParser getSubstitutions(Font font) {
+        return substitutions.getOrDefault(font, GsubParser.EMPTY);
+    }
+
+    public String getResourceKey(Font font) {
+        return resourceKeys.getOrDefault(font, generation + ":system:" + font.toString());
     }
 }
