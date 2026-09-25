@@ -664,6 +664,14 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
             queue.forcedClosing = true;
             queue.curtainSuppressed = true;
             setStoppingCoolDown(p.closeStartCoolDown());
+
+        final long adjustedTick = Math.max(millisElapsed, 0);
+        if (doorValue >= 0.999F && coolDown <= YTE_DOOR_FULL_OPEN_COOL_DOWN) {
+            setStoppingCoolDown(YTE_DOOR_FULL_OPEN_COOL_DOWN + adjustedTick);
+            setNeedsUpdate(true);
+        } else if (doorValue > 0 && coolDown <= YTE_DOOR_CLOSED_DELAY + YTE_SINGLE_DOOR_MOVE_TIME) {
+            setStoppingCoolDown(YTE_LIFT_STOPPING_TIME
+                    - Math.round(doorValue * YTE_SINGLE_DOOR_MOVE_TIME) + adjustedTick);
             setNeedsUpdate(true);
             return;
         }

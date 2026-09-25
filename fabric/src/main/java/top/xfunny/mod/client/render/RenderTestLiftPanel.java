@@ -16,11 +16,11 @@ import org.mtr.mod.block.BlockLiftTrackFloor;
 import org.mtr.mod.block.IBlock;
 import org.mtr.mod.client.IDrawing;
 import org.mtr.mod.data.IGui;
-import org.mtr.mod.render.MainRenderer;
 import org.mtr.mod.render.QueuedRenderLayer;
 import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.block.TestLiftPanel;
 import top.xfunny.mod.client.resource.TextureList;
+import top.xfunny.mod.client.view.DirectRenderer;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
 import top.xfunny.mod.util.ClientGetLiftDetails;
@@ -58,7 +58,7 @@ public class RenderTestLiftPanel extends BlockEntityRenderer<TestLiftPanel.Block
         final boolean holdingLinker = PlayerHelper.isHolding(PlayerEntity.cast(clientPlayerEntity), item -> item.data instanceof YteLiftButtonsLinker || item.data instanceof YteGroupLiftButtonsLinker);
         // 创建一个存储矩阵转换的实例，用于后续的渲染操作
         // 参数为方块的中心位置坐标 (x, y, z)
-        final StoredMatrixTransformations storedMatrixTransformations1 = new StoredMatrixTransformations(blockPos.getX() + 0.5, blockPos.getY(), blockPos.getZ() + 0.5);
+        final StoredMatrixTransformations storedMatrixTransformations1 = new StoredMatrixTransformations(0.5, 0, 0.5);
 
         // 创建一个对象列表，用于存储排序后的位置和升降机的配对信息
         final ObjectArrayList<ObjectObjectImmutablePair<BlockPos, Lift>> sortedPositionsAndLifts = new ObjectArrayList<>();
@@ -105,11 +105,13 @@ public class RenderTestLiftPanel extends BlockEntityRenderer<TestLiftPanel.Block
             });
 
             // 渲染黑色背景
-            MainRenderer.scheduleRender(new Identifier(Init.MOD_ID, "textures/block/black.png"), false, QueuedRenderLayer.EXTERIOR, (graphicsHolder, offset) -> {
-                storedMatrixTransformations3.transform(graphicsHolder, offset);
-                IDrawing.drawTexture(graphicsHolder, 0, -0.9375F, width, 0.40625F, Direction.UP, light);
-                graphicsHolder.pop();
-            });
+            {
+                final GraphicsHolder graphicsHolder = DirectRenderer.prepare(QueuedRenderLayer.EXTERIOR, new Identifier(Init.MOD_ID, "textures/block/black.png"), storedMatrixTransformations3);
+                if (graphicsHolder != null) {
+                    IDrawing.drawTexture(graphicsHolder, 0, -0.9375F, width, 0.40625F, Direction.UP, light);
+                    graphicsHolder.pop();
+                }
+            }
 
             // 根据按钮朝向判断两个最近的电梯是否需要反转渲染顺序
             final boolean reverseRendering = count > 1 && ReverseRendering.reverseRendering(facing.rotateYCounterclockwise(), sortedPositionsAndLifts.get(0).left(), sortedPositionsAndLifts.get(1).left());
@@ -148,12 +150,13 @@ public class RenderTestLiftPanel extends BlockEntityRenderer<TestLiftPanel.Block
         if (liftDirection != LiftDirection.NONE) {
             final float uv = (gameTick * ARROW_SPEED) % 1;
             final int color = goingUp ? 0xFF00FF00 : 0xFFFF0000; // 根据运行方向设置箭头颜色
-            MainRenderer.scheduleRender(ARROW_TEXTURE, false, QueuedRenderLayer.LIGHT_TRANSLUCENT, (graphicsHolder, offset) -> {
-                storedMatrixTransformations.transform(graphicsHolder, offset);
-                // 根据电梯运行方向绘制箭头
-                IDrawing.drawTexture(graphicsHolder, -width / 4 + arrowSize, y - 0.24F, arrowSize, arrowSize, 0, (goingUp ? 0 : 1) + uv, 1, (goingUp ? 1 : 0) + uv, Direction.UP, color, GraphicsHolder.getDefaultLight());
-                graphicsHolder.pop();
-            });
+            {
+                final GraphicsHolder graphicsHolder = DirectRenderer.prepare(QueuedRenderLayer.LIGHT_TRANSLUCENT, ARROW_TEXTURE, storedMatrixTransformations);
+                if (graphicsHolder != null) {
+                    IDrawing.drawTexture(graphicsHolder, -width / 4 + arrowSize, y - 0.24F, arrowSize, arrowSize, 0, (goingUp ? 0 : 1) + uv, 1, (goingUp ? 1 : 0) + uv, Direction.UP, color, GraphicsHolder.getDefaultLight());
+                    graphicsHolder.pop();
+                }
+            }
         }
         // 渲染楼层信息
         if (!noFloorNumber || !noFloorDisplay) {
@@ -170,20 +173,22 @@ public class RenderTestLiftPanel extends BlockEntityRenderer<TestLiftPanel.Block
 
                 }
                 float finalOffset = offset1;
-                MainRenderer.scheduleRender(TextureList.instance.getTestLiftPanelDisplay(text, 0xFFAA00).identifier, false, QueuedRenderLayer.LIGHT_TRANSLUCENT, (graphicsHolder, offset) -> {
-                    storedMatrixTransformations.transform(graphicsHolder, offset);
-                    // 绘制楼层信息纹理
-                    IDrawing.drawTexture(graphicsHolder, -width + 0.9F, y - 0.07F, width1, height1, finalOffset, 0, finalOffset + (float) 1 / text.length() + 0.0001F * text.length(), 1F, Direction.UP, ARGB_WHITE, GraphicsHolder.getDefaultLight());//楼层数字尺寸设置
-                    graphicsHolder.pop();
-                });
+                {
+                    final GraphicsHolder graphicsHolder = DirectRenderer.prepare(QueuedRenderLayer.LIGHT_TRANSLUCENT, TextureList.instance.getTestLiftPanelDisplay(text, 0xFFAA00).identifier, storedMatrixTransformations);
+                    if (graphicsHolder != null) {
+                        IDrawing.drawTexture(graphicsHolder, -width + 0.9F, y - 0.07F, width1, height1, finalOffset, 0, finalOffset + (float) 1 / text.length() + 0.0001F * text.length(), 1F, Direction.UP, ARGB_WHITE, GraphicsHolder.getDefaultLight());
+                        graphicsHolder.pop();
+                    }
+                }
             } else {
                 // 如果不需要走马灯，保持位置不变
-                MainRenderer.scheduleRender(TextureList.instance.getTestLiftPanelDisplay(text, 0xFFAA00).identifier, false, QueuedRenderLayer.LIGHT_TRANSLUCENT, (graphicsHolder, offset) -> {
-                    storedMatrixTransformations.transform(graphicsHolder, offset);
-                    // 绘制楼层信息纹理
-                    IDrawing.drawTexture(graphicsHolder, -width + 0.9F, y - 0.07F, width1, height1, 0, 0, 1, 1F, Direction.UP, ARGB_WHITE, GraphicsHolder.getDefaultLight());//楼层数字尺寸设置
-                    graphicsHolder.pop();
-                });
+                {
+                    final GraphicsHolder graphicsHolder = DirectRenderer.prepare(QueuedRenderLayer.LIGHT_TRANSLUCENT, TextureList.instance.getTestLiftPanelDisplay(text, 0xFFAA00).identifier, storedMatrixTransformations);
+                    if (graphicsHolder != null) {
+                        IDrawing.drawTexture(graphicsHolder, -width + 0.9F, y - 0.07F, width1, height1, 0, 0, 1, 1F, Direction.UP, ARGB_WHITE, GraphicsHolder.getDefaultLight());
+                        graphicsHolder.pop();
+                    }
+                }
             }
         }
     }

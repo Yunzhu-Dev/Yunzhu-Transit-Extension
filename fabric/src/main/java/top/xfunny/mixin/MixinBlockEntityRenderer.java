@@ -17,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.xfunny.mod.client.hint.ConnectionHintRenderer;
+import top.xfunny.mod.client.view.DirectRenderer;
 
 /**
  * 方块实体渲染前后处理：HEAD 距离裁剪（32 格外跳过渲染）、TAIL 连接提示调度。
@@ -58,6 +59,22 @@ public class MixinBlockEntityRenderer {
         // 检查是否需要渲染提示，只调度一次
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client.getPlayerMapped() == null) return;
+        final boolean isYteRenderer = this.getClass().getName().startsWith("top.xfunny");
+
+        return gh -> {
+            // 阴影通道跳过 yte 方块实体的重渲染（按钮/面板/厅灯/屏幕是自发光件，不应投阴影）
+            if (!(isYteRenderer && DirectRenderer.shadowPass)) {
+                DirectRenderer.setGraphicsHolder(gh);
+                try {
+                    original.accept(gh);
+                } finally {
+                    DirectRenderer.setGraphicsHolder(null);
+                }
+            }
+
+            // 检查是否需要渲染提示，只调度一次
+            final MinecraftClient client = MinecraftClient.getInstance();
+            if (client.getPlayerMapped() == null) return;
 
         final HitResult hit = client.getCrosshairTargetMapped();
         if (hit == null) return;

@@ -16,11 +16,11 @@ import org.mtr.mod.block.BlockLiftTrackFloor;
 import org.mtr.mod.block.IBlock;
 import org.mtr.mod.client.IDrawing;
 import org.mtr.mod.data.IGui;
-import org.mtr.mod.render.MainRenderer;
 import org.mtr.mod.render.QueuedRenderLayer;
 import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.block.TestLiftButtonsWithoutScreen;
 import top.xfunny.mod.block.base.LiftButtonsBase;
+import top.xfunny.mod.client.view.DirectRenderer;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
 import top.xfunny.mod.util.ReverseRendering;
@@ -55,7 +55,7 @@ public class RenderTestLiftButtonsWithoutScreen extends BlockEntityRenderer<Test
         final boolean holdingLinker = PlayerHelper.isHolding(PlayerEntity.cast(clientPlayerEntity), item -> item.data instanceof YteLiftButtonsLinker || item.data instanceof YteGroupLiftButtonsLinker);
         // 创建一个存储矩阵转换的实例，用于后续的渲染操作
         // 参数为方块的中心位置坐标 (x, y, z)
-        final StoredMatrixTransformations storedMatrixTransformations1 = new StoredMatrixTransformations(blockPos.getX() + 0.5, blockPos.getY(), blockPos.getZ() + 0.5);
+        final StoredMatrixTransformations storedMatrixTransformations1 = new StoredMatrixTransformations(0.5, 0, 0.5);
 
 
         // 定义一个布尔数组，用于记录按钮的状态
@@ -128,62 +128,50 @@ public class RenderTestLiftButtonsWithoutScreen extends BlockEntityRenderer<Test
         // 第一个按钮的渲染逻辑
         if (buttonDescriptor.hasDownButton()) {
             // 根据按钮的按下状态和鼠标位置选择不同的渲染层
-            MainRenderer.scheduleRender(
-                    BUTTON_TEXTURE,
-                    false,
-                    buttonStates[0] || lookingAtBottomHalf ? QueuedRenderLayer.LIGHT_TRANSLUCENT : QueuedRenderLayer.EXTERIOR,
-                    (graphicsHolder, offset) -> {
-                        // 应用存储的矩阵变换
-                        storedMatrixTransformations2.transform(graphicsHolder, offset);
-                        // 绘制按钮纹理，位置和颜色根据按钮状态和鼠标位置决定
-                        IDrawing.drawTexture(
-                                graphicsHolder,
-                                -1.5F / 16,
-                                (buttonDescriptor.hasUpButton() ? 0.5F : 2.5F) / 16,
-                                3F / 16,
-                                3F / 16,
-                                0,
-                                0,
-                                1,
-                                1,
-                                facing,
-                                buttonStates[0] ? PRESSED_COLOR : lookingAtBottomHalf ? HOVER_COLOR : ARGB_GRAY,
-                                light
-                        );
-                        // 弹出当前图形状态
-                        graphicsHolder.pop();
-                    }
-            );
+            {
+                final GraphicsHolder graphicsHolder = DirectRenderer.prepare(buttonStates[0] || lookingAtBottomHalf ? QueuedRenderLayer.LIGHT_TRANSLUCENT : QueuedRenderLayer.EXTERIOR, BUTTON_TEXTURE, storedMatrixTransformations2);
+                if (graphicsHolder != null) {
+                    IDrawing.drawTexture(
+                            graphicsHolder,
+                            -1.5F / 16,
+                            (buttonDescriptor.hasUpButton() ? 0.5F : 2.5F) / 16,
+                            3F / 16,
+                            3F / 16,
+                            0,
+                            0,
+                            1,
+                            1,
+                            facing,
+                            buttonStates[0] ? PRESSED_COLOR : lookingAtBottomHalf ? HOVER_COLOR : ARGB_GRAY,
+                            light
+                    );
+                    graphicsHolder.pop();
+                }
+            }
         }
         // 第二个按钮的渲染逻辑
         if (buttonDescriptor.hasUpButton()) {
             // 根据按钮的按下状态和鼠标位置选择不同的渲染层
-            MainRenderer.scheduleRender(
-                    BUTTON_TEXTURE,
-                    false,
-                    buttonStates[1] || lookingAtTopHalf ? QueuedRenderLayer.LIGHT_TRANSLUCENT : QueuedRenderLayer.EXTERIOR,
-                    (graphicsHolder, offset) -> {
-                        // 应用存储的矩阵变换
-                        storedMatrixTransformations2.transform(graphicsHolder, offset);
-                        // 绘制按钮纹理，位置和颜色根据按钮状态和鼠标位置决定
-                        IDrawing.drawTexture(
-                                graphicsHolder,
-                                -1.5F / 16,
-                                (buttonDescriptor.hasDownButton() ? 4.5F : 2.5F) / 16,
-                                3F / 16,
-                                3F / 16,
-                                0,
-                                1,
-                                1,
-                                0,
-                                facing,
-                                buttonStates[1] ? PRESSED_COLOR : lookingAtTopHalf ? HOVER_COLOR : ARGB_GRAY,
-                                light
-                        );
-                        // 弹出当前图形状态
-                        graphicsHolder.pop();
-                    }
-            );
+            {
+                final GraphicsHolder graphicsHolder = DirectRenderer.prepare(buttonStates[1] || lookingAtTopHalf ? QueuedRenderLayer.LIGHT_TRANSLUCENT : QueuedRenderLayer.EXTERIOR, BUTTON_TEXTURE, storedMatrixTransformations2);
+                if (graphicsHolder != null) {
+                    IDrawing.drawTexture(
+                            graphicsHolder,
+                            -1.5F / 16,
+                            (buttonDescriptor.hasDownButton() ? 4.5F : 2.5F) / 16,
+                            3F / 16,
+                            3F / 16,
+                            0,
+                            1,
+                            1,
+                            0,
+                            facing,
+                            buttonStates[1] ? PRESSED_COLOR : lookingAtTopHalf ? HOVER_COLOR : ARGB_GRAY,
+                            light
+                    );
+                    graphicsHolder.pop();
+                }
+            }
         }
         // 检查排序后的电梯位置列表是否非空
         if (!sortedPositionsAndLifts.isEmpty()) {

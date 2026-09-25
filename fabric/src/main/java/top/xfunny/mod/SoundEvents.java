@@ -39,6 +39,7 @@ public class SoundEvents {
     public static final SoundEventRegistryObject TKE_STEPC_BUTTON_1;
     public static final SoundEventRegistryObject HITACHI_WLMW_BUTTON_1;
     public static final SoundEventRegistryObject HITACHI_ZLMO_BUTTON_1;
+    public static final SoundEventRegistryObject HITACHI_YLGW_BUTTON_1;
 
     static {
         HITACHI_CA_LANTERN_1 = Init.REGISTRY.registerSoundEvent(new Identifier(Init.MOD_ID, "hitachi_ca_lantern_1"));
@@ -75,6 +76,7 @@ public class SoundEvents {
         TKE_STEPC_BUTTON_1 = Init.REGISTRY.registerSoundEvent(new Identifier(Init.MOD_ID, "tke_stepc_button_1"));
         HITACHI_WLMW_BUTTON_1 = Init.REGISTRY.registerSoundEvent(new Identifier(Init.MOD_ID, "hitachi_wlmw_button_1"));
         HITACHI_ZLMO_BUTTON_1 = Init.REGISTRY.registerSoundEvent(new Identifier(Init.MOD_ID, "hitachi_zlmo_button_1"));
+        HITACHI_YLGW_BUTTON_1 = Init.REGISTRY.registerSoundEvent(new Identifier(Init.MOD_ID, "hitachi_ylgw_button_1"));
     }
 
     public static void init() {
