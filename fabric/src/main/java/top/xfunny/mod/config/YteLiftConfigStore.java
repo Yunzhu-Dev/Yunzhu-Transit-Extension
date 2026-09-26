@@ -1,10 +1,12 @@
 package top.xfunny.mod.config;
 
+import top.xfunny.core.data.YteLiftConfig;
+import top.xfunny.mod.lift.DoorMotionCurve;
+import top.xfunny.mod.lift.FiremanOperationType;
 import top.xfunny.mod.lift.LiftArrivalLanternTriggerMode;
 import top.xfunny.mod.lift.LiftDoorButtonLightMode;
 import top.xfunny.mod.lift.LiftFloorCancelMode;
 import top.xfunny.mod.lift.LiftMotionProfile;
-import top.xfunny.mod.lift.LiftServiceMode;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,65 +29,36 @@ public final class YteLiftConfigStore {
     private static final Map<Long, LiftDoorButtonLightMode> doorButtonLightModeMap = new ConcurrentHashMap<>();
     private static final Map<Long, LiftFloorCancelMode> floorCancelModeMap = new ConcurrentHashMap<>();
     private static final Map<Long, Boolean> floorCancelWhileMovingMap = new ConcurrentHashMap<>();
+    private static final Map<Long, Long> doorOpenMsMap = new ConcurrentHashMap<>();
+    private static final Map<Long, Long> doorCloseMsMap = new ConcurrentHashMap<>();
+    private static final Map<Long, Long> doorDwellMsMap = new ConcurrentHashMap<>();
+    private static final Map<Long, Long> doorRunDelayMsMap = new ConcurrentHashMap<>();
+    private static final Map<Long, DoorMotionCurve> doorCurveMap = new ConcurrentHashMap<>();
+    private static final Map<Long, Double> recoverySpeedMap = new ConcurrentHashMap<>();
+    private static final Map<Long, Long> maxDoorOpenMsMap = new ConcurrentHashMap<>();
     private static final Map<Long, LiftArrivalLanternTriggerMode> arrivalLanternTriggerModeMap = new ConcurrentHashMap<>();
-    private static final Map<Long, LiftServiceMode> serviceModeMap = new ConcurrentHashMap<>();
     private static final Map<Long, String> liftNumberMap = new ConcurrentHashMap<>();
+    private static final Map<Long, Boolean> firemanLiftMap = new ConcurrentHashMap<>();
+    private static final Map<Long, FiremanOperationType> firemanOperationMap = new ConcurrentHashMap<>();
+    private static final Map<Long, String> fireRecallFloorMap = new ConcurrentHashMap<>();
 
     private static final double DEFAULT_SPEED = 10.0;
     private static final double DEFAULT_ACCELERATION = 4.0;
     private static final double DEFAULT_ADO_DISTANCE = 0;
     private static final double DEFAULT_LEVELLING_DISTANCE = 0.3;
     private static final double DEFAULT_LEVELLING_SPEED = 0.2;
+    private static final long DEFAULT_DOOR_OPEN_MS = 1600;
+    private static final long DEFAULT_DOOR_CLOSE_MS = 1600;
+    private static final long DEFAULT_DOOR_DWELL_MS = 2000;
+    private static final long DEFAULT_DOOR_RUN_DELAY_MS = 500;
 
     private YteLiftConfigStore() {}
-
-    public static void put(long liftId, double speed, double acceleration, double adoDistance, double levellingDistance, double levellingSpeed) {
-        put(liftId, speed, speed, acceleration, acceleration, adoDistance, levellingDistance, levellingSpeed);
-    }
-
-    public static void put(long liftId, double upSpeed, double downSpeed, double upAcceleration, double downAcceleration,
-            double adoDistance, double levellingDistance, double levellingSpeed) {
-        put(liftId, upSpeed, downSpeed, upAcceleration, downAcceleration,
-                adoDistance, levellingDistance, levellingSpeed, LiftMotionProfile.STANDARD);
-    }
-
-    public static void put(long liftId, double upSpeed, double downSpeed, double upAcceleration, double downAcceleration,
-            double adoDistance, double levellingDistance, double levellingSpeed, LiftMotionProfile motionProfile) {
-        put(liftId, upSpeed, downSpeed, upAcceleration, downAcceleration,
-                adoDistance, levellingDistance, levellingSpeed, motionProfile, false);
-    }
-
-    public static void put(long liftId, double upSpeed, double downSpeed, double upAcceleration, double downAcceleration,
-            double adoDistance, double levellingDistance, double levellingSpeed, LiftMotionProfile motionProfile,
-            boolean doorHoldEnabled) {
-        put(liftId, upSpeed, downSpeed, upAcceleration, downAcceleration, adoDistance, levellingDistance,
-                levellingSpeed, motionProfile, doorHoldEnabled, LiftDoorButtonLightMode.MOMENTARY,
-                LiftFloorCancelMode.DOUBLE_CLICK, false);
-    }
-
-    public static void put(long liftId, double upSpeed, double downSpeed, double upAcceleration, double downAcceleration,
-            double adoDistance, double levellingDistance, double levellingSpeed, LiftMotionProfile motionProfile,
-            boolean doorHoldEnabled, LiftDoorButtonLightMode doorButtonLightMode, LiftFloorCancelMode floorCancelMode,
-            boolean floorCancelWhileMoving) {
-        put(liftId, upSpeed, downSpeed, upAcceleration, downAcceleration, adoDistance, levellingDistance,
-                levellingSpeed, motionProfile, doorHoldEnabled, doorButtonLightMode, floorCancelMode,
-                floorCancelWhileMoving, LiftArrivalLanternTriggerMode.DECELERATION);
-    }
-
-    public static void put(long liftId, double upSpeed, double downSpeed, double upAcceleration, double downAcceleration,
-            double adoDistance, double levellingDistance, double levellingSpeed, LiftMotionProfile motionProfile,
-            boolean doorHoldEnabled, LiftDoorButtonLightMode doorButtonLightMode, LiftFloorCancelMode floorCancelMode,
-            boolean floorCancelWhileMoving, LiftArrivalLanternTriggerMode arrivalLanternTriggerMode) {
-        put(liftId, upSpeed, downSpeed, upAcceleration, downAcceleration, adoDistance, levellingDistance,
-                levellingSpeed, motionProfile, doorHoldEnabled, doorButtonLightMode, floorCancelMode,
-                floorCancelWhileMoving, arrivalLanternTriggerMode, LiftServiceMode.NORMAL);
-    }
 
     public static void put(long liftId, double upSpeed, double downSpeed, double upAcceleration, double downAcceleration,
             double adoDistance, double levellingDistance, double levellingSpeed, LiftMotionProfile motionProfile,
             boolean doorHoldEnabled, LiftDoorButtonLightMode doorButtonLightMode, LiftFloorCancelMode floorCancelMode,
             boolean floorCancelWhileMoving, LiftArrivalLanternTriggerMode arrivalLanternTriggerMode,
-            LiftServiceMode serviceMode) {
+            boolean firemanLift, FiremanOperationType firemanOperation, String fireRecallFloor) {
         speedMap.put(liftId, upSpeed);
         downSpeedMap.put(liftId, downSpeed);
         accelerationMap.put(liftId, upAcceleration);
@@ -98,8 +71,10 @@ public final class YteLiftConfigStore {
         doorButtonLightModeMap.put(liftId, doorButtonLightMode);
         floorCancelModeMap.put(liftId, floorCancelMode);
         floorCancelWhileMovingMap.put(liftId, floorCancelWhileMoving);
+        firemanLiftMap.put(liftId, firemanLift);
+        firemanOperationMap.put(liftId, firemanOperation);
+        fireRecallFloorMap.put(liftId, fireRecallFloor);
         arrivalLanternTriggerModeMap.put(liftId, arrivalLanternTriggerMode);
-        serviceModeMap.put(liftId, serviceMode);
     }
 
     public static double getSpeed(long liftId) {
@@ -144,12 +119,100 @@ public final class YteLiftConfigStore {
         return floorCancelWhileMovingMap.getOrDefault(liftId, false);
     }
 
-    public static LiftArrivalLanternTriggerMode getArrivalLanternTriggerMode(long liftId) {
-        return arrivalLanternTriggerModeMap.getOrDefault(liftId, LiftArrivalLanternTriggerMode.DECELERATION);
+    public static boolean isFiremanLift(long liftId){
+        return firemanLiftMap.getOrDefault(liftId, false);
     }
 
-    public static LiftServiceMode getServiceMode(long liftId) {
-        return serviceModeMap.getOrDefault(liftId, LiftServiceMode.NORMAL);
+    public static FiremanOperationType getFiremanOperation(long liftId) {
+        return firemanOperationMap.getOrDefault(liftId, FiremanOperationType.HOLD_DOOR_BUTTON);
+    }
+
+    public static String getFireRecallFloor(long liftId) {
+        return fireRecallFloorMap.getOrDefault(liftId, YteLiftConfig.DEFAULT_FIRE_RECALL_FLOOR);
+    }
+
+    /**
+     * Door timing per lift, bundled for the door curve and the message queue.
+     * A raw dwell of -1 (infinite open) keeps the default dwell length for the
+     * curve math so the FULLY_OPEN band stays non-empty; the infinite-open
+     * semantics are handled by the queue's INFINITE_OPEN close timer pinning.
+     */
+    public static final class DoorParams {
+        public final long openMs;
+        public final long closeMs;
+        public final long dwellMs;
+        public final long runDelay;
+        public final DoorMotionCurve curve;
+
+        private DoorParams(long openMs, long closeMs, long dwellMs, long runDelay, DoorMotionCurve curve) {
+            this.openMs = openMs;
+            this.closeMs = closeMs;
+            this.dwellMs = dwellMs == -1 ? DEFAULT_DOOR_DWELL_MS : Math.max(dwellMs, 0);
+            this.runDelay = runDelay;
+            this.curve = curve;
+        }
+
+        public long total() {
+            return openMs + dwellMs + closeMs + runDelay;
+        }
+
+        public long fullOpenCoolDown() {
+            return dwellMs + closeMs + runDelay;
+        }
+
+        public long closeStartCoolDown() {
+            return closeMs + runDelay;
+        }
+    }
+
+    public static DoorParams getDoorParams(long liftId) {
+        return new DoorParams(
+                doorOpenMsMap.getOrDefault(liftId, DEFAULT_DOOR_OPEN_MS),
+                doorCloseMsMap.getOrDefault(liftId, DEFAULT_DOOR_CLOSE_MS),
+                doorDwellMsMap.getOrDefault(liftId, DEFAULT_DOOR_DWELL_MS),
+                doorRunDelayMsMap.getOrDefault(liftId, DEFAULT_DOOR_RUN_DELAY_MS),
+                doorCurveMap.getOrDefault(liftId, DoorMotionCurve.LINEAR));
+    }
+
+    /** Raw dwell in ms; -1 means the door stays open indefinitely. */
+    public static long getDoorDwellMs(long liftId) {
+        return doorDwellMsMap.getOrDefault(liftId, DEFAULT_DOOR_DWELL_MS);
+    }
+
+    public static void putDoorParams(long liftId, long openMs, long closeMs, long dwellMs, long runDelay,
+            DoorMotionCurve curve) {
+        doorOpenMsMap.put(liftId, openMs);
+        doorCloseMsMap.put(liftId, closeMs);
+        doorDwellMsMap.put(liftId, dwellMs);
+        doorRunDelayMsMap.put(liftId, runDelay);
+        doorCurveMap.put(liftId, curve);
+    }
+
+    public static void putRecoverySpeed(long liftId, double recoverySpeed) {
+        recoverySpeedMap.put(liftId, recoverySpeed);
+    }
+
+    public static void putMaxDoorOpenMs(long liftId, long maxDoorOpenMs) {
+        maxDoorOpenMsMap.put(liftId, Math.max(YteLiftConfig.MIN_MAX_DOOR_OPEN_MS,
+                Math.min(YteLiftConfig.MAX_MAX_DOOR_OPEN_MS, maxDoorOpenMs)));
+    }
+
+    /** 光幕最大开门时长（ms），读端 clamp [30s, 60s]。 */
+    public static long getMaxDoorOpenMs(long liftId) {
+        return Math.max(YteLiftConfig.MIN_MAX_DOOR_OPEN_MS,
+                Math.min(YteLiftConfig.MAX_MAX_DOOR_OPEN_MS,
+                        maxDoorOpenMsMap.getOrDefault(liftId, YteLiftConfig.DEFAULT_MAX_DOOR_OPEN_MS)));
+    }
+
+    /** 自动救援就近平层速度（m/s），读端 clamp [0.1, 1.0]。 */
+    public static double getRecoverySpeed(long liftId) {
+        return Math.max(YteLiftConfig.MIN_RECOVERY_SPEED,
+                Math.min(YteLiftConfig.MAX_RECOVERY_SPEED,
+                        recoverySpeedMap.getOrDefault(liftId, YteLiftConfig.DEFAULT_RECOVERY_SPEED)));
+    }
+
+    public static LiftArrivalLanternTriggerMode getArrivalLanternTriggerMode(long liftId) {
+        return arrivalLanternTriggerModeMap.getOrDefault(liftId, LiftArrivalLanternTriggerMode.DECELERATION);
     }
 
     /**
@@ -182,8 +245,17 @@ public final class YteLiftConfigStore {
         floorCancelModeMap.remove(liftId);
         floorCancelWhileMovingMap.remove(liftId);
         arrivalLanternTriggerModeMap.remove(liftId);
-        serviceModeMap.remove(liftId);
         liftNumberMap.remove(liftId);
+        doorOpenMsMap.remove(liftId);
+        doorCloseMsMap.remove(liftId);
+        doorDwellMsMap.remove(liftId);
+        doorRunDelayMsMap.remove(liftId);
+        doorCurveMap.remove(liftId);
+        recoverySpeedMap.remove(liftId);
+        maxDoorOpenMsMap.remove(liftId);
+        firemanLiftMap.remove(liftId);
+        firemanOperationMap.remove(liftId);
+        fireRecallFloorMap.remove(liftId);
     }
 
     public static void clear() {
@@ -200,7 +272,16 @@ public final class YteLiftConfigStore {
         floorCancelModeMap.clear();
         floorCancelWhileMovingMap.clear();
         arrivalLanternTriggerModeMap.clear();
-        serviceModeMap.clear();
         liftNumberMap.clear();
+        doorOpenMsMap.clear();
+        doorCloseMsMap.clear();
+        doorDwellMsMap.clear();
+        doorRunDelayMsMap.clear();
+        doorCurveMap.clear();
+        recoverySpeedMap.clear();
+        maxDoorOpenMsMap.clear();
+        firemanLiftMap.clear();
+        firemanOperationMap.clear();
+        fireRecallFloorMap.clear();
     }
 }

@@ -27,6 +27,7 @@ import top.xfunny.mod.lift.LiftDisplayDirectionState;
 import top.xfunny.mod.lift.LiftDisplayState;
 import top.xfunny.mod.lift.LiftFloorRegistry;
 import top.xfunny.mod.lift.LiftLanternController;
+import top.xfunny.mod.lift.LiftModeState;
 import top.xfunny.mod.util.TransformPositionX;
 import top.xfunny.mixin.MixinLiftSchema;
 
@@ -106,7 +107,7 @@ public abstract class LiftButtonsBase extends BlockExtension implements Directio
                         final boolean[] availableHallLift = {false};
                         data.trackPositions.forEach(trackPosition -> MinecraftClientData.getInstance().lifts.forEach(lift -> {
                             if (lift.getFloorIndex(Init.blockPosToPosition(trackPosition)) >= 0
-                                    && YteLiftConfigStore.getServiceMode(lift.getId()).acceptsHallCalls()) {
+                                    && LiftModeState.canAcceptHallCall(lift.getId())) {
                                 availableHallLift[0] = true;
                             }
                         }));
@@ -413,7 +414,7 @@ public abstract class LiftButtonsBase extends BlockExtension implements Directio
                     trackPosition, ignored -> new java.util.HashMap<>());
 
             for (Lift lift : MinecraftClientData.getInstance().lifts) {
-                if (YteLiftConfigStore.getServiceMode(lift.getId()).hidesHallDisplay()) {
+                if (LiftModeState.getMode(lift.getId()) == LiftModeState.LiftMode.ATTENDANT) {
                     continue;
                 }
                 final int floorIndex = lift.getFloorIndex(Init.blockPosToPosition(trackPosition));

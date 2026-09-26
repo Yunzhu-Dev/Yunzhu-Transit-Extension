@@ -5,8 +5,13 @@ import org.mtr.mapping.holder.NativeImage;
 import org.mtr.mapping.holder.NativeImageFormat;
 import org.mtr.mod.config.Config;
 import org.mtr.mod.data.IGui;
+import top.xfunny.mod.client.font.FontFeatureLayout;
+import top.xfunny.mod.client.font.FontFeature;
+import top.xfunny.mod.client.font.GsubParser;
 
 import java.awt.*;
+import java.awt.font.GlyphVector;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.util.AbstractMap;
@@ -16,6 +21,11 @@ import java.util.Map;
 public class FontResourceGenerator implements IGui {
 
     public static NativeImage generateNativeImage(String text, int textColor, Font font, float fontSize, int padding, float letterSpacing) {
+        return generateNativeImage(text, textColor, font, fontSize, padding, letterSpacing, GsubParser.EMPTY, new FontFeature[0]);
+    }
+
+    public static NativeImage generateNativeImage(String text, int textColor, Font font, float fontSize, int padding, float letterSpacing,
+                                                  GsubParser substitutions, FontFeature... features) {
         // 绝对不改动原有的基础缩放和画布大小，保证所有配件渲染正常
         int baseScale = (int) Math.pow(2, Config.getClient().getDynamicTextureResolution() + 5);
         float sizeScaleFactor = 0.8f;
@@ -31,7 +41,8 @@ public class FontResourceGenerator implements IGui {
                     scaledFontSize,
                     padding,
                     font,
-                    Math.round(letterSpacing * sizeScaleFactor)
+                    Math.round(letterSpacing * sizeScaleFactor),
+                    substitutions, features
             );
 
             // 严格维持 1.5F 的高度比例
@@ -53,7 +64,8 @@ public class FontResourceGenerator implements IGui {
         }
     }
 
-    private static Map.Entry<int[], byte[]> getTextPixels(String text, int[] dimensions, float fontSize, int padding, Font font, int letterSpacing) {
+    private static Map.Entry<int[], byte[]> getTextPixels(String text, int[] dimensions, float fontSize, int padding, Font font, int letterSpacing,
+                                                          GsubParser substitutions, FontFeature[] features) {
         try {
             BufferedImage tempImage = new BufferedImage(1, 1, BufferedImage.TYPE_BYTE_GRAY);
             Graphics2D g2d = tempImage.createGraphics();
@@ -61,8 +73,16 @@ public class FontResourceGenerator implements IGui {
             g2d.setFont(renderFont);
 
             FontMetrics metrics = g2d.getFontMetrics();
+            boolean useFeatures = false;
+            for (FontFeature feature : features) useFeatures |= substitutions.supports(feature.getTag());
+            g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            final GlyphVector glyphs = useFeatures ? FontFeatureLayout.create(renderFont, g2d.getFontRenderContext(), text, substitutions, features, letterSpacing) : null;
+            final Rectangle2D glyphBounds = glyphs == null ? null : glyphs.getVisualBounds();
+            final int leftBearing = glyphBounds == null ? 0 : (int) Math.floor(Math.min(0, glyphBounds.getMinX()));
             int textWidth = 0;
-            if (letterSpacing == 0) {
+            if (glyphs != null) {
+                textWidth = (int) Math.ceil(Math.max(glyphBounds.getMaxX(), glyphs.getGlyphPosition(glyphs.getNumGlyphs()).getX())) - leftBearing;
+            } else if (letterSpacing == 0) {
                 textWidth = metrics.stringWidth(text);
             } else {
                 for (char c : text.toCharArray()) {
@@ -72,11 +92,13 @@ public class FontResourceGenerator implements IGui {
             }
 
             int textHeight = metrics.getHeight();
+            g2d.dispose();
+            tempImage.flush();
 
             // 【修改点】：直接给 64 像素的超大安全缓冲（上下各 32 像素）
             int vBuffer = 64;
 
-            int calculatedWidth = textWidth + 2 * padding;
+            int calculatedWidth = Math.max(1, textWidth + 2 * padding);
             int calculatedHeight = textHeight + 2 * padding + vBuffer;
 
             dimensions[0] = calculatedWidth;
@@ -92,7 +114,9 @@ public class FontResourceGenerator implements IGui {
             // 【修改点】：基线直接硬下移 32 像素，这下任何字体都绝对不可能突破顶部了
             int y = padding + metrics.getAscent() + 32;
 
-            if (letterSpacing == 0) {
+            if (glyphs != null) {
+                g2d.drawGlyphVector(glyphs, x - leftBearing, y);
+            } else if (letterSpacing == 0) {
                 g2d.drawString(text, x, y);
             } else {
                 for (char c : text.toCharArray()) {
@@ -107,6 +131,7 @@ public class FontResourceGenerator implements IGui {
 
             return new AbstractMap.SimpleEntry<>(dimensions, pixels);
         } catch (Exception e) {
+            top.xfunny.mod.Init.LOGGER.error("Unable to rasterize font text", e);
             dimensions[0] = 0;
             dimensions[1] = 0;
             return new AbstractMap.SimpleEntry<>(dimensions, new byte[0]);

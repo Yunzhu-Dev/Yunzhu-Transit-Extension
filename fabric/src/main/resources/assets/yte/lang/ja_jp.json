@@ -442,7 +442,7 @@
   "gui.yte.lift_arrival_lantern_trigger_door_open": "ランタン点灯：戸開時",
   "gui.yte.lift_service_mode_normal": "運転モード：通常運転",
   "gui.yte.lift_service_mode_independent": "運転モード：専用運転",
-  "gui.yte.lift_service_mode_driver": "運転モード：手動運転",
+  "gui.yte.lift_service_mode_attendant": "運転モード：手動運転",
   "gui.yte.lift_hold_open": "開延長",
   "gui.yte.lift_number": "バンク内号機番号",
   "gui.yte.lift_tab_base": "基本設定",

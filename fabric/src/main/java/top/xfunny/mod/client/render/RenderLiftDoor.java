@@ -13,6 +13,7 @@ import org.mtr.mod.data.IGui;
 import org.mtr.mod.render.QueuedRenderLayer;
 import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.client.view.DirectRenderer;
+import top.xfunny.mod.lift.LiftDoorState;
 
 public class RenderLiftDoor<T extends BlockAPGDoor.BlockEntityBase> extends BlockEntityRenderer<T> implements IGui, IBlock {
 
@@ -42,7 +43,7 @@ public class RenderLiftDoor<T extends BlockAPGDoor.BlockEntityBase> extends Bloc
         final boolean side = IBlock.getStatePropertySafe(world, blockPos, BlockPSDAPGDoorBase.SIDE) == EnumSide.RIGHT;
         final boolean half = IBlock.getStatePropertySafe(world, blockPos, BlockPSDAPGDoorBase.HALF) == DoubleBlockHalf.UPPER;
         final boolean unlocked = IBlock.getStatePropertySafe(world, blockPos, BlockPSDAPGDoorBase.UNLOCKED);
-        final double open = Math.min(entity.getDoorValue(), type >= 3 ? 0.75F : 1);//todo
+        final double open = Math.min(entity.getDoorValue(), LiftDoorState.DOOR_MAX_OPEN_SCALE);
 
 
         final StoredMatrixTransformations storedMatrixTransformations = new StoredMatrixTransformations(0.5, 0, 0.5);
@@ -53,24 +54,24 @@ public class RenderLiftDoor<T extends BlockAPGDoor.BlockEntityBase> extends Bloc
 
         storedMatrixTransformations.add(matricesNew -> matricesNew.translate(open * (side ? -1 : 1), 0, 0));
 
+        final String texturePrefix;
         switch (type) {
-            case 0:
-            case 3:
-                renderDoor(new Identifier(String.format("yte:textures/block/schindler_qks9_door_%s_%s_1.png", half ? "top" : "bottom", side ? "right" : "left")), storedMatrixTransformations, side, half, unlocked, light, overlay);
-                break;
             case 5:
-                renderDoor(new Identifier(String.format("yte:textures/block/mitsubishi_nexway_door_%s_%s_1.png", half ? "top" : "bottom", side ? "right" : "left")), storedMatrixTransformations, side, half, unlocked, light, overlay);
+                texturePrefix = "mitsubishi_nexway_door";
                 break;
             case 6:
-                renderDoor(new Identifier(String.format("yte:textures/block/kone_m_door_%s_%s_1.png", half ? "top" : "bottom", side ? "right" : "left")), storedMatrixTransformations, side, half, unlocked, light, overlay);
+                texturePrefix = "kone_m_door";
                 break;
             case 7:
-                renderDoor(new Identifier(String.format("yte:textures/block/hitachi_b85_door_%s_%s_1.png", half ? "top" : "bottom", side ? "right" : "left")), storedMatrixTransformations, side, half, unlocked, light, overlay);
+                texturePrefix = "hitachi_b85_door";
                 break;
             case 8:
-                renderDoor(new Identifier(String.format("yte:textures/block/otis_e411_us_door_%s_%s_1.png", half ? "top" : "bottom", side ? "right" : "left")), storedMatrixTransformations, side, half, unlocked, light, overlay);
+                texturePrefix = "otis_e411_us_door";
                 break;
+            default:
+                texturePrefix = "schindler_qks9_door";
         }
+        renderDoor(new Identifier(String.format("yte:textures/block/%s_%s_%s_1.png", texturePrefix, half ? "top" : "bottom", side ? "right" : "left")), storedMatrixTransformations, side, half, unlocked, light, overlay);
     }
 
     private void renderDoor(Identifier doorTexture, StoredMatrixTransformations storedMatrixTransformations, boolean side, boolean half, boolean unlocked, int light, int overlay) {

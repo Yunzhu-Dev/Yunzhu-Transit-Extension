@@ -21,8 +21,6 @@ public final class GuiHelper {
     private GuiHelper() {
     }
 
-    // MTR mapping 层没有调用 Screen.init() 清除 children，resize 时子控件会累积。
-    // 兼容 Fabric (Yarn: clearChildren) 和 Forge (Mojang: clearWidgets)。
     public static void clearScreenChildren(ScreenExtension screen) {
         if (screen == null) {
             return;

@@ -9,9 +9,9 @@ import org.mtr.mod.render.RenderLifts;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import top.xfunny.mod.lift.LiftModeState;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
-import top.xfunny.mod.config.YteLiftConfigStore;
 
 @Mixin(value = RenderLiftButtons.class, remap = false)
 public class MixinRenderLiftButtons {
@@ -21,7 +21,7 @@ public class MixinRenderLiftButtons {
     )
     private void yte$renderBlankDriverModeDisplay(org.mtr.mod.render.StoredMatrixTransformations transformations,
             World world, Lift lift, float width, float height) {
-        if (!YteLiftConfigStore.getServiceMode(lift.getId()).hidesHallDisplay()) {
+        if (LiftModeState.getMode(lift.getId()) != LiftModeState.LiftMode.ATTENDANT) {
             RenderLifts.renderLiftDisplay(transformations, world, lift, width, height);
         }
     }
