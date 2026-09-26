@@ -37,6 +37,13 @@ public class MixinBlockEntityRenderer {
     @Inject(method = "lambda$render$0", at = @At("HEAD"), cancellable = true)
     private void yte$cullFarEntities(BlockEntityExtension entity, float tickDelta, int light, int overlay,
             GraphicsHolder graphicsHolder, CallbackInfo ci) {
+        // HEAD 先建立直接绘制上下文；取消渲染时 TAIL 不会执行，必须在这里清理。
+        DirectRenderer.setGraphicsHolder(null);
+        if (DirectRenderer.shadowPass && this.getClass().getName().startsWith("top.xfunny")) {
+            ci.cancel();
+            return;
+        }
+        DirectRenderer.setGraphicsHolder(graphicsHolder);
         final BlockPos pos = entity.getPos2();
         if (pos == null) {
             return;
@@ -49,6 +56,7 @@ public class MixinBlockEntityRenderer {
         final double dy = pos.getY() + 0.5 - player.getPos().getYMapped();
         final double dz = pos.getZ() + 0.5 - player.getPos().getZMapped();
         if (dx * dx + dy * dy + dz * dz > MAX_RENDER_DISTANCE_SQ) {
+            DirectRenderer.setGraphicsHolder(null);
             ci.cancel();
         }
     }
@@ -56,25 +64,10 @@ public class MixinBlockEntityRenderer {
     @Inject(method = "lambda$render$0", at = @At("TAIL"))
     private void yte$afterRender(BlockEntityExtension entity, float tickDelta, int light, int overlay,
             GraphicsHolder graphicsHolder, CallbackInfo ci) {
+        DirectRenderer.setGraphicsHolder(null);
         // 检查是否需要渲染提示，只调度一次
         final MinecraftClient client = MinecraftClient.getInstance();
         if (client.getPlayerMapped() == null) return;
-        final boolean isYteRenderer = this.getClass().getName().startsWith("top.xfunny");
-
-        return gh -> {
-            // 阴影通道跳过 yte 方块实体的重渲染（按钮/面板/厅灯/屏幕是自发光件，不应投阴影）
-            if (!(isYteRenderer && DirectRenderer.shadowPass)) {
-                DirectRenderer.setGraphicsHolder(gh);
-                try {
-                    original.accept(gh);
-                } finally {
-                    DirectRenderer.setGraphicsHolder(null);
-                }
-            }
-
-            // 检查是否需要渲染提示，只调度一次
-            final MinecraftClient client = MinecraftClient.getInstance();
-            if (client.getPlayerMapped() == null) return;
 
         final HitResult hit = client.getCrosshairTargetMapped();
         if (hit == null) return;

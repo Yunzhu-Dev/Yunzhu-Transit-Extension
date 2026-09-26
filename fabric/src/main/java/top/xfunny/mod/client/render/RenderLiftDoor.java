@@ -56,21 +56,14 @@ public class RenderLiftDoor<T extends BlockAPGDoor.BlockEntityBase> extends Bloc
 
         final String texturePrefix;
         switch (type) {
-            case 0:
-            case 3:
-                renderDoor(new Identifier(String.format("yte:textures/block/schindler_qks9_door_%s_%s_1.png", half ? "top" : "bottom", side ? "right" : "left")), storedMatrixTransformations, side, half, unlocked, light, overlay);
-                break;
             case 5:
                 texturePrefix = "mitsubishi_nexway_door";
-                renderDoor(new Identifier(String.format("yte:textures/block/mitsubishi_nexway_door_%s_%s_1.png", half ? "top" : "bottom", side ? "right" : "left")), storedMatrixTransformations, side, half, unlocked, light, overlay);
                 break;
             case 6:
                 texturePrefix = "kone_m_door";
-                renderDoor(new Identifier(String.format("yte:textures/block/kone_m_door_%s_%s_1.png", half ? "top" : "bottom", side ? "right" : "left")), storedMatrixTransformations, side, half, unlocked, light, overlay);
                 break;
             case 7:
                 texturePrefix = "hitachi_b85_door";
-                renderDoor(new Identifier(String.format("yte:textures/block/hitachi_b85_door_%s_%s_1.png", half ? "top" : "bottom", side ? "right" : "left")), storedMatrixTransformations, side, half, unlocked, light, overlay);
                 break;
             case 8:
                 texturePrefix = "otis_e411_us_door";
@@ -78,21 +71,7 @@ public class RenderLiftDoor<T extends BlockAPGDoor.BlockEntityBase> extends Bloc
             default:
                 texturePrefix = "schindler_qks9_door";
         }
-        MainRenderer.scheduleRender(new Identifier(String.format("yte:textures/block/%s_%s_%s_1.png", texturePrefix, half ? "top" : "bottom", side ? "right" : "left")), false, QueuedRenderLayer.EXTERIOR, (graphicsHolderNew, offset) -> {
-            storedMatrixTransformations.transform(graphicsHolderNew, offset);
-            (side ? MODEL_LIFT_RIGHT : MODEL_LIFT_LEFT).render(graphicsHolderNew, light, overlay, 1, 1, 1, 1);
-            graphicsHolderNew.pop();
-        });
-        if (half && !unlocked) {
-            MainRenderer.scheduleRender(new Identifier(Init.MOD_ID, "textures/block/sign/door_not_in_use.png"), false, QueuedRenderLayer.EXTERIOR, (graphicsHolderNew, offset) -> {
-                storedMatrixTransformations.transform(graphicsHolderNew, offset);
-                graphicsHolderNew.translate(side ? 0.125 : -0.125, 0, 0);
-                MODEL_PSD_DOOR_LOCKED.render(graphicsHolderNew, light, overlay, 1, 1, 1, 1);
-                graphicsHolderNew.pop();
-            });
-                renderDoor(new Identifier(String.format("yte:textures/block/otis_e411_us_door_%s_%s_1.png", half ? "top" : "bottom", side ? "right" : "left")), storedMatrixTransformations, side, half, unlocked, light, overlay);
-                break;
-        }
+        renderDoor(new Identifier(String.format("yte:textures/block/%s_%s_%s_1.png", texturePrefix, half ? "top" : "bottom", side ? "right" : "left")), storedMatrixTransformations, side, half, unlocked, light, overlay);
     }
 
     private void renderDoor(Identifier doorTexture, StoredMatrixTransformations storedMatrixTransformations, boolean side, boolean half, boolean unlocked, int light, int overlay) {
