@@ -69,12 +69,7 @@ public class FontList {
             // loadFont("kone-kss", "font/kone-kss-800-signalization.ttf");
             loadFont("hitachi-led-seg", "font/hitachi-cip71-led.ttf");
             loadFont("hitachi-led-seg-fix", "font/hitachi-cip71-led-left.ttf");
-            loadFont("hitachi-led-dot_matrix", "font/hitachi-dot-matrix-regular.ttf"); // 待弃用
-            loadFont("hitachi-led-dot_matrix_small_pafc", "font/hitachi-dot-matrix-small-pafc.ttf"); // 待弃用
-            loadFont("hitachi-led-dot_matrix_small", "font/hitachi-dot-matrix-small-generic.ttf"); // 待弃用
             loadFont("hitachi-bxsclc5", "font/hitachi-bxsclc5-led.ttf"); //ss01 为窄体特性，cv01为1，cv02为G（候选2同时影响L），cv03为P，cv04为7，cv05为B
-            loadFont("hitachi-bxsclc5-compact", "font/hitachi-bxsclc5-led-compact.ttf");
-            loadFont("hitachi-bxsclc5-pafc-compact", "font/hitachi-bxsclc5-led-pafc-compact.ttf"); // 深圳 PAFC 使用
             loadFont("hitachi-lcd-seg", "font/hitachi-hip31-lcd.ttf");
             loadFont("hitachi-japan-lcd", "font/hitachi-hip32-lcd.ttf");
             loadFont("hitachi-hip43", "font/hitachi-hip43-lcd.ttf"); // SCLC-LCD4、HIP-27 使用此字体

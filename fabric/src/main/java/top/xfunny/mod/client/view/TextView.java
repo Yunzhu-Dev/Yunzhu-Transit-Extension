@@ -175,33 +175,27 @@ public class TextView implements RenderView {
         this.fontFeatures = FontFeatures.normalize(features);
     }
 
-    /** Configure a stopped animation. Call startFontAnimation() to play. */
-    public void setFontAnimation(String firstCodePoint, String lastCodePoint, double framesPerSecond) {
-        this.fontAnimation = new FontAnimation(firstCodePoint, lastCodePoint, framesPerSecond);
+    /** Start at the first code point of the range. */
+    public void startFontAnimation(Object owner, String firstCodePoint, String lastCodePoint, double framesPerSecond) {
+        startFontAnimation(owner, firstCodePoint, lastCodePoint, framesPerSecond, firstCodePoint);
     }
 
-    /** Preserve playback across rebuilt views, identified by owner and this view's stable texture ID. */
-    public void setFontAnimation(Object owner, String firstCodePoint, String lastCodePoint, double framesPerSecond) {
-        this.fontAnimation = FontAnimation.forScreen(owner, textureId, firstCodePoint, lastCodePoint, framesPerSecond);
+    /** Configure and start; identical repeated calls preserve playback across rebuilt views. */
+    public void startFontAnimation(Object owner, String firstCodePoint, String lastCodePoint,
+                                   double framesPerSecond, String startCodePoint) {
+        final FontAnimation animation = FontAnimation.forScreen(owner, textureId, firstCodePoint, lastCodePoint, framesPerSecond);
+        animation.start(Math.max(0, org.mtr.mod.InitClient.getGameTick()) / 20D, startCodePoint);
+        this.fontAnimation = animation;
     }
 
-    public void startFontAnimation() {
-        if (fontAnimation == null) throw new IllegalStateException("Configure a font animation before starting it");
-        fontAnimation.start(Math.max(0, org.mtr.mod.InitClient.getGameTick()) / 20D);
-    }
-
-    /** Restore ordinary text, keeping the range available for another start from frame one. */
-    public void stopFontAnimation() {
-        if (fontAnimation != null) fontAnimation.stop();
-    }
-
-    public boolean isFontAnimationRunning() {
-        return fontAnimation != null && fontAnimation.isRunning();
-    }
-
-    public void clearFontAnimation() {
-        stopFontAnimation();
+    /** Remove saved playback and restore ordinary text. Shared glyph textures remain cached. */
+    public void stopFontAnimation(Object owner) {
+        FontAnimation.removeScreen(owner, textureId);
         this.fontAnimation = null;
+    }
+
+    private boolean isFontAnimationRunning() {
+        return fontAnimation != null && fontAnimation.isRunning();
     }
 
     public void setAdaptMode(AdaptMode adaptMode) {

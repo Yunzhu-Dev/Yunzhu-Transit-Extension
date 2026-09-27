@@ -8,6 +8,7 @@ public final class FontAnimation {
     private final String last;
     private final int firstCodePoint;
     private final int frameCount;
+    private int startOffset;
     private final double framesPerSecond;
     private boolean running;
     private double startedAt;
@@ -25,12 +26,33 @@ public final class FontAnimation {
         return replacement;
     }
 
+    /** Remove playback, including when the caller is a freshly rebuilt view. */
+    public static void removeScreen(Object owner, String slot) {
+        java.util.Objects.requireNonNull(owner, "owner");
+        java.util.Objects.requireNonNull(slot, "slot");
+        final java.util.Map<String, FontAnimation> slots = OWNED.get(owner);
+        if (slots == null) return;
+        final FontAnimation animation = slots.remove(slot);
+        if (animation != null) animation.stop();
+        if (slots.isEmpty()) OWNED.remove(owner);
+    }
+
     /** Repeated starts while running preserve the current playback. Time is in seconds. */
     public void start(double currentSeconds) {
+        start(currentSeconds, first);
+    }
+
+    /** Hexadecimal start code point. Repeated starts preserve the current playback. */
+    public void start(double currentSeconds, String startCodePoint) {
+        final int offset = parseCodePoint(startCodePoint) - firstCodePoint;
+        if (offset < 0 || offset >= frameCount) {
+            throw new IllegalArgumentException("Start code point must be within the animation range");
+        }
         if (!Double.isFinite(currentSeconds) || currentSeconds < 0) {
             throw new IllegalArgumentException("Animation clock must be finite and nonnegative");
         }
         if (!running) {
+            this.startOffset = offset;
             startedAt = currentSeconds;
             running = true;
         }
@@ -79,7 +101,7 @@ public final class FontAnimation {
         // Reduce time before multiplication so even long-running clocks stay within the cycle.
         final double duration = frameCount / framesPerSecond;
         final int frame = (int) Math.min(frameCount - 1, Math.floor((elapsedSeconds % duration) * framesPerSecond));
-        return new String(Character.toChars(firstCodePoint + frame));
+        return new String(Character.toChars(firstCodePoint + (frame + startOffset) % frameCount));
     }
 
     public int getFrameCount() {

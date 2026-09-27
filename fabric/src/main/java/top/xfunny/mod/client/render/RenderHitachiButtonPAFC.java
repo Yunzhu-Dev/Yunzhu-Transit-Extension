@@ -28,6 +28,8 @@ import top.xfunny.mod.util.ReverseRendering;
 
 import java.util.Comparator;
 
+import static top.xfunny.mod.client.font.FontFeatures.*;
+
 public class RenderHitachiButtonPAFC extends BlockEntityRenderer<HitachiButtonPAFC.BlockEntity> implements DirectionHelper, IGui, IBlock {
 
     private static final int HOVER_COLOR = 0xFFAAAAAA;
@@ -208,14 +210,8 @@ public class RenderHitachiButtonPAFC extends BlockEntityRenderer<HitachiButtonPA
 
 
                 if (liftFloorDisplayView.getTextLength() >= 3) {
-                    liftFloorDisplayView.setBasicsAttributes(world,
-                            blockPos,
-                            sortedPositionsAndLifts.get(i).right(),
-                            FontList.instance.getFont("hitachi-bxsclc5-pafc-compact"),
-                            5.8F,
-                            0xFFFF4800);
-                    liftFloorDisplayView.setMargin(0.008F, 0.7F / 16, 0, 0);
-                    liftFloorDisplayView.setAdaptMode(LiftFloorDisplayView.AdaptMode.FORCE_FIT_WIDTH);
+                    liftFloorDisplayView.setFontFeatures(ss01,cv01,cv02,cv03,cv04);
+                    liftFloorDisplayView.setAdaptMode(LiftFloorDisplayView.AdaptMode.FIT_WIDTH);
                 } else {
                     liftFloorDisplayView.setAdaptMode(LiftFloorDisplayView.AdaptMode.ASPECT_FILL);
                 }

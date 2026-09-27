@@ -210,13 +210,14 @@ public class RenderHitachiVIB320ButtonDotMatrix extends BlockEntityRenderer<Hita
                 liftFloorDisplayView.setHeight(1.7F / 16);
                 liftFloorDisplayView.setMargin(0.01F, 0, 0, 0);
                 liftFloorDisplayView.setTextAlign(TextView.HorizontalTextAlign.CENTER);
-                liftFloorDisplayView.setFontAnimation(blockEntity, "E064", "E095", 5);
                 liftFloorDisplayView.addStoredMatrixTransformations(graphicsHolder -> graphicsHolder.translate(0, 0, -SMALL_OFFSET));
+
+                // TODO: 测试代码
                 if (!unlocked){
-                    liftFloorDisplayView.startFontAnimation();
+                    liftFloorDisplayView.startFontAnimation(blockEntity, "E064", "E095", 5, "E092");
                     liftFloorDisplayView.setAdaptMode(LiftFloorDisplayView.AdaptMode.FIT_WIDTH);
                 } else {
-                    liftFloorDisplayView.stopFontAnimation();
+                    liftFloorDisplayView.stopFontAnimation(blockEntity);
                     if (liftFloorDisplayView.getTextLength() >= 3) {
                         liftFloorDisplayView.setFontFeatures(ss01);
                         liftFloorDisplayView.setAdaptMode(LiftFloorDisplayView.AdaptMode.FIT_WIDTH);
