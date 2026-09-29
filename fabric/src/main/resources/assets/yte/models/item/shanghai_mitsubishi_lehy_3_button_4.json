@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "yte:item/shanghai_mitsubishi_lehy_3_button_4"
+  }
+}

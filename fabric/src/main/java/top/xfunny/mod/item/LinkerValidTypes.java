@@ -230,6 +230,7 @@ public class LinkerValidTypes {
             ShanghaiMitsubishiLehy3Button1WithoutScreen.class,
             ShanghaiMitsubishiLehy3Button2.class,
             ShanghaiMitsubishiLehy3Button3LCD.class,
+            ShanghaiMitsubishiLehy3Button4.class,
             ShanghaiMitsubishiLehy3Screen1Odd.class,
             ShanghaiMitsubishiLehy3Screen1Even.class,
             ShanghaiMitsubishiLehy3Screen1WideOdd.class,

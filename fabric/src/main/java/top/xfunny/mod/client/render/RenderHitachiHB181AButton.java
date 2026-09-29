@@ -28,13 +28,13 @@ import java.util.Comparator;
 
 public class RenderHitachiHB181AButton extends BlockEntityRenderer<HitachiHB181AButton.BlockEntity> implements DirectionHelper, IGui, IBlock {
 
-    private static final int HOVER_COLOR = 0xAAFFFFFF;
-    private static final int PRESSED_COLOR = 0xFFFFFFFF;
-    private static final int DEFAULT_COLOR = 0x00FFFFFF;
-    private static final Identifier BUTTON_UP_TEXTURE = new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/wl_mw_up.png");
-    private static final Identifier LIGHT_UP_TEXTURE = new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/wl_mw_up_light.png");
-    private static final Identifier BUTTON_DOWN_TEXTURE = new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/wl_mw_down.png");
-    private static final Identifier LIGHT_DOWN_TEXTURE = new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/wl_mw_down_light.png");
+    private static final int HOVER_COLOR = 0xDF7cc0f7; //偏蓝，和d7e6f5形成对比
+    private static final int PRESSED_COLOR = 0xFFd7e6f5; //按下后的冷白光
+    private static final int DEFAULT_COLOR = 0x7E7a7d82; //这是一个always on按钮
+    private static final Identifier BUTTON_UP_TEXTURE = new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/ul_mw_up.png");
+    private static final Identifier LIGHT_UP_TEXTURE = new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/ul_mw_up_light.png");
+    private static final Identifier BUTTON_DOWN_TEXTURE = new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/ul_mw_down.png");
+    private static final Identifier LIGHT_DOWN_TEXTURE = new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/ul_mw_down_light.png");
     private static final BooleanProperty UNLOCKED = BooleanProperty.of("unlocked");
 
     public RenderHitachiHB181AButton(Argument dispatcher) {
@@ -128,10 +128,10 @@ public class RenderHitachiHB181AButton extends BlockEntityRenderer<HitachiHB181A
         buttonUpLight.setDimension(1F / 16);
         buttonUpLight.setGravity(Gravity.CENTER);
         buttonUpLight.setLight(light);
-        buttonUpLight.setDefaultColor(DEFAULT_COLOR);
+        buttonUpLight.setDefaultColor(DEFAULT_COLOR,true);
         buttonUpLight.setHoverColor(HOVER_COLOR);
         buttonUpLight.setPressedColor(PRESSED_COLOR);
-        SoundPlaybackManager.registerButtonSound(buttonUpLight,"hitachi_wlmw_button_1");
+        SoundPlaybackManager.registerButtonSound(buttonUpLight,"hitachi_ulmw_button_1");
 
         ImageView buttonDown = new ImageView();
         buttonDown.setBasicsAttributes(world, blockPos);
@@ -148,11 +148,11 @@ public class RenderHitachiHB181AButton extends BlockEntityRenderer<HitachiHB181A
         buttonDownLight.setDimension(1F / 16);
         buttonDownLight.setGravity(Gravity.CENTER);
         buttonDownLight.setLight(light);
-        buttonDownLight.setDefaultColor(DEFAULT_COLOR);
+        buttonDownLight.setDefaultColor(DEFAULT_COLOR,true);
         buttonDownLight.setHoverColor(HOVER_COLOR);
         buttonDownLight.setPressedColor(PRESSED_COLOR);
         buttonDownLight.setFlip(false, false);
-        SoundPlaybackManager.registerButtonSound(buttonDownLight,"hitachi_wlmw_button_1");
+        SoundPlaybackManager.registerButtonSound(buttonDownLight,"hitachi_ulmw_button_1");
 
         final LineComponent line = new LineComponent();
         line.setBasicsAttributes(world, blockPos);

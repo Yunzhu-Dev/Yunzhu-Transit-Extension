@@ -152,6 +152,7 @@ public final class BlockFixtures {
         add("shanghai_mitsubishi_lehy_3_button_1_without_screen", () -> new Block(new ShanghaiMitsubishiLehy3Button1WithoutScreen()));
         add("shanghai_mitsubishi_lehy_3_button_2", () -> new Block(new ShanghaiMitsubishiLehy3Button2()));
         add("shanghai_mitsubishi_lehy_3_button_3_lcd", () -> new Block(new ShanghaiMitsubishiLehy3Button3LCD()));
+        add("shanghai_mitsubishi_lehy_3_button_4", () -> new Block(new ShanghaiMitsubishiLehy3Button4()));
         add("shanghai_mitsubishi_lehy_3_screen_1_odd", () -> new Block(new ShanghaiMitsubishiLehy3Screen1Odd()));
         add("shanghai_mitsubishi_lehy_3_screen_1_even", () -> new Block(new ShanghaiMitsubishiLehy3Screen1Even()));
         add("shanghai_mitsubishi_lehy_3_screen_1_wide_odd", () -> new Block(new ShanghaiMitsubishiLehy3Screen1WideOdd()));

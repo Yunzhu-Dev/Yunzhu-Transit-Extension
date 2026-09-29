@@ -184,6 +184,7 @@ public final class InitClient {
         REGISTRY_CLIENT.registerBlockEntityRenderer(BlockEntityTypes.SHANGHAI_MITSUBISHI_LEHY_3_BUTTON_1_WITHOUT_SCREEN, RenderShanghaiMitsubishiLehy3Button1WithoutScreen::new);
         REGISTRY_CLIENT.registerBlockEntityRenderer(BlockEntityTypes.SHANGHAI_MITSUBISHI_LEHY_3_BUTTON_2, RenderShanghaiMitsubishiLehy3Button2::new);
         REGISTRY_CLIENT.registerBlockEntityRenderer(BlockEntityTypes.SHANGHAI_MITSUBISHI_LEHY_3_BUTTON_3_LCD, RenderShanghaiMitsubishiLehy3Button3LCD::new);
+        REGISTRY_CLIENT.registerBlockEntityRenderer(BlockEntityTypes.SHANGHAI_MITSUBISHI_LEHY_3_BUTTON_4, RenderShanghaiMitsubishiLehy3Button4::new);
         REGISTRY_CLIENT.registerBlockEntityRenderer(BlockEntityTypes.SHANGHAI_MITSUBISHI_LEHY_3_SCREEN_1_EVEN, dispatcher -> new top.xfunny.mod.client.render.RenderShanghaiMitsubishiLehy3Screen1<>(dispatcher, false));
         REGISTRY_CLIENT.registerBlockEntityRenderer(BlockEntityTypes.SHANGHAI_MITSUBISHI_LEHY_3_SCREEN_1_ODD, dispatcher -> new top.xfunny.mod.client.render.RenderShanghaiMitsubishiLehy3Screen1<>(dispatcher, true));
         REGISTRY_CLIENT.registerBlockEntityRenderer(BlockEntityTypes.SHANGHAI_MITSUBISHI_LEHY_3_SCREEN_1_WIDE_EVEN, dispatcher -> new top.xfunny.mod.client.render.RenderShanghaiMitsubishiLehy3Screen1Wide<>(dispatcher, false));
