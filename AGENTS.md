@@ -18,7 +18,7 @@ Yunzhu Transit Extension（模组 ID：`yte`）是 Minecraft Transit Railway（M
 | `libs/` | 本地 MTR server JAR 依赖缓存，按 loader/MC 版本命名 | 视为二进制依赖；不随意替换、重命名或提交生成物。 |
 | `deploy.gradle` | 跨版本构建、下载、部署与启动验证自动化 | 会访问网络、读取/写入外部 Minecraft 目录并可启动客户端；执行前确认参数与目标路径。 |
 | `gradle.properties` | 默认 MC/MTR/项目版本及部署矩阵 | 使用 `-PminecraftVersion=...` 等属性临时覆盖，避免无意修改默认矩阵。 |
-| `README*.md` | 面向用户的中英文说明与字体许可说明 | 新增用户可见功能时同步更新；许可证表不可随意删除。 |
+| `README*.md` | 面向用户的中英文说明与字体许可说明 | 许可证表不可随意删除。 |
 
 根目录的 `build/`、`.gradle/`、IDE 配置、`fabric/run/`、Forge 从 Fabric 同步的目录、`fabric.mod.json` 与 `Keys.java` 均为忽略的构建/运行产物，通常不提交。
 
@@ -59,8 +59,6 @@ Yunzhu Transit Extension（模组 ID：`yte`）是 Minecraft Transit Railway（M
 
 `deployForTesting` 可能从 Modrinth 下载 MTR，`testLaunch` 会执行外部 PowerShell 启动脚本，`fullTest` 会部署后再启动验证。它们不是纯单元测试，不能在未确认用户的外部目录、网络下载和客户端启动意图时盲目运行。`buildAllVersions` 会为每一个版本启动子 Gradle 进程，耗时和资源开销均较高。
 
-质量验证以可编译性、资源/注册一致性和真实客户端/服务器冒烟验证为主。`fabric/src/test/java/top/xfunny/mod/client/font/` 中的 `FontFeaturesTest` 和 `UnicodeFontAnimationTest` 是不依赖测试库的字体回归 main 程序，须按 `FONT_FEATURES.md` 手动编译运行；Gradle 默认 test 不会执行这些 main。
-
 ### 终端与长运行进程约束
 
 - 会正常退出的文件查看、Git、依赖安装和 Gradle 构建命令可前台执行，以便读取错误输出。
@@ -98,7 +96,7 @@ Yunzhu Transit Extension（模组 ID：`yte`）是 Minecraft Transit Railway（M
 
 方块实体渲染使用 `MixinBlockEntityRenderer` 对映射层 `lambda$render$0` 的 HEAD/TAIL 注入：HEAD 做距离/阴影裁剪并建立 `DirectRenderer` 上下文，TAIL 清理上下文并调度连接提示；取消渲染不会执行 TAIL，取消路径必须自行清理。View 与电梯门使用局部坐标直接绘制，不能混入世界坐标的延迟绘制。门扇开度保留 `LiftDoorState.DOOR_MAX_OPEN_SCALE`，与门控和碰撞箱保持一致。
 
-AWT 动态文字的 `TextView.setFontFeatures(ss01, cv01)` 使用 `client.font.FontFeatures` 中的非枚举 `FontFeature` 常量，支持 SS/CV 的 GSUB Type 1 单替换、Type 3 候选替换及其 Type 7 包装；CV 编号写为 `cv02(2)`，默认候选为 1，不提供字符串启用接口。解析器使用 latn（不存在时 DFLT）的默认 LangSys，不是完整 shaping 引擎；限制及测试见 `FONT_FEATURES.md`。`FontList` 将原始 Font 对象绑定到同一资源的解析结果；渲染线程取得不可变结果后交给 worker。纹理键必须包含字体资源/重载代数和启用特性及候选编号，不能退回只按文字缓存。
+AWT 动态文字的 `TextView.setFontFeatures(ss01, cv01)` 使用 `client.font.FontFeatures` 中的非枚举 `FontFeature` 常量，支持 SS/CV 的 GSUB Type 1 单替换、Type 3 候选替换及其 Type 7 包装；CV 编号写为 `cv02(2)`，默认候选为 1，不提供字符串启用接口。解析器使用 latn（不存在时 DFLT）的默认 LangSys，不是完整 shaping 引擎；`FontList` 将原始 Font 对象绑定到同一资源的解析结果；渲染线程取得不可变结果后交给 worker。纹理键必须包含字体资源/重载代数和启用特性及候选编号，不能退回只按文字缓存。
 
 字体动画仅提供 `TextView.startFontAnimation(blockEntity, "E082", "E0B3", 5, "E092")` 与 `stopFontAnimation(blockEntity)`：Start 可省略最后的启动码位，默认从范围首码位开始。一次配置并启动，范围含首尾，速度为 FPS，从指定码位开始并循环；播放中重复调用不重置。先设置稳定 texture ID；内部按弱引用 owner 与 ID 保存独立播放状态，stop 移除该条目并恢复普通文字，下一次 start 创建新状态。没有 set/clear 或按帧数启动接口。共享字形纹理继续缓存，不能把播放时间加入纹理键；继承 View 的模式隐藏逻辑不变。
 
@@ -152,7 +150,7 @@ Mixin 配置为 `fabric/src/main/resources/yte.mixins.json`，并会复制到 Fo
 - 先复用现有领域类、基类和工具；不要为单个按钮/屏幕复制一套不兼容的状态机。
 - 在复杂状态转换、Mixin 注入原因、线程边界、持久化兼容处写注释；不要写陈述性噪音注释。
 - 新日志使用 `Init.LOGGER` 或 `YteCoreLogger`；不要新增 `System.out.println`。现有调试输出和 TODO 是历史债务，不应被无关改动扩散。
-- **非必要不得更改非项目业务代码或基础设施文件**，包括根/子项目的 `build.gradle`、`settings.gradle`、`gradle.properties`、`deploy.gradle`、Gradle wrapper、`buildSrc/`、依赖 JAR 与构建/发布脚本。只有当用户需求确实要求构建、依赖、版本、发布或跨加载器生成流程变更时，才以最小范围修改，并说明影响与验证方式。
+- **非必要不得更改非项目业务代码或基础设施文件**，包括根/子项目的 `build.gradle`、`settings.gradle`、`gradle.properties`、`deploy.gradle`、Gradle wrapper、`buildSrc/`、依赖 JAR 与构建/发布脚本。只有当用户需求确实要求构建、依赖、版本、发布或跨加载器生成流程变更时，需请求用户后才以最小范围修改，并说明影响与验证方式。
 - 若本次更新改变了项目结构、模块所有权、构建/运行方式、数据流、领域不变量、Mixin 约束、验证流程或其他本文件描述的事实，必须在同一变更中同步更新或补充 `AGENTS.md` 的相关部分；不要让代理说明滞后于代码。
 - 不要提交生成的 `Keys.java`、`fabric.mod.json`、运行存档、构建输出、IDE 元数据或 Forge 的从 Fabric 复制内容。
 - 工作树当前可能包含用户未提交改动或本地脚本/资源；修改前先用 `git status --short` 与 `git diff` 确认范围，绝不重置、覆盖或清理无关改动。
