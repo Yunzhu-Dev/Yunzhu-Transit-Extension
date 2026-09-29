@@ -8,7 +8,7 @@ import org.mtr.mapping.holder.World;
 import org.mtr.mod.Init;
 import org.mtr.mod.InitClient;
 import top.xfunny.mod.util.ClientGetLiftDetails;
-import top.xfunny.mod.config.YteLiftConfigStore;
+import top.xfunny.mod.lift.LiftModeState;
 
 public class LiftArrowView extends ImageView {
     private Lift lift;
@@ -19,7 +19,7 @@ public class LiftArrowView extends ImageView {
 
     @Override
     public void render() {
-        if (YteLiftConfigStore.getServiceMode(lift.getId()).hidesHallDisplay()) {
+        if (LiftModeState.getMode(lift.getId()) == LiftModeState.LiftMode.ATTENDANT) {
             return;
         }
         float gameTick = InitClient.getGameTick();

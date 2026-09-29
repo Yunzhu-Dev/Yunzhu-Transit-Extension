@@ -30,7 +30,10 @@ import top.xfunny.mod.util.ReverseRendering;
 
 import java.util.Comparator;
 
+import static top.xfunny.mod.client.font.FontFeatures.ss01;
+
 public class RenderHitachiVIB320ButtonDotMatrix extends BlockEntityRenderer<HitachiVIB320ButtonDotMatrix.BlockEntity> implements DirectionHelper, IGui, IBlock {
+
 
     private static final int HOVER_COLOR = 0xAAFFFFFF;
     private static final int PRESSED_COLOR = 0xFFFFFFFF;
@@ -208,16 +211,19 @@ public class RenderHitachiVIB320ButtonDotMatrix extends BlockEntityRenderer<Hita
                 liftFloorDisplayView.setMargin(0.01F, 0, 0, 0);
                 liftFloorDisplayView.setTextAlign(TextView.HorizontalTextAlign.CENTER);
                 liftFloorDisplayView.addStoredMatrixTransformations(graphicsHolder -> graphicsHolder.translate(0, 0, -SMALL_OFFSET));
-                if (liftFloorDisplayView.getTextLength() >= 3) {
-                    liftFloorDisplayView.setBasicsAttributes(world,
-                            blockPos,
-                            sortedPositionsAndLifts.get(i).right(),
-                            FontList.instance.getFont("hitachi-bxsclc5-compact"),
-                            6F,
-                            0xFFFF4800);
+
+                // TODO: 测试代码
+                if (!unlocked){
+                    liftFloorDisplayView.startFontAnimation(blockEntity, "E064", "E095", 5, "E092");
                     liftFloorDisplayView.setAdaptMode(LiftFloorDisplayView.AdaptMode.FIT_WIDTH);
                 } else {
-                    liftFloorDisplayView.setAdaptMode(LiftFloorDisplayView.AdaptMode.ASPECT_FILL);
+                    liftFloorDisplayView.stopFontAnimation(blockEntity);
+                    if (liftFloorDisplayView.getTextLength() >= 3) {
+                        liftFloorDisplayView.setFontFeatures(ss01);
+                        liftFloorDisplayView.setAdaptMode(LiftFloorDisplayView.AdaptMode.FIT_WIDTH);
+                    } else {
+                        liftFloorDisplayView.setAdaptMode(LiftFloorDisplayView.AdaptMode.ASPECT_FILL);
+                    }
                 }
 
 

@@ -19,12 +19,13 @@ public class CategoryItem extends BaseListItem {
     }
 
     @Override
-    public void draw(GraphicsHolder graphicsHolder, GuiDrawing guiDrawing, int entryX, int entryY, int width, int height, int mouseX, int mouseY, boolean widgetVisible, float tickDelta) {
-        GuiHelper.drawRectangle(guiDrawing, entryX, entryY, width, this.height, 0x99999999);
-        graphicsHolder.drawCenteredText(title, (entryX + width / 2), entryY - (8 / 2) + (this.height / 2), 0xFFFFFFFF);
+    public void draw(GraphicsHolder graphicsHolder, int entryX, int entryY, int entryWidth, int mouseX, int mouseY, float tickDelta) {
+        GuiDrawing guiDrawing = new GuiDrawing(graphicsHolder);
+        GuiHelper.drawRectangle(guiDrawing, entryX, entryY, entryWidth, this.height, 0x99999999);
+        graphicsHolder.drawCenteredText(title, (entryX + entryWidth / 2), entryY - (8 / 2) + (this.height / 2), 0xFFFFFFFF);
     }
 
     @Override
-    public void positionChanged(int entryX, int entryY) {
+    public void positionChanged(int entryX, int entryY, int entryWidth) {
     }
 }

@@ -17,7 +17,27 @@ public class ModUpload {
 
 
 	public static void main(String[] args) throws IOException {
-		String changelog = "";
+		String changelog = "## **更新日志**\n" +
+				"\n" +
+				"> 本 Mod 依赖 **Minecraft Transit Railway 4.0.0 及以上**\n" +
+				"> 安装本Mod前，请备份您的存档。\n" +
+				"\n" +
+				"---\n" +
+				"### **修复内容**\n" +
+				"* 修复使用较低版本的Fabric Loader无法启动游戏的问题\n" +
+				"\n" +
+				"---\n" +
+				"\n" +
+				"## **Change Log**\n" +
+				"\n" +
+				"> This Mod requires **Minecraft Transit Railway 4.0.0 or above.**\n" +
+				"> Please back up your save before installing this Mod.\n" +
+				"\n" +
+				"---\n" +
+				"### **Bug Fixes**\n" +
+				"* Fixed the issue where the game could not start when using an older version of Fabric Loader.\n" +
+				"\n" +
+				"---";
 
 
 
@@ -33,33 +53,15 @@ public class ModUpload {
 
 
 
-//					 //Modrinth
-//					final Map<String, DependencyType> dependenciesModrinth = new HashMap<String, DependencyType>();
-//					dependenciesModrinth.put("XKPAmI6u", DependencyType.REQUIRED);
-//					do {
-//					} while (!new ModId("nqMdKn6A", ModProvider.MODRINTH).uploadFile(
-//							modVersionUpperCase,
-//							modVersionUpperCase,
-//							changelog,
-//							dependenciesModrinth,
-//							ReleaseStatus.BETA,
-//							Collections.singleton(minecraftVersion),
-//							Collections.singleton(modLoader),
-//							false,
-//							Files.newInputStream(filePath),
-//							fileName,
-//							args[1]
-//					));
-
-					 //CurseForge
-					final Map<String, DependencyType> dependenciesCurseForge = new HashMap<>();
-					dependenciesCurseForge.put("minecraft-transit-railway", DependencyType.REQUIRED);//mtr依赖
+					 //Modrinth
+					final Map<String, DependencyType> dependenciesModrinth = new HashMap<String, DependencyType>();
+					dependenciesModrinth.put("XKPAmI6u", DependencyType.REQUIRED);
 					do {
-					} while (!new ModId("1421375", ModProvider.CURSE_FORGE).uploadFile(
-							"",
+					} while (!new ModId("nqMdKn6A", ModProvider.MODRINTH).uploadFile(
+							modVersionUpperCase,
 							modVersionUpperCase,
 							changelog,
-							dependenciesCurseForge,
+							dependenciesModrinth,
 							ReleaseStatus.BETA,
 							Collections.singleton(minecraftVersion),
 							Collections.singleton(modLoader),
@@ -68,6 +70,24 @@ public class ModUpload {
 							fileName,
 							args[1]
 					));
+
+					// CurseForge
+//					final Map<String, DependencyType> dependenciesCurseForge = new HashMap<>();
+//					dependenciesCurseForge.put("minecraft-transit-railway", DependencyType.REQUIRED);//mtr依赖
+//					do {
+//					} while (!new ModId("1421375", ModProvider.CURSE_FORGE).uploadFile(
+//							"",
+//							modVersionUpperCase,
+//							changelog,
+//							dependenciesCurseForge,
+//							ReleaseStatus.BETA,
+//							Collections.singleton(minecraftVersion),
+//							Collections.singleton(modLoader),
+//							false,
+//							Files.newInputStream(filePath),
+//							fileName,
+//							args[1]
+//					));
 				}
 			}
 		}

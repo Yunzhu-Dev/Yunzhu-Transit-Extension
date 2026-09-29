@@ -1,6 +1,7 @@
 package top.xfunny.mod.client.render;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.mtr.core.data.Lift;
 import org.mtr.core.data.LiftDirection;
 import org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -29,6 +30,8 @@ import top.xfunny.mod.util.ReverseRendering;
 
 import java.util.Comparator;
 
+import static top.xfunny.mod.client.font.FontFeatures.ss01;
+
 public class RenderHitachiVIB673Button extends BlockEntityRenderer<HitachiVIB673Button.BlockEntity> implements DirectionHelper, IGui, IBlock {
 
     private static final int HOVER_COLOR = 0xAAFFFFFF;
@@ -46,7 +49,7 @@ public class RenderHitachiVIB673Button extends BlockEntityRenderer<HitachiVIB673
     }
 
     @Override
-    public void render(HitachiVIB673Button.BlockEntity blockEntity, float tickDelta, GraphicsHolder graphicsHolder1, int light, int overlay) {
+    public void render(HitachiVIB673Button.BlockEntity blockEntity, float tickDelta, @NotNull GraphicsHolder graphicsHolder1, int light, int overlay) {
         final World world = blockEntity.getWorld2();
         if (world == null) {
             return;
@@ -209,13 +212,8 @@ public class RenderHitachiVIB673Button extends BlockEntityRenderer<HitachiVIB673
                 liftFloorDisplayView.setTextAlign(TextView.HorizontalTextAlign.CENTER);
                 liftFloorDisplayView.addStoredMatrixTransformations(graphicsHolder -> graphicsHolder.translate(0, 0, -SMALL_OFFSET));
                 if (liftFloorDisplayView.getTextLength() >= 3) {
-                    liftFloorDisplayView.setBasicsAttributes(world,
-                            blockPos,
-                            sortedPositionsAndLifts.get(i).right(),
-                            FontList.instance.getFont("hitachi-bxsclc5-compact"),
-                            6F,
-                            0xFFFF4800);
-                    liftFloorDisplayView.setAdaptMode(LiftFloorDisplayView.AdaptMode.FORCE_FIT_WIDTH);
+                    liftFloorDisplayView.setFontFeatures(ss01);
+                    liftFloorDisplayView.setAdaptMode(LiftFloorDisplayView.AdaptMode.FIT_WIDTH);
                 } else {
                     liftFloorDisplayView.setAdaptMode(LiftFloorDisplayView.AdaptMode.ASPECT_FILL);
                 }

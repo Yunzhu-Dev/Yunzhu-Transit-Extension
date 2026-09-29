@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import top.xfunny.mod.config.YteLiftConfigStore;
+import top.xfunny.mod.lift.LiftModeState;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
 
@@ -25,7 +25,7 @@ public class MixinRenderLiftPanel {
     )
     private ObjectObjectImmutablePair<LiftDirection, ObjectObjectImmutablePair<String, String>> yte$renderBlankDriverModeDisplay(
             World world, Lift lift, BlockPos blockPos) {
-        return YteLiftConfigStore.getServiceMode(lift.getId()).hidesHallDisplay()
+        return LiftModeState.getMode(lift.getId()) == LiftModeState.LiftMode.ATTENDANT
                 ? new ObjectObjectImmutablePair<>(LiftDirection.NONE, new ObjectObjectImmutablePair<>("", ""))
                 : RenderLifts.getLiftDetails(world, lift, blockPos);
     }

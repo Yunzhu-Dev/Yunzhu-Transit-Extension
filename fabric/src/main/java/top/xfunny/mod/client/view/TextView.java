@@ -12,6 +12,9 @@ import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.client.client_data.DynamicResource;
 
 import top.xfunny.mod.client.resource.TextureList;
+import top.xfunny.mod.client.font.FontFeatures;
+import top.xfunny.mod.client.font.FontFeature;
+import top.xfunny.mod.client.font.FontAnimation;
 
 import java.awt.*;
 import java.util.function.Consumer;
@@ -25,6 +28,9 @@ public class TextView implements RenderView {
     protected Font font;
     protected int color;
     protected float letterSpacing = 0;
+    private FontFeature[] fontFeatures = new FontFeature[0];
+    private FontAnimation fontAnimation;
+    private int renderedTextLength;
     protected World world;
     protected BlockPos blockPos;
     protected float height;
@@ -36,7 +42,7 @@ public class TextView implements RenderView {
     protected String textureId;
     protected float fontSize;
     protected float gameTick;
-    protected String text;
+    protected String text = "";
     protected DynamicResource texture;
     protected float fixedWidth;
     protected float textWidth;
@@ -75,7 +81,7 @@ public class TextView implements RenderView {
         }
 
         float offset1;
-        if (text.length() > displayTextLength && adaptMode == AdaptMode.ASPECT_FILL) {
+        if (!isFontAnimationRunning() && renderedTextLength > displayTextLength && adaptMode == AdaptMode.ASPECT_FILL) {
             offset1 = (gameTick * scrollSpeed) % 1;
             final GraphicsHolder graphicsHolder = DirectRenderer.prepare(QueuedRenderLayer.LIGHT_TRANSLUCENT, texture.identifier, storedMatrixTransformations1);
             if (graphicsHolder != null) {
@@ -93,7 +99,10 @@ public class TextView implements RenderView {
 
     protected void calculateSize() {
         this.gameTick = org.mtr.mod.InitClient.getGameTick();
-        this.texture = TextureList.instance.renderFont(textureId, blockPos.asLong(), text, color, font, fontSize, letterSpacing);
+        final String frame = fontAnimation == null ? null : fontAnimation.getCurrentFrame(Math.max(0, gameTick) / 20D);
+        final String renderedText = frame == null ? text : frame;
+        this.renderedTextLength = frame == null ? renderedText.length() : 1;
+        this.texture = TextureList.instance.renderFont(textureId, blockPos.asLong(), renderedText, color, font, fontSize, letterSpacing, fontFeatures);
         int rawTextWidth = texture.width;
         int rawTextHeight = texture.height;
         float scale = (float) rawTextHeight / height;
@@ -108,7 +117,7 @@ public class TextView implements RenderView {
             case ASPECT_FILL:
                 this.textWidth = rawTextWidth / scale;//缩放处理后的文本宽度
                 this.textHeight = rawTextHeight / scale;//缩放处理后的文本高度
-                this.fixedWidth = textWidth / text.length() * displayTextLength;
+                this.fixedWidth = frame == null ? textWidth / Math.max(1, renderedTextLength) * displayTextLength : textWidth;
                 break;
 
             case FIT_WIDTH:
@@ -161,6 +170,34 @@ public class TextView implements RenderView {
         this.letterSpacing = letterSpacing;
     }
 
+    /** Static imports: setFontFeatures(ss01, cv02(2)). Empty arguments disable features. */
+    public void setFontFeatures(FontFeature... features) {
+        this.fontFeatures = FontFeatures.normalize(features);
+    }
+
+    /** Start at the first code point of the range. */
+    public void startFontAnimation(Object owner, String firstCodePoint, String lastCodePoint, double framesPerSecond) {
+        startFontAnimation(owner, firstCodePoint, lastCodePoint, framesPerSecond, firstCodePoint);
+    }
+
+    /** Configure and start; identical repeated calls preserve playback across rebuilt views. */
+    public void startFontAnimation(Object owner, String firstCodePoint, String lastCodePoint,
+                                   double framesPerSecond, String startCodePoint) {
+        final FontAnimation animation = FontAnimation.forScreen(owner, textureId, firstCodePoint, lastCodePoint, framesPerSecond);
+        animation.start(Math.max(0, org.mtr.mod.InitClient.getGameTick()) / 20D, startCodePoint);
+        this.fontAnimation = animation;
+    }
+
+    /** Remove saved playback and restore ordinary text. Shared glyph textures remain cached. */
+    public void stopFontAnimation(Object owner) {
+        FontAnimation.removeScreen(owner, textureId);
+        this.fontAnimation = null;
+    }
+
+    private boolean isFontAnimationRunning() {
+        return fontAnimation != null && fontAnimation.isRunning();
+    }
+
     public void setAdaptMode(AdaptMode adaptMode) {
         this.adaptMode = adaptMode;
     }
@@ -172,10 +209,10 @@ public class TextView implements RenderView {
     protected void calculateTextPositionX() {
         switch (horizontalTextAlign) {
             case LEFT:
-                textX = x + width - (text.length() > displayTextLength ? (displayTextLength != 0 ? fixedWidth : textWidth) : textWidth);
+                textX = x + width - (renderedTextLength > displayTextLength ? (displayTextLength != 0 ? fixedWidth : textWidth) : textWidth);
                 break;
             case CENTER:
-                textX = x + width / 2 - (text.length() > displayTextLength ? (displayTextLength != 0 ? fixedWidth : textWidth) : textWidth) / 2;
+                textX = x + width / 2 - (renderedTextLength > displayTextLength ? (displayTextLength != 0 ? fixedWidth : textWidth) : textWidth) / 2;
                 break;
             case RIGHT:
                 textX = x;
@@ -242,7 +279,7 @@ public class TextView implements RenderView {
     }
 
     public int getTextLength() {
-        return text.length();
+        return isFontAnimationRunning() ? 1 : text.length();
     }
 
     @Override

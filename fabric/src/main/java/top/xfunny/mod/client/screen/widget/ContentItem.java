@@ -9,11 +9,22 @@ import top.xfunny.mod.client.screen.GuiHelper;
 import static top.xfunny.mod.client.screen.widget.ListViewWidget.ENTRY_PADDING;
 
 public class ContentItem extends BaseListItem {
+
+    public enum Alignment {
+        LEFT, CENTER, JUSTIFIED
+    }
+
+    private static final int TEXT_COLOR_ENABLED = 0xFFFFFFFF;
+    private static final int TEXT_COLOR_DISABLED = 0xFF808080;
+
     public final MutableText title;
     public final MappedWidget widget;
     private Identifier textureResource;
     private boolean hasIcon;
     private double hoverOpacity = 0;
+    private Alignment alignment = Alignment.LEFT;
+    private MutableText valueText;
+    private boolean enabled = true;
 
     public ContentItem(MutableText title, MappedWidget widget, int height) {
         super(height);
@@ -25,61 +36,77 @@ public class ContentItem extends BaseListItem {
         this(title, widget, 26);
     }
 
-    public void setIcon(Identifier textureResource) {
+    public ContentItem setIcon(Identifier textureResource) {
         if (textureResource != null) {
             this.textureResource = textureResource;
             hasIcon = true;
         } else {
             hasIcon = false;
         }
+        return this;
     }
 
     public boolean hasIcon() {
         return hasIcon;
     }
 
-    @Override
-    public void setWidgetVisible(boolean visible) {
+    public ContentItem setAlignment(Alignment alignment) {
+        this.alignment = alignment;
+        return this;
+    }
+
+    public ContentItem setValue(MutableText valueText) {
+        this.valueText = valueText;
+        return this;
+    }
+
+    public ContentItem setEnabled(boolean enabled) {
+        this.enabled = enabled;
         if (widget != null) {
-            widget.setVisible(visible);
+            widget.setActive(enabled);
+        }
+        return this;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override
+    public void positionChanged(int entryX, int entryY, int entryWidth) {
+        if (widget != null) {
+            widget.setX(entryX + entryWidth - ENTRY_PADDING - widget.getWidth());
+            widget.setY(entryY + (height - widget.getHeight()) / 2);
         }
     }
 
     @Override
-    public void positionChanged(int entryX, int entryY) {
+    public void hidden() {
         if (widget != null) {
-            int offsetY = (height - widget.getHeight()) / 2;
-            widget.setX(entryX - widget.getWidth());
-            widget.setY(entryY + offsetY);
+            widget.setVisible(false);
         }
     }
 
     @Override
-    public void draw(GraphicsHolder graphicsHolder, GuiDrawing guiDrawing, int entryX, int entryY, int width, int height, int mouseX, int mouseY, boolean widgetVisible, float tickDelta) {
-        super.draw(graphicsHolder, guiDrawing, entryX, entryY, width, height, mouseX, mouseY, widgetVisible, tickDelta);
-        drawBackground(guiDrawing, entryX, entryY, width, mouseX, mouseY, tickDelta);
-        drawListEntry(graphicsHolder, entryX, entryY, mouseX, mouseY, widgetVisible, tickDelta);
-    }
-
-    private void drawListEntry(GraphicsHolder graphicsHolder, int entryX, int entryY, int mouseX, int mouseY, boolean widgetVisible, float tickDelta) {
-        if (title != null)
-            drawListEntryDescription(graphicsHolder, entryX, entryY);
-
+    public void shown() {
         if (widget != null) {
-            widget.setVisible(widgetVisible);
-            if (widgetVisible) {
-                // TODO: 控件不再作为 Screen child，手动 render 不会维护 hovered/focused 状态：
-                //       按钮悬停高亮消失，键盘 Tab/Enter/Space 也不可用（当前为 mouse-only）。
-                //       需要时在 MappedWidget 补 hover/focus 转发（渲染前按 bounds 计算并设置 hovered）。
-                widget.render(graphicsHolder, mouseX, mouseY, tickDelta);
-            }
+            widget.setVisible(true);
         }
     }
 
-    private void drawListEntryDescription(GraphicsHolder graphicsHolder, int entryX, int entryY) {
+    @Override
+    public void draw(GraphicsHolder graphicsHolder, int entryX, int entryY, int entryWidth, int mouseX, int mouseY, float tickDelta) {
+        drawBackground(graphicsHolder, entryX, entryY, entryWidth, mouseX, mouseY, tickDelta);
+        drawListEntryDescription(graphicsHolder, entryX, entryY, entryWidth);
+    }
+
+    private void drawListEntryDescription(GraphicsHolder graphicsHolder, int entryX, int entryY, int entryWidth) {
         int textHeight = 9;
         int iconSize = hasIcon() ? height - ENTRY_PADDING : 0;
         int textY = (height / 2) - (textHeight / 2) - (ENTRY_PADDING / 2);
+        int reservedRight = widget != null ? widget.getWidth() + ENTRY_PADDING : 0;
+        int available = Math.max(1, entryWidth - ENTRY_PADDING * 2 - iconSize - reservedRight);
+        final int textColor = enabled ? TEXT_COLOR_ENABLED : TEXT_COLOR_DISABLED;
 
         graphicsHolder.push();
         graphicsHolder.translate(entryX, entryY, 0);
@@ -93,17 +120,50 @@ public class ContentItem extends BaseListItem {
             graphicsHolder.translate(iconSize + ENTRY_PADDING, 0, 0);
         }
 
-        // TODO: 标题未限制可用宽度，长文本会画到右侧内嵌控件上；需要时按 (width - 图标 - 控件宽) 做 scaleToFit。
-        graphicsHolder.drawText(title, 0, textY, 0xFFFFFFFF, true, GraphicsHolder.getDefaultLight());
+        if (alignment == Alignment.CENTER) {
+            final int titleWidth = GraphicsHolder.getTextWidth(title);
+            final int drawnWidth = Math.min(titleWidth, available);
+            graphicsHolder.push();
+            graphicsHolder.translate((available - drawnWidth) / 2.0, 0, 0);
+            drawScaledText(graphicsHolder, title, textY, available, textColor);
+            graphicsHolder.pop();
+        } else if (alignment == Alignment.JUSTIFIED) {
+            if (valueText != null) {
+                final int valueWidth = GraphicsHolder.getTextWidth(valueText);
+                final int titleMaxWidth = Math.max(1, available - Math.min(valueWidth, available));
+                drawScaledText(graphicsHolder, title, textY, titleMaxWidth, textColor);
+                graphicsHolder.push();
+                graphicsHolder.translate(available - Math.min(valueWidth, available), 0, 0);
+                drawScaledText(graphicsHolder, valueText, textY, available, textColor);
+                graphicsHolder.pop();
+            } else {
+                drawScaledText(graphicsHolder, title, textY, available, textColor);
+            }
+        } else {
+            drawScaledText(graphicsHolder, title, textY, available, textColor);
+        }
+
         graphicsHolder.pop();
     }
 
-    private void drawBackground(GuiDrawing guiDrawing, int entryX, int entryY, int width, int mouseX, int mouseY, float tickDelta) {
+    private void drawScaledText(GraphicsHolder graphicsHolder, MutableText text, int textY, int maxWidth, int color) {
+        GuiHelper.scaleToFit(graphicsHolder, GraphicsHolder.getTextWidth(text), maxWidth, true);
+        graphicsHolder.drawText(text, 0, textY, color, true, GraphicsHolder.getDefaultLight());
+    }
+
+    private void drawBackground(GraphicsHolder graphicsHolder, int entryX, int entryY, int entryWidth, int mouseX, int mouseY, float tickDelta) {
+        if (!enabled) {
+            hoverOpacity = 0;
+            return;
+        }
         double highlightFadeSpeed = (tickDelta / 4);
-        boolean entryHovered = mouseX >= entryX && mouseY >= entryY && mouseX < entryX + width && mouseY < entryY + this.height;
+        boolean entryHovered = mouseX >= entryX && mouseY >= entryY && mouseX < entryX + entryWidth && mouseY < entryY + this.height;
         hoverOpacity = entryHovered ? Math.min(1, hoverOpacity + highlightFadeSpeed) : Math.max(0, hoverOpacity - highlightFadeSpeed);
 
-        if (hoverOpacity > 0) drawListEntryHighlight(guiDrawing, entryX, entryY, width, height);
+        if (hoverOpacity > 0) {
+            GuiDrawing guiDrawing = new GuiDrawing(graphicsHolder);
+            drawListEntryHighlight(guiDrawing, entryX, entryY, entryWidth, height);
+        }
     }
 
     private void drawListEntryHighlight(GuiDrawing guiDrawing, int x, int y, int width, int height) {
@@ -112,6 +172,4 @@ public class ContentItem extends BaseListItem {
 
         GuiHelper.drawRectangle(guiDrawing, x, y, width, height, highlightColor);
     }
-
 }
-

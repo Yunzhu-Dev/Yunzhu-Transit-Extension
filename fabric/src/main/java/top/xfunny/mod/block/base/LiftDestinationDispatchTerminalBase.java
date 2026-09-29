@@ -18,6 +18,7 @@ import top.xfunny.mod.Init;
 import top.xfunny.mod.config.YteLiftConfigStore;
 import top.xfunny.mod.lift.LiftFloorRegistry;
 import top.xfunny.mod.lift.LiftLanternController;
+import top.xfunny.mod.lift.LiftModeState;
 import top.xfunny.mod.keymapping.DefaultButtonsKeyMapping;
 import top.xfunny.mod.packet.PacketSyncLiftDestinationDispatchTerminal;
 import top.xfunny.mod.util.GetLiftDetails;
@@ -376,7 +377,7 @@ public abstract class LiftDestinationDispatchTerminalBase extends BlockExtension
 
             trackPositions.forEach(trackPosition -> {
                 MinecraftClientData.getInstance().lifts.forEach(lift -> {
-                    if (!YteLiftConfigStore.getServiceMode(lift.getId()).acceptsHallCalls()) return;
+                    if (!LiftModeState.canAcceptHallCall(lift.getId())) return;
                     final int callingFloorIdx = lift.getFloorIndex(Init.blockPosToPosition(trackPosition));
                     if (callingFloorIdx < 0) return;
 
