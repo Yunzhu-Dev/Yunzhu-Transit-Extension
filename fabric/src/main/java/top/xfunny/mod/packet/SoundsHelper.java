@@ -237,7 +237,7 @@ public final class SoundsHelper {
                         blockPos,
                         SoundEvents.MITSUBISHI_NEXWAY_BUTTON_1.get(),
                         SoundCategory.BLOCKS,
-                        0.4F,
+                        0.6F, //换了个新音频
                         1.0F
                 );
                 break;
@@ -358,6 +358,16 @@ public final class SoundsHelper {
                         null,
                         blockPos,
                         SoundEvents.HITACHI_YLGW_BUTTON_1.get(),
+                        SoundCategory.BLOCKS,
+                        0.8F,
+                        1.0F
+                );
+                break;
+            case "hitachi_ulmw_button_1":
+                serverPlayerEntity.getEntityWorld().playSound(
+                        null,
+                        blockPos,
+                        SoundEvents.HITACHI_ULMW_BUTTON_1.get(),
                         SoundCategory.BLOCKS,
                         0.8F,
                         1.0F

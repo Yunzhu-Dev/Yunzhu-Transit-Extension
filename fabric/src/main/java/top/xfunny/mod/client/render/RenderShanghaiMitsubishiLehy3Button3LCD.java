@@ -18,6 +18,7 @@ import org.mtr.mod.render.QueuedRenderLayer;
 import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.block.ShanghaiMitsubishiLehy3Button3LCD;
 import top.xfunny.mod.block.base.LiftButtonsBase;
+import top.xfunny.mod.client.client_data.LiftSpeed;
 import top.xfunny.mod.client.resource.FontList;
 import top.xfunny.mod.client.view.*;
 import top.xfunny.mod.client.view.view_group.FrameLayout;
@@ -38,6 +39,7 @@ public class RenderShanghaiMitsubishiLehy3Button3LCD extends BlockEntityRenderer
     private static final Identifier BUTTON_TEXTURE = new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/shanghai_mitsubishi_a11_button_1.png");
     private static final Identifier BUTTON_LIGHT_TEXTURE = new Identifier(top.xfunny.mod.Init.MOD_ID, "textures/block/shanghai_mitsubishi_a11_button_1_light.png");
     private static final BooleanProperty UNLOCKED = BooleanProperty.of("unlocked");
+    private final LiftSpeed liftSpeed = new LiftSpeed(); //速度
 
     public RenderShanghaiMitsubishiLehy3Button3LCD(Argument dispatcher) {
         super(dispatcher);
@@ -204,6 +206,7 @@ public class RenderShanghaiMitsubishiLehy3Button3LCD extends BlockEntityRenderer
                 ;
                 liftFloorDisplayView.setWidth(1.2F / 16);
                 liftFloorDisplayView.setHeight(1.5F / 16);
+                liftFloorDisplayView.setLetterSpacing(-8);
                 liftFloorDisplayView.setTextAlign(TextView.HorizontalTextAlign.CENTER);
                 liftFloorDisplayView.addStoredMatrixTransformations(graphicsHolder -> graphicsHolder.translate(0, 0, -SMALL_OFFSET));
                 if (liftFloorDisplayView.getTextLength() >= 3) {
@@ -219,7 +222,7 @@ public class RenderShanghaiMitsubishiLehy3Button3LCD extends BlockEntityRenderer
                 liftArrowView.setGravity(Gravity.CENTER_HORIZONTAL);
                 liftArrowView.setQueuedRenderLayer(QueuedRenderLayer.LIGHT_TRANSLUCENT);
                 liftArrowView.setMargin(0, 0.2F / 16, 0, 0);
-                liftArrowView.setAnimationYawRotation(true, 0.075F);
+                liftArrowView.setAnimationYawRotation(liftSpeed.getSpeed(lift) != 0, 0.075F); //根据速度判断电梯运行切箭头动画
                 if (unlocked) {
                     liftArrowView.setColor(0xFFCEB993);
                 } else {

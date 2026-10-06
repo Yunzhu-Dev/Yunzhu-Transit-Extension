@@ -16,6 +16,7 @@ import org.mtr.mod.render.StoredMatrixTransformations;
 import top.xfunny.mod.Init;
 import top.xfunny.mod.block.ShanghaiMitsubishiLehy3Screen1Even;
 import top.xfunny.mod.block.base.LiftPanelBase;
+import top.xfunny.mod.client.client_data.LiftSpeed;
 import top.xfunny.mod.client.resource.FontList;
 import top.xfunny.mod.client.view.*;
 import top.xfunny.mod.client.view.view_group.LinearLayout;
@@ -26,6 +27,7 @@ import java.util.Comparator;
 
 public class RenderShanghaiMitsubishiLehy3Screen1<T extends LiftPanelBase.BlockEntityBase> extends BlockEntityRenderer<T> implements DirectionHelper, IGui, IBlock {
     private final boolean isOdd;
+    /*private final LiftSpeed liftSpeed = new LiftSpeed(); //运行速度获取   */
 
     public RenderShanghaiMitsubishiLehy3Screen1(Argument dispatcher, Boolean isOdd) {
         super(dispatcher);
@@ -101,7 +103,7 @@ public class RenderShanghaiMitsubishiLehy3Screen1<T extends LiftPanelBase.BlockE
                 liftFloorDisplayView.setHeight(1.5F / 16);
                 liftFloorDisplayView.setGravity(Gravity.CENTER_VERTICAL);
                 liftFloorDisplayView.setTextAlign(TextView.HorizontalTextAlign.CENTER);
-                liftFloorDisplayView.setLetterSpacing(0);
+                liftFloorDisplayView.setLetterSpacing(-8);
                 liftFloorDisplayView.setMargin(0.3F / 16, 0, 0, 0);
                 liftFloorDisplayView.addStoredMatrixTransformations(graphicsHolder -> graphicsHolder.translate(0, 0, -SMALL_OFFSET));
                 if (liftFloorDisplayView.getTextLength() >= 3) {
@@ -114,11 +116,15 @@ public class RenderShanghaiMitsubishiLehy3Screen1<T extends LiftPanelBase.BlockE
                 final LiftArrowView liftArrowView = new LiftArrowView();
                 liftArrowView.setBasicsAttributes(world, blockPos, sortedPositionsAndLifts.get(i).right(), LiftArrowView.ArrowType.AUTO);
                 liftArrowView.setTexture(new Identifier(Init.MOD_ID, "textures/block/shanghai_mitsubishi_lehy_3_arrow_2.png"));
+                /*
+                liftArrowView.setAnimatedTexture(Init.MOD_ID, "textures/block/smec_lcd_arrow/smec_lcd_arrow_", 16, 1.25F);
+                liftArrowView.setAnimationPaused(liftSpeed.getSpeed(sortedPositionsAndLifts.get(i).right()) == 0); // 速度为零时固定在第一帧
+                序列帧预留*/
                 liftArrowView.setDimension(0.875F / 16);
                 liftArrowView.setGravity(Gravity.CENTER_VERTICAL);
                 liftArrowView.setQueuedRenderLayer(QueuedRenderLayer.LIGHT_TRANSLUCENT);
                 liftArrowView.setColor(0xFFCEB993);
-                liftArrowView.setAnimationYawRotation(true, 0.075F);
+                liftArrowView.setAnimationYawRotation(true, 0.075F);//原来的旋转
 
                 numberLayout.addChild(liftArrowView);
                 numberLayout.addChild(liftFloorDisplayView);

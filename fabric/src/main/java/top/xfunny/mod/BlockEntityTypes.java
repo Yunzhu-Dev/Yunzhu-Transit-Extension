@@ -183,6 +183,7 @@ public class BlockEntityTypes {
     public static final BlockEntityTypeRegistryObject<ShanghaiMitsubishiLehy3Button1WithoutScreen.BlockEntity> SHANGHAI_MITSUBISHI_LEHY_3_BUTTON_1_WITHOUT_SCREEN;
     public static final BlockEntityTypeRegistryObject<ShanghaiMitsubishiLehy3Button2.BlockEntity> SHANGHAI_MITSUBISHI_LEHY_3_BUTTON_2;
     public static final BlockEntityTypeRegistryObject<ShanghaiMitsubishiLehy3Button3LCD.BlockEntity> SHANGHAI_MITSUBISHI_LEHY_3_BUTTON_3_LCD;
+    public static final BlockEntityTypeRegistryObject<ShanghaiMitsubishiLehy3Button4.BlockEntity> SHANGHAI_MITSUBISHI_LEHY_3_BUTTON_4;
     public static final BlockEntityTypeRegistryObject<ShanghaiMitsubishiLehy3Screen1Even.BlockEntity> SHANGHAI_MITSUBISHI_LEHY_3_SCREEN_1_EVEN;
     public static final BlockEntityTypeRegistryObject<ShanghaiMitsubishiLehy3Screen1Odd.BlockEntity> SHANGHAI_MITSUBISHI_LEHY_3_SCREEN_1_ODD;
     public static final BlockEntityTypeRegistryObject<ShanghaiMitsubishiLehy3Screen1WideEven.BlockEntity> SHANGHAI_MITSUBISHI_LEHY_3_SCREEN_1_WIDE_EVEN;
@@ -492,6 +493,7 @@ public class BlockEntityTypes {
         SHANGHAI_MITSUBISHI_LEHY_3_BUTTON_1_WITHOUT_SCREEN = Init.REGISTRY.registerBlockEntityType(new Identifier(Init.MOD_ID, "shanghai_mitsubishi_lehy_3_button_1_without_screen"), ShanghaiMitsubishiLehy3Button1WithoutScreen.BlockEntity::new, Blocks.SHANGHAI_MITSUBISHI_LEHY_3_BUTTON_1_WITHOUT_SCREEN::get);
         SHANGHAI_MITSUBISHI_LEHY_3_BUTTON_2 = Init.REGISTRY.registerBlockEntityType(new Identifier(Init.MOD_ID, "shanghai_mitsubishi_lehy_3_button_2"), ShanghaiMitsubishiLehy3Button2.BlockEntity::new, Blocks.SHANGHAI_MITSUBISHI_LEHY_3_BUTTON_2::get);
         SHANGHAI_MITSUBISHI_LEHY_3_BUTTON_3_LCD = Init.REGISTRY.registerBlockEntityType(new Identifier(Init.MOD_ID, "shanghai_mitsubishi_lehy_3_button_3_lcd"), ShanghaiMitsubishiLehy3Button3LCD.BlockEntity::new, Blocks.SHANGHAI_MITSUBISHI_LEHY_3_BUTTON_3_LCD::get);
+        SHANGHAI_MITSUBISHI_LEHY_3_BUTTON_4 = Init.REGISTRY.registerBlockEntityType(new Identifier(Init.MOD_ID, "shanghai_mitsubishi_lehy_3_button_4"), ShanghaiMitsubishiLehy3Button4.BlockEntity::new, Blocks.SHANGHAI_MITSUBISHI_LEHY_3_BUTTON_4::get);
         SHANGHAI_MITSUBISHI_LEHY_3_SCREEN_1_EVEN = Init.REGISTRY.registerBlockEntityType(new Identifier(Init.MOD_ID, "shanghai_mitsubishi_lehy_3_screen_1_even"), ShanghaiMitsubishiLehy3Screen1Even.BlockEntity::new, Blocks.SHANGHAI_MITSUBISHI_LEHY_3_SCREEN_1_EVEN::get);
         SHANGHAI_MITSUBISHI_LEHY_3_SCREEN_1_ODD = Init.REGISTRY.registerBlockEntityType(new Identifier(Init.MOD_ID, "shanghai_mitsubishi_lehy_3_screen_1_odd"), ShanghaiMitsubishiLehy3Screen1Odd.BlockEntity::new, Blocks.SHANGHAI_MITSUBISHI_LEHY_3_SCREEN_1_ODD::get);
         SHANGHAI_MITSUBISHI_LEHY_3_SCREEN_1_WIDE_EVEN = Init.REGISTRY.registerBlockEntityType(new Identifier(Init.MOD_ID, "shanghai_mitsubishi_lehy_3_screen_1_wide_even"), ShanghaiMitsubishiLehy3Screen1WideEven.BlockEntity::new, Blocks.SHANGHAI_MITSUBISHI_LEHY_3_SCREEN_1_WIDE_EVEN::get);

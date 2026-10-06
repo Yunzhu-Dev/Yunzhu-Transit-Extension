@@ -184,6 +184,7 @@ public class Blocks {
     public static final BlockRegistryObject SHANGHAI_MITSUBISHI_LEHY_3_BUTTON_1_WITHOUT_SCREEN = BlockFixtures.get("shanghai_mitsubishi_lehy_3_button_1_without_screen");
     public static final BlockRegistryObject SHANGHAI_MITSUBISHI_LEHY_3_BUTTON_2 = BlockFixtures.get("shanghai_mitsubishi_lehy_3_button_2");
     public static final BlockRegistryObject SHANGHAI_MITSUBISHI_LEHY_3_BUTTON_3_LCD = BlockFixtures.get("shanghai_mitsubishi_lehy_3_button_3_lcd");
+    public static final BlockRegistryObject SHANGHAI_MITSUBISHI_LEHY_3_BUTTON_4 = BlockFixtures.get("shanghai_mitsubishi_lehy_3_button_4");
     public static final BlockRegistryObject SHANGHAI_MITSUBISHI_LEHY_3_SCREEN_1_EVEN = BlockFixtures.get("shanghai_mitsubishi_lehy_3_screen_1_even");
     public static final BlockRegistryObject SHANGHAI_MITSUBISHI_LEHY_3_SCREEN_1_ODD = BlockFixtures.get("shanghai_mitsubishi_lehy_3_screen_1_odd");
     public static final BlockRegistryObject SHANGHAI_MITSUBISHI_LEHY_3_SCREEN_1_WIDE_EVEN = BlockFixtures.get("shanghai_mitsubishi_lehy_3_screen_1_wide_even");

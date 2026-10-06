@@ -108,7 +108,7 @@ public class RenderShanghaiMitsubishiLehy3Screen1Wide<T extends LiftPanelBase.Bl
                 liftFloorDisplayView.setHeight(1.5F / 16);
                 liftFloorDisplayView.setGravity(Gravity.CENTER_VERTICAL);
                 liftFloorDisplayView.setTextAlign(TextView.HorizontalTextAlign.CENTER);
-                liftFloorDisplayView.setLetterSpacing(0);
+                liftFloorDisplayView.setLetterSpacing(-8);
                 liftFloorDisplayView.setMargin(0.57F / 16, 0, 0, 0);
                 liftFloorDisplayView.addStoredMatrixTransformations(graphicsHolder -> graphicsHolder.translate(0, 0, -SMALL_OFFSET));
 
