@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class HitachiGHLLanternPolicy implements LiftArrivalLanternPolicy {
 
-    public static final HitachiGHLLanternPolicy GHL668 = new HitachiGHLLanternPolicy("hitachi_ca_lantern_2");
+    public static final HitachiGHLLanternPolicy GHL668 = new HitachiGHLLanternPolicy(null);
     public static final HitachiGHLLanternPolicy GHL673 = new HitachiGHLLanternPolicy("hitachi_ca_lantern_1");
     public static final HitachiGHLLanternPolicy GHL820 = new HitachiGHLLanternPolicy("hitachi_ca_lantern_1");
 

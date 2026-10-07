@@ -18,16 +18,6 @@ public final class SoundsHelper {
                         1.0F
                 );
                 break;
-            case "hitachi_ca_lantern_2":
-                serverPlayerEntity.getEntityWorld().playSound(
-                        null,
-                        blockPos,
-                        SoundEvents.HITACHI_CA_LANTERN_2.get(),
-                        SoundCategory.BLOCKS,
-                        1.0F,
-                        1.0F
-                );
-                break;
             case "otis_series_1_lantern_up":
                 serverPlayerEntity.getEntityWorld().playSound(
                         null,

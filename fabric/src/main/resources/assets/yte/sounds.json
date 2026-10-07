@@ -7,14 +7,6 @@
       }
     ]
   },
-  "hitachi_ca_lantern_2": {
-    "sounds": [
-      {
-        "name": "yte:hitachi_ca_lantern_2",
-        "pitch": 1.0
-      }
-    ]
-  },
   "otis_series_1_lantern_1_up": {
     "sounds": [
       {
