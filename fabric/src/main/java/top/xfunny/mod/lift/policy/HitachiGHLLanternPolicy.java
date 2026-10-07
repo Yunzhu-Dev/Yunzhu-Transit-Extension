@@ -47,9 +47,10 @@ public final class HitachiGHLLanternPolicy implements LiftArrivalLanternPolicy {
         final long liftId = facts.getLiftId();
         final int lanternFloor = context.getLanternFloor();
 
-        // 提前 2 层触发：电梯运行中、按运动方向距本层还剩 1~2 层
+        // 提前 2 层触发：电梯运行中、目标为本层、按运动方向距本层还剩 1~2 层
         final int remaining = remainingFloors(facts, lanternFloor);
-        if (remaining >= 1 && remaining <= APPROACH_FLOORS && facts.isMoving()) {
+        if (facts.getTargetFloor() == lanternFloor
+                && remaining >= 1 && remaining <= APPROACH_FLOORS && facts.isMoving()) {
             approachStartMillis.computeIfAbsent(liftId, ignored -> new ConcurrentHashMap<>())
                     .putIfAbsent(lanternFloor, context.getCurrentMillis());
         }
@@ -57,7 +58,7 @@ public final class HitachiGHLLanternPolicy implements LiftArrivalLanternPolicy {
         final boolean activeDoorCycleAtLantern = facts.getDoorValue() > 0
                 && arrivalState.isActiveForFloor(lanternFloor);
         final boolean approachLatched = getStartMillis(liftId, lanternFloor) > 0
-                && (remaining >= 0 || arrivalState.isActiveForFloor(lanternFloor));
+                && (facts.getTargetFloor() == lanternFloor || arrivalState.isActiveForFloor(lanternFloor));
 
         if (!approachLatched && !activeDoorCycleAtLantern) {
             clearFinishedCycle(facts, arrivalState, liftId, lanternFloor);
