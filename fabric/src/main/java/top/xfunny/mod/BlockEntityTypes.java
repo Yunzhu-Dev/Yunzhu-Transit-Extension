@@ -1,10 +1,13 @@
 package top.xfunny.mod;
 
+import org.mtr.libraries.okhttp3.Call;
 import org.mtr.mapping.holder.Identifier;
 import org.mtr.mapping.registry.BlockEntityTypeRegistryObject;
 import top.xfunny.mod.block.*;
 
 public class BlockEntityTypes {
+
+    public static final BlockEntityTypeRegistryObject<HallCallBox.BlockEntity> HALL_CALL_BOX;
 
     public static final BlockEntityTypeRegistryObject<TestLiftButtons.BlockEntity> TEST_LIFT_BUTTONS;
     public static final BlockEntityTypeRegistryObject<TestLiftHallLanterns.BlockEntity> TEST_LIFT_HALL_LANTERNS;
@@ -361,6 +364,7 @@ public class BlockEntityTypes {
 
 
     static {
+        HALL_CALL_BOX = Init.REGISTRY.registerBlockEntityType(new Identifier(Init.MOD_ID, "hall_call_box"), HallCallBox.BlockEntity::new, Blocks.HALL_CALL_BOX::get);
         TEST_LIFT_BUTTONS = Init.REGISTRY.registerBlockEntityType(new Identifier(Init.MOD_ID, "lift_buttons"), TestLiftButtons.BlockEntity::new, Blocks.TEST_LIFT_BUTTONS::get);
         TEST_LIFT_HALL_LANTERNS = Init.REGISTRY.registerBlockEntityType(new Identifier(Init.MOD_ID, "lift_hall_lanterns"), TestLiftHallLanterns.BlockEntity::new, Blocks.TEST_LIFT_HALL_LANTERNS::get);
         TEST_LIFT_BUTTONS_WITHOUT_SCREEN = Init.REGISTRY.registerBlockEntityType(new Identifier(Init.MOD_ID, "lift_buttons_without_screen"), TestLiftButtonsWithoutScreen.BlockEntity::new, Blocks.TEST_LIFT_BUTTONS_WITHOUT_SCREEN::get);

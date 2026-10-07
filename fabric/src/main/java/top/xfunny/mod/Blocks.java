@@ -11,6 +11,9 @@ import static org.mtr.mod.Blocks.createDefaultBlockSettings;
 
 public class Blocks {
 
+    public static final BlockRegistryObject HALL_CALL_BOX;
+
+
     public static final BlockRegistryObject TEST_LIFT_BUTTONS;
     public static final BlockRegistryObject TEST_LIFT_BUTTONS_WITHOUT_SCREEN;
     public static final BlockRegistryObject TEST_LIFT_HALL_LANTERNS;
@@ -372,6 +375,8 @@ public class Blocks {
     public static final BlockRegistryObject SCHINDLER_QKS9_DOOR_1;
 
     static {
+
+        HALL_CALL_BOX = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "hall_call_box"), () -> new Block(new HallCallBox()), CreativeModeTabs.YTE_TOOLS);
 
         TEST_LIFT_BUTTONS = Init.REGISTRY.registerBlockWithBlockItem(new Identifier(Init.MOD_ID, "test_lift_buttons"), () -> new Block(new TestLiftButtons()));
 

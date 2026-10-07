@@ -2,10 +2,12 @@ package top.xfunny.mod.packet;
 
 import org.mtr.mapping.holder.*;
 import org.mtr.mapping.mapper.ScreenExtension;
+import top.xfunny.mod.block.HallCallBox;
 import top.xfunny.mod.block.PATRS01RailwaySign;
 import top.xfunny.mod.block.TestLiftButtons;
 import top.xfunny.mod.block.LiftTrackMagneticVane;
 import top.xfunny.mod.client.screen.GuangzhouRailwaySignScreen;
+import top.xfunny.mod.client.screen.HallCallBoxConfigScreen;
 import top.xfunny.mod.client.screen.LiftTrackMagneticVaneScreen;
 import top.xfunny.mod.client.screen.PATRS01RailwaySignScreen;
 
@@ -24,6 +26,13 @@ public final class YTEClientPacketHelper {
                 openScreen(new LiftTrackMagneticVaneScreen(blockPos, (LiftTrackMagneticVane.BlockEntity) blockEntity.data),
                         screenExtension -> screenExtension instanceof LiftTrackMagneticVaneScreen);
             }
+            else if (blockEntity.data instanceof HallCallBox.BlockEntity) {
+                openScreen(new HallCallBoxConfigScreen(blockPos, (HallCallBox.BlockEntity) blockEntity.data),
+                        screenExtension -> screenExtension instanceof HallCallBoxConfigScreen);
+            }
+
+
+
             else if (blockEntity.data instanceof TestLiftButtons.BlockEntity) {
                 openScreen(new GuangzhouRailwaySignScreen(blockPos),
                         screenExtension -> screenExtension instanceof GuangzhouRailwaySignScreen);
