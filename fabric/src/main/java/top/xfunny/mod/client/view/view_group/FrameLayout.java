@@ -62,7 +62,7 @@ public class FrameLayout implements RenderView {
             storedMatrixTransformations1.add(graphicsHolder -> {
                 graphicsHolder.translate(0, 0, -0.6 * SMALL_OFFSET);
             });
-            final GraphicsHolder graphicsHolder = DirectRenderer.prepare(QueuedRenderLayer.EXTERIOR, new Identifier(Init.MOD_ID, "textures/block/white.png"), storedMatrixTransformations1);
+            final GraphicsHolder graphicsHolder = DirectRenderer.prepare(QueuedRenderLayer.LIGHT, new Identifier(Init.MOD_ID, "textures/block/white.png"), storedMatrixTransformations1);
             if (graphicsHolder != null) {
                 IDrawing.drawTexture(graphicsHolder, x, y, width, height, 0, 0, 1, 1, Direction.UP, backgroundColor, 15);
                 graphicsHolder.pop();

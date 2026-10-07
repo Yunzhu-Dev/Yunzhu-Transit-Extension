@@ -132,7 +132,7 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
             imageView.setTexture(BACKGROUND_TEXTURE);
             imageView.setDimension(3.5F / 16, 2.575F / 3.5F);
             imageView.setLight(light);
-            imageView.setQueuedRenderLayer(QueuedRenderLayer.LIGHT_TRANSLUCENT);
+            imageView.setQueuedRenderLayer(QueuedRenderLayer.LIGHT);
             imageView.setGravity(Gravity.CENTER);
 
             final TextView textView = new TextView();
@@ -164,7 +164,7 @@ public class RenderSchindlerZLine3Keypad1 extends BlockEntityRenderer<SchindlerZ
             imageView.setTexture(BACKGROUND_TEXTURE);
             imageView.setDimension(3.5F / 16, 2.575F / 3.5F);
             imageView.setLight(light);
-            imageView.setQueuedRenderLayer(QueuedRenderLayer.LIGHT_TRANSLUCENT);
+            imageView.setQueuedRenderLayer(QueuedRenderLayer.LIGHT);
             imageView.setGravity(Gravity.CENTER);
 
             final ImageView imageAccessibility = new ImageView();
