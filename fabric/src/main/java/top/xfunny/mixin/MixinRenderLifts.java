@@ -1,9 +1,5 @@
 package top.xfunny.mixin;
 
-import org.mtr.core.data.Lift;
-import org.mtr.core.data.LiftDirection;
-import org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectObjectImmutablePair;
-import org.mtr.mapping.holder.BlockPos;
 import org.mtr.mapping.holder.ClientPlayerEntity;
 import org.mtr.mapping.holder.ClientWorld;
 import org.mtr.mapping.holder.Identifier;
@@ -20,10 +16,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import top.xfunny.mod.block.LiftTrackMagneticVane;
-import top.xfunny.mod.lift.LiftDisplayDirection;
-import top.xfunny.mod.util.LiftTrackMagneticVaneDisplayHelper;
 
 @Mixin(value = RenderLifts.class, remap = false)
 public abstract class MixinRenderLifts {
@@ -60,25 +53,5 @@ public abstract class MixinRenderLifts {
                 }
             }
         });
-    }
-
-    @Inject(method = "getLiftDetails", at = @At("RETURN"), cancellable = true)
-    private static void yte$useMagneticVaneForDisplay(
-            World world, Lift lift, BlockPos blockPos,
-            CallbackInfoReturnable<ObjectObjectImmutablePair<LiftDirection,
-                    ObjectObjectImmutablePair<String, String>>> cir) {
-        // Only replace the live car display. Calls using a hall track position
-        // must keep returning that hall's real floor for arrival-lantern checks.
-        if (!blockPos.equals(org.mtr.mod.Init.positionToBlockPos(lift.getCurrentFloor().getPosition()))) {
-            return;
-        }
-        final LiftTrackMagneticVane.BlockEntity magneticVane = LiftTrackMagneticVaneDisplayHelper.getDisplayedMagneticVane(world, lift);
-        if (magneticVane != null) {
-            ((LiftDisplayDirection) lift).yte$resetArrivalDirectionDelay();
-        }
-        if (magneticVane != null) {
-            cir.setReturnValue(new ObjectObjectImmutablePair<>(lift.getDirection(),
-                    new ObjectObjectImmutablePair<>(magneticVane.getFloorNumber(), magneticVane.getFloorDescription())));
-        }
     }
 }
