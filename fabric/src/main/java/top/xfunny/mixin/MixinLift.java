@@ -35,6 +35,9 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
     private static final long YTE_ARRIVAL_DIRECTION_DELAY = 100;
 
     @Unique
+    private static final double YTE_ARRIVAL_DIRECTION_DISTANCE = 5.0;
+
+    @Unique
     private static final long YTE_DOOR_CLOSED_DELAY = 500;
 
     @Unique
@@ -537,7 +540,10 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
 
         if (!getInstructions().isEmpty()) {
             final LiftInstruction instruction = getInstructions().get(0);
-            if (displayedFloorIndex == instruction.getFloor()) {
+            // The nearest displayed floor may change far ahead of arrival when
+            // floors are widely spaced. Start the delay only within five metres.
+            if (displayedFloorIndex == instruction.getFloor()
+                    && Math.abs(invokeGetProgress(instruction.getFloor()) - getRailProgress()) <= YTE_ARRIVAL_DIRECTION_DISTANCE) {
                 final boolean terminalTurnaround = displayState.movedSinceIdle
                         || instruction.getDirection() != LiftDirection.NONE;
                 final LiftDirection arrivalDirection = terminalTurnaround && displayedFloorIndex == floorCount - 1
@@ -556,7 +562,8 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
             }
         }
 
-        if (displayState.arrivalFloor >= 0 && displayedFloorIndex != displayState.arrivalFloor) {
+        if (displayState.arrivalFloor >= 0 && (displayedFloorIndex != displayState.arrivalFloor
+                || Math.abs(invokeGetProgress(displayState.arrivalFloor) - getRailProgress()) > YTE_ARRIVAL_DIRECTION_DISTANCE)) {
             yte$resetArrivalDirectionDelay();
         } else if (activeDirectionCycle && displayState.arrivalFloor >= 0) {
             displayState.arrivalMillis += millisElapsed;
