@@ -1,5 +1,9 @@
 package top.xfunny.mixin;
 
+import org.mtr.core.data.Lift;
+import org.mtr.core.data.LiftDirection;
+import org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectObjectImmutablePair;
+import org.mtr.mapping.holder.BlockPos;
 import org.mtr.mapping.holder.ClientPlayerEntity;
 import org.mtr.mapping.holder.ClientWorld;
 import org.mtr.mapping.holder.Identifier;
@@ -15,8 +19,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.xfunny.mod.block.LiftTrackMagneticVane;
+import top.xfunny.mod.util.ClientGetLiftDetails;
 
 @Mixin(value = RenderLifts.class, remap = false)
 public abstract class MixinRenderLifts {
@@ -24,6 +30,17 @@ public abstract class MixinRenderLifts {
     @Unique
     private static final ModelSmallCube YTE_MAGNETIC_VANE_MARKER = new ModelSmallCube(
             new Identifier("textures/block/lapis_block.png"));
+
+    // Car and hall-button displays share this live-floor entry point. Keep
+    // getLiftDetails itself unchanged: panels and lanterns also query real floors.
+    @Redirect(
+            method = "renderLiftDisplay",
+            at = @At(value = "INVOKE", target = "Lorg/mtr/mod/render/RenderLifts;getLiftDetails(Lorg/mtr/mapping/holder/World;Lorg/mtr/core/data/Lift;Lorg/mtr/mapping/holder/BlockPos;)Lorg/mtr/libraries/it/unimi/dsi/fastutil/objects/ObjectObjectImmutablePair;")
+    )
+    private static ObjectObjectImmutablePair<LiftDirection, ObjectObjectImmutablePair<String, String>> yte$renderLiveFloor(
+            World world, Lift lift, BlockPos blockPos) {
+        return ClientGetLiftDetails.getLiftDetails(world, lift, blockPos);
+    }
 
     @Inject(method = "render", at = @At("TAIL"))
     private static void yte$renderMagneticVaneMarkers(long millisElapsed, Vector3d cameraPosition, CallbackInfo ci) {

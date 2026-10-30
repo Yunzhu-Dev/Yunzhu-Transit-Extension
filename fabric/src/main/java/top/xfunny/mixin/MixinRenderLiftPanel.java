@@ -13,12 +13,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import top.xfunny.mod.block.LiftTrackMagneticVane;
 import top.xfunny.mod.config.YteLiftConfigStore;
 import top.xfunny.mod.item.YteGroupLiftButtonsLinker;
 import top.xfunny.mod.item.YteLiftButtonsLinker;
-import top.xfunny.mod.lift.LiftDisplayDirection;
-import top.xfunny.mod.util.LiftTrackMagneticVaneDisplayHelper;
+import top.xfunny.mod.util.ClientGetLiftDetails;
 
 @Mixin(value = RenderLiftPanel.class, remap = false)
 public class MixinRenderLiftPanel {
@@ -45,13 +43,7 @@ public class MixinRenderLiftPanel {
         if (YteLiftConfigStore.getServiceMode(lift.getId()).hidesHallDisplay()) {
             return new ObjectObjectImmutablePair<>(LiftDirection.NONE, new ObjectObjectImmutablePair<>("", ""));
         }
-        final LiftTrackMagneticVane.BlockEntity magneticVane = LiftTrackMagneticVaneDisplayHelper.getDisplayedMagneticVane(world, lift);
-        if (magneticVane != null) {
-            ((LiftDisplayDirection) lift).yte$resetArrivalDirectionDelay();
-            return new ObjectObjectImmutablePair<>(lift.getDirection(),
-                    new ObjectObjectImmutablePair<>(magneticVane.getFloorNumber(), magneticVane.getFloorDescription()));
-        }
-        return RenderLifts.getLiftDetails(world, lift, blockPos);
+        return ClientGetLiftDetails.getLiftDetails(world, lift, blockPos);
     }
 
     @ModifyVariable(
