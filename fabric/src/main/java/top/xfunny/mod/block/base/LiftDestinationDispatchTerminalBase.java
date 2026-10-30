@@ -13,10 +13,13 @@ import org.mtr.mod.InitClient;
 import org.mtr.mod.block.IBlock;
 import org.mtr.mod.client.MinecraftClientData;
 import org.mtr.mod.packet.PacketPressLiftButton;
+import top.xfunny.mixin.MixinLiftFields;
+import top.xfunny.mixin.MixinLiftSchema;
 import top.xfunny.mod.ButtonRegistry;
 import top.xfunny.mod.Init;
 import top.xfunny.mod.config.YteLiftConfigStore;
 import top.xfunny.mod.lift.LiftFloorRegistry;
+import top.xfunny.mod.lift.LiftDisplayDirectionState;
 import top.xfunny.mod.lift.LiftLanternController;
 import top.xfunny.mod.keymapping.DefaultButtonsKeyMapping;
 import top.xfunny.mod.packet.PacketSyncLiftDestinationDispatchTerminal;
@@ -416,6 +419,16 @@ public abstract class LiftDestinationDispatchTerminalBase extends BlockExtension
             final LiftDirection neededDirection = determineDirection(
                     bestCandidate.callingFloorIndex, bestCandidate.destFloorIndex);
             this.liftDirection = neededDirection;
+            // The server can consume a same-floor pickup before the client sees
+            // its instruction. The assigned car is already known here, so latch
+            // the requested travel direction directly, including while doors are open.
+            final Lift assignedLift = bestCandidate.lift;
+            final MixinLiftSchema assignedSchema = (MixinLiftSchema) assignedLift;
+            if (neededDirection != NONE && assignedSchema.getSpeed() == 0
+                    && Math.abs(assignedSchema.getRailProgress()
+                    - ((MixinLiftFields) assignedLift).invokeGetProgress(bestCandidate.callingFloorIndex)) < 0.000001) {
+                LiftDisplayDirectionState.get(assignedLift.getId()).setSameFloorCallDirection(neededDirection);
+            }
             final String liftNumber = YteLiftConfigStore.getLiftNumber(bestCandidate.lift.getId());
             liftIdentifier = liftNumber.isEmpty() ? "NULL" : liftNumber;
             // 计算电梯相对于终端的位置
