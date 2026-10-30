@@ -13,7 +13,7 @@ plugins {
 }
 
 include("fabric")
-//include("forge")
+include("forge")
 
 rootProject.name = "Yunzhu-Transit-Extension"
 
