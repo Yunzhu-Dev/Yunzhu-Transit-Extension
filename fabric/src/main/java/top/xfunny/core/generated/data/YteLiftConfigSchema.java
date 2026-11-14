@@ -14,6 +14,7 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
     protected boolean directionParametersLinked;
     protected String motionProfile;
     protected double adoDistance;
+    protected double doorOpenDelaySeconds;
     protected double levellingDistance;
     protected double levellingSpeed;
     protected boolean doorHoldEnabled;
@@ -32,6 +33,8 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
     private static final String KEY_DIRECTION_PARAMETERS_LINKED = "direction_parameters_linked";
     private static final String KEY_MOTION_PROFILE = "motion_profile";
     private static final String KEY_ADO_DISTANCE = "ado_distance";
+    private static final String KEY_DOOR_OPEN_DELAY_SECONDS = "door_open_delay_seconds";
+    private static final String KEY_DOOR_OPEN_DELAY_STEPS = "door_open_delay_steps";
     private static final String KEY_LEVELLING_DISTANCE = "levelling_distance";
     private static final String KEY_LEVELLING_SPEED = "levelling_speed";
     private static final String KEY_DOOR_HOLD_ENABLED = "door_hold_enabled";
@@ -45,7 +48,9 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
     public static final double DEFAULT_SPEED = 10.0;
     public static final double DEFAULT_ACCELERATION = 4.0;
     public static final double DEFAULT_ADO_DISTANCE = 0;
-    public static final double DEFAULT_LEVELLING_DISTANCE = 0.3;
+    public static final int MAX_DOOR_OPEN_DELAY_STEPS = 20;
+    public static final int DOOR_OPEN_DELAY_STEP_MILLIS = 100;
+    public static final double DEFAULT_LEVELLING_DISTANCE = 0.1;
     public static final double DEFAULT_LEVELLING_SPEED = 0.2;
     public static final double MIN_SPEED = 0.1;
     public static final double MAX_SPEED = 20.0;
@@ -165,6 +170,9 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         directionParametersLinked = readerBase.getBoolean(KEY_DIRECTION_PARAMETERS_LINKED, true);
         motionProfile = readerBase.getString(KEY_MOTION_PROFILE, DEFAULT_MOTION_PROFILE);
         readerBase.unpackDouble(KEY_ADO_DISTANCE, value -> adoDistance = value);
+        final double legacyDelay = Math.max(0, readerBase.getInt(KEY_DOOR_OPEN_DELAY_STEPS, 0))
+                * (double) DOOR_OPEN_DELAY_STEP_MILLIS / 1000;
+        doorOpenDelaySeconds = validateDoorOpenDelay(readerBase.getDouble(KEY_DOOR_OPEN_DELAY_SECONDS, legacyDelay));
         readerBase.unpackDouble(KEY_LEVELLING_DISTANCE, value -> levellingDistance = value);
         readerBase.unpackDouble(KEY_LEVELLING_SPEED, value -> levellingSpeed = value);
         doorHoldEnabled = readerBase.getBoolean(KEY_DOOR_HOLD_ENABLED, false);
@@ -187,6 +195,7 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
         writerBase.writeBoolean(KEY_DIRECTION_PARAMETERS_LINKED, directionParametersLinked);
         writerBase.writeString(KEY_MOTION_PROFILE, motionProfile);
         writerBase.writeDouble(KEY_ADO_DISTANCE, adoDistance);
+        writerBase.writeDouble(KEY_DOOR_OPEN_DELAY_SECONDS, doorOpenDelaySeconds);
         writerBase.writeDouble(KEY_LEVELLING_DISTANCE, levellingDistance);
         writerBase.writeDouble(KEY_LEVELLING_SPEED, levellingSpeed);
         writerBase.writeBoolean(KEY_DOOR_HOLD_ENABLED, doorHoldEnabled);
@@ -217,5 +226,9 @@ public abstract class YteLiftConfigSchema implements SerializedDataBaseWithId {
 
     public long getId() {
         return liftId;
+    }
+
+    protected static double validateDoorOpenDelay(double seconds) {
+        return Double.isFinite(seconds) && seconds > 0 ? seconds : 0;
     }
 }

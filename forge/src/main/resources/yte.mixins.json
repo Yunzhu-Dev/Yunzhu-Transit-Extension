@@ -17,6 +17,7 @@
     "MixinBlockEntityRenderer",
     "MixinDynamicTextureCache",
     "MixinMainRenderer",
+    "MixinPacketUpdateVehiclesLifts",
     "MixinRenderLiftButtons",
     "MixinRenderLiftPanel",
     "MixinRenderLifts",

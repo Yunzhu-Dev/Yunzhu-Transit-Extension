@@ -118,6 +118,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique private WidgetShorterSlider yte$sliderDownAcceleration;
 
     @Unique private WidgetShorterSlider yte$sliderAdoDistance;
+    @Unique private WidgetShorterSlider yte$sliderDoorOpenDelay;
     @Unique private WidgetShorterSlider yte$sliderLevellingDistance;
     @Unique private WidgetShorterSlider yte$sliderLevellingSpeed;
     @Unique private ButtonWidgetExtension yte$professionalModeButton;
@@ -133,6 +134,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique private TextFieldWidgetExtension yte$downSpeedField;
     @Unique private TextFieldWidgetExtension yte$downAccelerationField;
     @Unique private TextFieldWidgetExtension yte$adoDistanceField;
+    @Unique private TextFieldWidgetExtension yte$doorOpenDelayField;
     @Unique private TextFieldWidgetExtension yte$levellingDistanceField;
     @Unique private TextFieldWidgetExtension yte$levellingSpeedField;
     @Unique private TextFieldWidgetExtension yte$liftNumberField;
@@ -144,6 +146,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     private static final int ACCEL_SLIDER_MAX = 20;
 
     @Unique private static final int ADO_DISTANCE_SLIDER_MAX = 30;
+    @Unique private static final double DOOR_OPEN_DELAY_STEP_SECONDS = YteLiftConfig.DOOR_OPEN_DELAY_STEP_MILLIS / 1000.0;
     @Unique private static final int LEVELLING_DISTANCE_SLIDER_MAX = 20;
     @Unique private static final int LEVELLING_SPEED_SLIDER_MAX = 20;
     @Unique private static boolean yte$professionalMode;
@@ -172,6 +175,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     @Unique private String yte$liftNumber = "";
     @Unique private String yte$lastSentLiftNumber = "";
     @Unique private double yte$lastSentAdoDistance = -1;
+    @Unique private double yte$lastSentDoorOpenDelaySeconds;
+    @Unique private int yte$doorOpenDelaySliderAnchor;
     @Unique private double yte$lastSentLevellingDistance = -1;
     @Unique private double yte$lastSentLevellingSpeed = -1;
     @Unique private final double[] yte$easyModeValues = new double[7];
@@ -232,6 +237,11 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                 value -> "", null);
         yte$sliderAdoDistance.setValue(adoDistanceToValue(currentAdoDistance));
 
+        yte$lastSentDoorOpenDelaySeconds = config == null ? 0 : config.getDoorOpenDelaySeconds();
+        yte$sliderDoorOpenDelay = new WidgetShorterSlider(0, 60, YteLiftConfig.MAX_DOOR_OPEN_DELAY_STEPS,
+                value -> "", null);
+        yte$setDoorOpenDelaySlider(yte$lastSentDoorOpenDelaySeconds);
+
         yte$sliderLevellingDistance = new WidgetShorterSlider(0, 60, LEVELLING_DISTANCE_SLIDER_MAX,
                 value -> "", null);
         yte$sliderLevellingDistance.setValue(levellingDistanceToValue(currentLevellingDistance));
@@ -274,6 +284,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$downSpeedField = yte$createNumberField(currentDownSpeed);
         yte$downAccelerationField = yte$createNumberField(currentDownAccel);
         yte$adoDistanceField = yte$createNumberField(currentAdoDistance);
+        yte$doorOpenDelayField = yte$createNumberField(yte$lastSentDoorOpenDelaySeconds);
         yte$levellingDistanceField = yte$createNumberField(currentLevellingDistance);
         yte$levellingSpeedField = yte$createNumberField(currentLevellingSpeed);
         yte$liftNumberField = yte$createLiftNumberField();
@@ -331,6 +342,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         addChild(new ClickableWidget(yte$sliderDownSpeed));
         addChild(new ClickableWidget(yte$sliderDownAcceleration));
         addChild(new ClickableWidget(yte$sliderAdoDistance));
+        addChild(new ClickableWidget(yte$sliderDoorOpenDelay));
         addChild(new ClickableWidget(yte$sliderLevellingDistance));
         addChild(new ClickableWidget(yte$sliderLevellingSpeed));
 
@@ -339,6 +351,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         addChild(new ClickableWidget(yte$downSpeedField));
         addChild(new ClickableWidget(yte$downAccelerationField));
         addChild(new ClickableWidget(yte$adoDistanceField));
+        addChild(new ClickableWidget(yte$doorOpenDelayField));
         addChild(new ClickableWidget(yte$levellingDistanceField));
         addChild(new ClickableWidget(yte$levellingSpeedField));
         addChild(new ClickableWidget(yte$liftNumberField));
@@ -349,6 +362,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         yte$liftNumberField.setText2(yte$liftNumber);
 
         yte$activeTab = TAB_BASE;
+        yte$doorOpenDelayField.setText2(Double.toString(yte$lastSentDoorOpenDelaySeconds));
         yte$onSelectTab(TAB_BASE);
     }
 
@@ -364,13 +378,23 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
         renderBackground(graphicsHolder);
 
         final double[] values = yte$computeCurrentValues();
+        final boolean delayEnabled = values[4] == 0;
+        final double doorOpenDelaySeconds = yte$getDoorOpenDelaySeconds(delayEnabled);
+        yte$sliderDoorOpenDelay.active = delayEnabled;
+        yte$doorOpenDelayField.setEditable2(delayEnabled);
+        if (yte$professionalMode && (!delayEnabled || !yte$doorOpenDelayField.isFocused2())) {
+            final String delayText = Double.toString(doorOpenDelaySeconds);
+            if (!delayText.equals(yte$doorOpenDelayField.getText2())) {
+                yte$doorOpenDelayField.setText2(delayText);
+            }
+        }
 
         // 内容区裁剪到标签栏之下、footer 之上，滚动时内容不会盖住顶部标签栏
         GuiHelper.enableScissor(graphicsHolder, 0, IGui.SQUARE_SIZE, IGui.PANEL_WIDTH, yte$getContentBottom());
         try {
             super.render(graphicsHolder, mouseX, mouseY, delta);
             yte$drawScrollbar(graphicsHolder);
-            yte$drawTabLabels(graphicsHolder, values);
+            yte$drawTabLabels(graphicsHolder, values, doorOpenDelaySeconds);
         } finally {
             GuiHelper.disableScissor(graphicsHolder);
         }
@@ -386,7 +410,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
             yte$professionalModeButton.render(graphicsHolder, mouseX, mouseY, delta);
         }
 
-        yte$syncValuesToServer(values);
+        yte$syncValuesToServer(values, doorOpenDelaySeconds);
     }
 
     @Unique
@@ -437,10 +461,12 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
             case TAB_LEVEL:
                 yte$positionSlider(yte$sliderAdoDistance, 2);
                 yte$positionField(yte$adoDistanceField, 2);
-                yte$positionSlider(yte$sliderLevellingDistance, 4);
-                yte$positionField(yte$levellingDistanceField, 4);
-                yte$positionSlider(yte$sliderLevellingSpeed, 6);
-                yte$positionField(yte$levellingSpeedField, 6);
+                yte$positionSlider(yte$sliderDoorOpenDelay, 4);
+                yte$positionField(yte$doorOpenDelayField, 4);
+                yte$positionSlider(yte$sliderLevellingDistance, 6);
+                yte$positionField(yte$levellingDistanceField, 6);
+                yte$positionSlider(yte$sliderLevellingSpeed, 8);
+                yte$positionField(yte$levellingSpeedField, 8);
                 break;
             case TAB_DOOR:
                 yte$positionFullWidth(yte$doorHoldButton, 1);
@@ -476,7 +502,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
             case TAB_MOTION:
                 return yte$directionParametersLinked ? 6 : 10;
             case TAB_LEVEL:
-                return 6;
+                return 8;
             case TAB_DOOR:
                 return 5;
             default:
@@ -526,7 +552,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     }
 
     @Unique
-    private void yte$drawTabLabels(GraphicsHolder graphicsHolder, double[] values) {
+    private void yte$drawTabLabels(GraphicsHolder graphicsHolder, double[] values, double doorOpenDelaySeconds) {
         switch (yte$activeTab) {
             case TAB_BASE:
                 graphicsHolder.drawText(TextHelper.translatable("gui.yte.lift_number"), 0,
@@ -557,8 +583,20 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                 break;
             case TAB_LEVEL:
                 yte$drawModeLabel(graphicsHolder, "gui.yte.lift_ado_distance", "gui.yte.lift_ado_distance_value", values[4], 1);
-                yte$drawModeLabel(graphicsHolder, "gui.yte.lift_levelling_distance", "gui.yte.lift_levelling_distance_value", values[5], 3);
-                yte$drawModeLabel(graphicsHolder, "gui.yte.lift_levelling_speed", "gui.yte.lift_levelling_speed_value", values[6], 5);
+                graphicsHolder.drawText(TextHelper.translatable(yte$professionalMode
+                                ? "gui.yte.lift_door_open_delay" : "gui.yte.lift_door_open_delay_value",
+                                Double.toString(doorOpenDelaySeconds)), 0,
+                        yte$contentY(3) + IGui.TEXT_PADDING,
+                        yte$sliderDoorOpenDelay.active ? IGui.ARGB_WHITE : 0xFFAAAAAA, false, GraphicsHolder.getDefaultLight());
+                /* Reverse levelling temporarily disabled.
+                if (yte$motionProfile == LiftMotionProfile.REVERSE_LEVELLING) {
+                    yte$drawModeLabel(graphicsHolder, "gui.yte.lift_overshoot_distance", "gui.yte.lift_overshoot_distance_value", values[5], 5);
+                } else {
+                    yte$drawModeLabel(graphicsHolder, "gui.yte.lift_levelling_distance", "gui.yte.lift_levelling_distance_value", values[5], 5);
+                }
+                */
+                yte$drawModeLabel(graphicsHolder, "gui.yte.lift_levelling_distance", "gui.yte.lift_levelling_distance_value", values[5], 5);
+                yte$drawModeLabel(graphicsHolder, "gui.yte.lift_levelling_speed", "gui.yte.lift_levelling_speed_value", values[6], 7);
                 break;
             case TAB_DOOR:
                 break;
@@ -594,7 +632,27 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
     }
 
     @Unique
-    private void yte$syncValuesToServer(double[] values) {
+    private double yte$getDoorOpenDelaySeconds(boolean enabled) {
+        if (!enabled) {
+            return yte$lastSentDoorOpenDelaySeconds;
+        }
+        if (yte$professionalMode) {
+            return yte$parseNumber(yte$doorOpenDelayField, yte$lastSentDoorOpenDelaySeconds, Double.POSITIVE_INFINITY);
+        }
+        final int step = yte$sliderDoorOpenDelay.getIntValue();
+        return step == yte$doorOpenDelaySliderAnchor ? yte$lastSentDoorOpenDelaySeconds
+                : step * (double) YteLiftConfig.DOOR_OPEN_DELAY_STEP_MILLIS / 1000;
+    }
+
+    @Unique
+    private void yte$setDoorOpenDelaySlider(double seconds) {
+        yte$doorOpenDelaySliderAnchor = (int) Math.round(Math.min(YteLiftConfig.MAX_DOOR_OPEN_DELAY_STEPS,
+                seconds / DOOR_OPEN_DELAY_STEP_SECONDS));
+        yte$sliderDoorOpenDelay.setValue(yte$doorOpenDelaySliderAnchor);
+    }
+
+    @Unique
+    private void yte$syncValuesToServer(double[] values, double doorOpenDelaySeconds) {
         final double upSpeed = values[0];
         final double downSpeed = values[1];
         final double upAccel = values[2];
@@ -609,6 +667,7 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                 || yte$directionParametersLinked != yte$lastSentDirectionParametersLinked
                 || yte$motionProfile != yte$lastSentMotionProfile
                 || adoDistance != yte$lastSentAdoDistance || levellingDistance != yte$lastSentLevellingDistance
+                || doorOpenDelaySeconds != yte$lastSentDoorOpenDelaySeconds
                 || levellingSpeed != yte$lastSentLevellingSpeed
                 || yte$doorHoldEnabled != yte$lastSentDoorHoldEnabled
                 || yte$doorButtonLightMode != yte$lastSentDoorButtonLightMode
@@ -623,6 +682,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
             yte$lastSentDirectionParametersLinked = yte$directionParametersLinked;
             yte$lastSentMotionProfile = yte$motionProfile;
             yte$lastSentAdoDistance = adoDistance;
+            yte$lastSentDoorOpenDelaySeconds = doorOpenDelaySeconds;
+            yte$doorOpenDelaySliderAnchor = yte$sliderDoorOpenDelay.getIntValue();
             yte$lastSentLevellingDistance = levellingDistance;
             yte$lastSentLevellingSpeed = levellingSpeed;
             yte$lastSentDoorHoldEnabled = yte$doorHoldEnabled;
@@ -638,11 +699,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                     yte$directionParametersLinked, adoDistance, levellingDistance, levellingSpeed, yte$motionProfile,
                     yte$doorHoldEnabled, yte$doorButtonLightMode, yte$floorCancelMode, false,
                     yte$arrivalLanternTriggerMode, yte$serviceMode, liftNumber);
-            YteLiftConfigStore.put(liftId, upSpeed, downSpeed, upAccel, downAccel,
-                    adoDistance, levellingDistance, levellingSpeed, yte$motionProfile, yte$doorHoldEnabled,
-                    yte$doorButtonLightMode, yte$floorCancelMode, false, yte$arrivalLanternTriggerMode,
-                    yte$serviceMode);
-            YteLiftConfigStore.setLiftNumber(liftId, liftNumber);
+            config.setDoorOpenDelaySeconds(doorOpenDelaySeconds);
+            YteLiftConfigStore.put(config);
 
             final YteUpdateDataRequest request = new YteUpdateDataRequest(
                     config, YteMinecraftClientData.getInstance());
@@ -769,6 +827,9 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
 
     @Unique
     private void yte$toggleProfessionalMode() {
+        final double[] values = yte$computeCurrentValues();
+        final double doorOpenDelaySeconds = yte$getDoorOpenDelaySeconds(values[4] == 0);
+        yte$syncValuesToServer(values, doorOpenDelaySeconds);
         if (yte$professionalMode) {
             yte$setEasyModeValues(
                     yte$parseNumber(yte$speedField, yte$lastSentSpeed, YteLiftConfig.MIN_SPEED, YteLiftConfig.MAX_SPEED),
@@ -792,6 +853,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
                     yte$getEasyModeValue(5, yte$sliderLevellingDistance, valueToLevellingDistance(yte$sliderLevellingDistance.getIntValue())),
                     yte$getEasyModeValue(6, yte$sliderLevellingSpeed, valueToLevellingSpeed(yte$sliderLevellingSpeed.getIntValue())));
         }
+        yte$setDoorOpenDelaySlider(doorOpenDelaySeconds);
+        yte$doorOpenDelayField.setText2(Double.toString(doorOpenDelaySeconds));
         yte$professionalMode = !yte$professionalMode;
         yte$updateModeWidgets();
     }
@@ -897,6 +960,8 @@ public abstract class MixinLiftCustomizationScreen extends MTRScreenBase {
 
         // 平层参数：滑块/文本框
         yte$sliderAdoDistance.setVisibleMapped(levelTab && !yte$professionalMode);
+        yte$sliderDoorOpenDelay.setVisibleMapped(levelTab && !yte$professionalMode);
+        yte$doorOpenDelayField.setVisibleMapped(levelTab && yte$professionalMode);
         yte$adoDistanceField.setVisibleMapped(levelTab && yte$professionalMode);
         yte$sliderLevellingDistance.setVisibleMapped(levelTab && !yte$professionalMode);
         yte$levellingDistanceField.setVisibleMapped(levelTab && yte$professionalMode);

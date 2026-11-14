@@ -1,5 +1,6 @@
 package top.xfunny.mod.config;
 
+import top.xfunny.core.data.YteLiftConfig;
 import top.xfunny.mod.lift.LiftArrivalLanternTriggerMode;
 import top.xfunny.mod.lift.LiftDoorButtonLightMode;
 import top.xfunny.mod.lift.LiftFloorCancelMode;
@@ -20,6 +21,7 @@ public final class YteLiftConfigStore {
     private static final Map<Long, Double> downSpeedMap = new ConcurrentHashMap<>();
     private static final Map<Long, Double> downAccelerationMap = new ConcurrentHashMap<>();
     private static final Map<Long, Double> adoDistanceMap = new ConcurrentHashMap<>();
+    private static final Map<Long, Double> doorOpenDelaySecondsMap = new ConcurrentHashMap<>();
     private static final Map<Long, Double> levellingDistanceMap = new ConcurrentHashMap<>();
     private static final Map<Long, Double> levellingSpeedMap = new ConcurrentHashMap<>();
     private static final Map<Long, LiftMotionProfile> motionProfileMap = new ConcurrentHashMap<>();
@@ -38,6 +40,17 @@ public final class YteLiftConfigStore {
     private static final double DEFAULT_LEVELLING_SPEED = 0.2;
 
     private YteLiftConfigStore() {}
+
+    public static void put(YteLiftConfig config) {
+        final long liftId = config.getId();
+        put(liftId, config.getUpSpeed(), config.getDownSpeed(), config.getUpAcceleration(),
+                config.getDownAcceleration(), config.getAdoDistance(), config.getLevellingDistance(),
+                config.getLevellingSpeed(), config.getMotionProfile(), config.isDoorHoldEnabled(),
+                config.getDoorButtonLightMode(), config.getFloorCancelMode(), config.isFloorCancelWhileMovingAllowed(),
+                config.getArrivalLanternTriggerMode(), config.getServiceMode());
+        doorOpenDelaySecondsMap.put(liftId, config.getDoorOpenDelaySeconds());
+        setLiftNumber(liftId, config.getLiftNumber());
+    }
 
     public static void put(long liftId, double speed, double acceleration, double adoDistance, double levellingDistance, double levellingSpeed) {
         put(liftId, speed, speed, acceleration, acceleration, adoDistance, levellingDistance, levellingSpeed);
@@ -120,6 +133,10 @@ public final class YteLiftConfigStore {
 
     public static double getAdoDistance(long liftId) { return adoDistanceMap.getOrDefault(liftId, DEFAULT_ADO_DISTANCE); }
 
+    public static long getDoorOpenDelayMillis(long liftId) {
+        return Math.round(doorOpenDelaySecondsMap.getOrDefault(liftId, 0.0) * 1000);
+    }
+
     public static double getLevellingDistance(long liftId) { return levellingDistanceMap.getOrDefault(liftId, DEFAULT_LEVELLING_DISTANCE); }
 
     public static double getLevellingSpeed(long liftId) { return levellingSpeedMap.getOrDefault(liftId, DEFAULT_LEVELLING_SPEED); }
@@ -174,6 +191,7 @@ public final class YteLiftConfigStore {
         downSpeedMap.remove(liftId);
         downAccelerationMap.remove(liftId);
         adoDistanceMap.remove(liftId);
+        doorOpenDelaySecondsMap.remove(liftId);
         levellingDistanceMap.remove(liftId);
         levellingSpeedMap.remove(liftId);
         motionProfileMap.remove(liftId);
@@ -192,6 +210,7 @@ public final class YteLiftConfigStore {
         downSpeedMap.clear();
         downAccelerationMap.clear();
         adoDistanceMap.clear();
+        doorOpenDelaySecondsMap.clear();
         levellingDistanceMap.clear();
         levellingSpeedMap.clear();
         motionProfileMap.clear();

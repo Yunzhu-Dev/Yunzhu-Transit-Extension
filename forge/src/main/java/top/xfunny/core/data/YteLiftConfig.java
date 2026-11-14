@@ -98,6 +98,8 @@ public class YteLiftConfig extends YteLiftConfigSchema {
 
     public double getAdoDistance() { return adoDistance; }
 
+    public double getDoorOpenDelaySeconds() { return doorOpenDelaySeconds; }
+
     public double getLevellingDistance() { return levellingDistance; }
 
     public double getLevellingSpeed() { return levellingSpeed; }
@@ -133,6 +135,8 @@ public class YteLiftConfig extends YteLiftConfigSchema {
     }
 
     public void setAdoDistance(double adoDistance) { this.adoDistance = clamp(adoDistance, MIN_ADO_DISTANCE, MAX_ADO_DISTANCE); }
+
+    public void setDoorOpenDelaySeconds(double seconds) { doorOpenDelaySeconds = validateDoorOpenDelay(seconds); }
 
     public void setLevellingDistance(double levellingDistance) { this.levellingDistance = clamp(levellingDistance, MIN_LEVELLING_DISTANCE, MAX_LEVELLING_DISTANCE); }
 

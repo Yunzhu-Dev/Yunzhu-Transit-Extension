@@ -2,6 +2,9 @@ package top.xfunny.mixin;
 
 import org.mtr.core.data.*;
 import org.mtr.core.data.Lift;
+// import org.mtr.core.generated.data.LiftSchema;
+import org.mtr.core.serializer.ReaderBase;
+// import org.mtr.core.serializer.WriterBase;
 import org.mtr.core.simulation.Simulator;
 import org.mtr.core.tool.Utilities;
 import org.spongepowered.asm.mixin.Mixin;
@@ -9,7 +12,9 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+// import top.xfunny.core.data.YteLiftConfig;
 import top.xfunny.mod.config.YteLiftConfigStore;
 import top.xfunny.mod.Init;
 import top.xfunny.mod.lift.LiftArrivalLanternState;
@@ -23,13 +28,10 @@ import top.xfunny.mod.lift.LiftMotionProfile;
 import top.xfunny.mod.lift.LiftServiceMode;
 
 @Mixin(value = Lift.class, remap = false)
-public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, MixinNameColorDataBaseSchema, LiftDisplayDirection {
+public abstract class MixinLift /* extends LiftSchema */ implements MixinLiftSchema, MixinLiftFields, MixinNameColorDataBaseSchema, LiftDisplayDirection {
 
     @Unique
     private static final long YTE_LIFT_STOPPING_TIME = Vehicle.DOOR_MOVE_TIME + 2500;
-
-    @Unique
-    private static final long YTE_BRAKE_HOLD_TIME = 200;
 
     @Unique
     private static final long YTE_ARRIVAL_DIRECTION_DELAY = 100;
@@ -59,11 +61,102 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
     @Unique
     private long yte$twoStageCoarseHoldRemaining;
 
+    /* Reverse levelling temporarily disabled.
+    @Unique
+    private int yte$reverseApproachDirection;
+
+    @Unique
+    private double yte$reverseTurnProgress;
+
+    @Unique
+    private boolean yte$reverseReturning;
+    */
+    @Unique
+    private long yte$doorCoolDownBeforeUpdate;
+
+    @Inject(method = "updateData", at = @At("HEAD"))
+    private void yte$rememberDoorAnimation(ReaderBase reader, CallbackInfo ci) {
+        yte$doorCoolDownBeforeUpdate = getStoppingCoolDown();
+    }
+
     @Unique
     private static final long YTE_TWO_STAGE_COARSE_HOLD_TIME = 1000;
 
     @Unique
     private LiftServiceMode yte$lastServiceMode;
+
+    /* Reverse levelling temporarily disabled.
+    protected MixinLift(TransportMode transportMode, Data data) {
+        super(transportMode, data);
+    }
+
+    @Inject(method = "getCurrentFloor", at = @At("HEAD"), cancellable = true)
+    private void yte$terminalFloorOutsideRail(CallbackInfoReturnable<LiftFloor> cir) {
+        if (!getFloors().isEmpty()) {
+            if (getRailProgress() < 0) {
+                cir.setReturnValue(getFloors().get(0));
+            } else if (getRailProgress() > invokeGetProgress(Integer.MAX_VALUE)) {
+                cir.setReturnValue(getFloors().get(getFloors().size() - 1));
+            }
+        }
+    }
+
+    @Inject(method = "getPosition", at = @At("HEAD"), cancellable = true)
+    private void yte$terminalOvershootPosition(
+            java.util.function.BiFunction<Position, Position,
+                    org.mtr.libraries.it.unimi.dsi.fastutil.objects.ObjectArrayList<org.mtr.core.tool.Vector>> path,
+            CallbackInfoReturnable<org.mtr.core.tool.Vector> cir) {
+        final double progress = getRailProgress();
+        final double boundary = Utilities.clamp(progress, 0, invokeGetProgress(Integer.MAX_VALUE));
+        if (progress != boundary && getFloors().size() >= 2) {
+            // Sample the existing rendered path at its endpoint and just inside it.
+            // Extending that tangent also supports terminals on non-vertical paths.
+            final double sample = Math.min(0.01, invokeGetProgress(Integer.MAX_VALUE));
+            final double inward = progress < 0 ? sample : -sample;
+            final Lift lift = (Lift) (Object) this;
+            try {
+                setRailProgress(boundary);
+                final org.mtr.core.tool.Vector endpoint = lift.getPosition(path);
+                setRailProgress(boundary + inward);
+                final org.mtr.core.tool.Vector inside = lift.getPosition(path);
+                final double scale = (progress - boundary) / inward;
+                cir.setReturnValue(endpoint.add((inside.x - endpoint.x) * scale,
+                        (inside.y - endpoint.y) * scale, (inside.z - endpoint.z) * scale));
+            } finally {
+                setRailProgress(progress);
+            }
+        }
+    }
+
+    @Override
+    public void serializeData(WriterBase writer) {
+        super.serializeData(writer);
+        if (yte$reverseApproachDirection != 0) {
+            writer.writeInt("yteReverseTargetFloor", yte$motionTargetFloor);
+            writer.writeInt("yteReverseApproachDirection", yte$reverseApproachDirection);
+            writer.writeDouble("yteReverseTurnProgress", yte$reverseTurnProgress);
+            writer.writeBoolean("yteReverseReturning", yte$reverseReturning);
+        }
+    }
+    */
+    @Inject(method = "updateData", at = @At("TAIL"))
+    private void yte$restoreDoorAnimation(ReaderBase reader, CallbackInfo ci) {
+        // ADO events and regular snapshots travel independently. Once opening
+        // starts, preserve its local timeline across opening/old closed snapshots.
+        // A closing snapshot still takes effect normally.
+        if (isClientside() && yte$doorCoolDownBeforeUpdate >= YTE_DOOR_FULL_OPEN_COOL_DOWN
+                && (getStoppingCoolDown() >= YTE_DOOR_FULL_OPEN_COOL_DOWN || getStoppingCoolDown() <= 1)) {
+            setStoppingCoolDown(yte$doorCoolDownBeforeUpdate);
+        }
+        /* Reverse levelling temporarily disabled.
+        yte$reverseApproachDirection = reader.getInt("yteReverseApproachDirection", 0);
+        yte$reverseReturning = reader.getBoolean("yteReverseReturning", false);
+        if (yte$reverseApproachDirection != 0) {
+            yte$motionTargetFloor = reader.getInt("yteReverseTargetFloor", Integer.MIN_VALUE);
+            yte$reverseTurnProgress = reader.getDouble("yteReverseTurnProgress", 0);
+        }
+        */
+    }
 
     @Inject(method = "pressButton", at = @At("HEAD"), cancellable = true)
     private void yte$rejectHallCallsInServiceMode(
@@ -76,10 +169,10 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
 
     /**
      * MTR's door curve becomes negative when the cooldown is extended beyond its
-     * native stopping time. Clamp that short brake-hold section to fully closed.
+     * native stopping time. Keep the doors fully closed during the opening delay.
      */
     @Inject(method = "getDoorValue", at = @At("RETURN"), cancellable = true)
-    private void yte$clampBrakeHoldDoorValue(CallbackInfoReturnable<Float> cir) {
+    private void yte$clampDelayedDoorValue(CallbackInfoReturnable<Float> cir) {
         final Lift lift = (Lift) (Object) this;
         final float doorValue = Math.max(cir.getReturnValue(), 0F);
         cir.setReturnValue(isClientside()
@@ -108,6 +201,17 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
      */
     @Overwrite
     public void tick(long millisElapsed) {
+        // Bound integration steps so a delayed frame cannot snap across the
+        // entire levelling distance or consume half of the door animation.
+        if (millisElapsed > 20) {
+            long remaining = millisElapsed;
+            while (remaining > 0) {
+                final long step = Math.min(remaining, 20);
+                tick(step);
+                remaining -= step;
+            }
+            return;
+        }
         final long id = ((Lift) (Object) this).getId();
         final boolean movingDown = getSpeed() < 0 || getSpeed() == 0 && !getInstructions().isEmpty()
                 && invokeGetProgress(getInstructions().get(0).getFloor()) < getRailProgress();
@@ -186,6 +290,19 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
             }
         }
 
+        /* Reverse levelling temporarily disabled.
+        final int nextFloor = getInstructions().isEmpty() ? Integer.MIN_VALUE : getInstructions().get(0).getFloor();
+        if (yte$reverseApproachDirection != 0 && nextFloor != yte$motionTargetFloor) {
+            yte$reverseApproachDirection = 0;
+            yte$reverseReturning = false;
+            if (getStoppingCoolDown() > 0) {
+                setStoppingCoolDown(0);
+            }
+        }
+        final boolean adoLevelling = getStoppingCoolDown() > 0 && !getInstructions().isEmpty()
+                && (getSpeed() != 0 || yte$reverseApproachDirection != 0
+                && getRailProgress() != invokeGetProgress(nextFloor));
+        */
         final boolean adoLevelling = getStoppingCoolDown() > 0 && getSpeed() != 0 && !getInstructions().isEmpty();
 
         if (getStoppingCoolDown() > 0 && !adoLevelling) {
@@ -218,6 +335,69 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
                 }
                 final double distanceToTarget = Math.abs(nextInstructionProgress - getRailProgress());
                 final double direction = Math.signum(nextInstructionProgress - getRailProgress());
+                /* Reverse levelling temporarily disabled.
+                if (motionProfile == LiftMotionProfile.REVERSE_LEVELLING && yte$reverseApproachDirection == 0
+                        && getStoppingCoolDown() == 0 && levellingDistance > 0 && levellingSpeed > 0 && direction != 0) {
+                    // Keep the turnaround on the target floor's side of the midpoint to the next floor.
+                    final long adjacentProgress = invokeGetProgress(nextInstructionFloor + (int) direction);
+                    final double clearance = adjacentProgress == nextInstructionProgress ? levellingDistance
+                            : Math.abs(adjacentProgress - nextInstructionProgress) / 2.0 - 0.000001;
+                    if (clearance > 0) {
+                        yte$reverseApproachDirection = (int) direction;
+                        yte$reverseTurnProgress = nextInstructionProgress + direction * Math.min(levellingDistance, clearance);
+                        setNeedsUpdate(true);
+                    }
+                }
+
+                final boolean approachingTurn = yte$reverseApproachDirection != 0 && !yte$reverseReturning;
+                final double motionTarget = approachingTurn ? yte$reverseTurnProgress : nextInstructionProgress;
+                final double motionDifference = motionTarget - getRailProgress();
+                final LiftMotionProfile activeProfile = yte$reverseApproachDirection != 0
+                        ? LiftMotionProfile.REVERSE_LEVELLING
+                        : motionProfile == LiftMotionProfile.REVERSE_LEVELLING ? LiftMotionProfile.STANDARD : motionProfile;
+                if (activeProfile == LiftMotionProfile.TWO_STAGE && yte$twoStageCoarseHoldRemaining > 0) {
+                    setSpeed(LiftMotionProfile.TWO_STAGE_COARSE_STOP_SPEED * direction);
+                    yte$twoStageCoarseHoldRemaining = Math.max(
+                            yte$twoStageCoarseHoldRemaining - millisElapsed, 0);
+                    if (yte$twoStageCoarseHoldRemaining == 0) {
+                        yte$twoStageFineLevelling = true;
+                    }
+                } else {
+                    final double returnSpeed = levellingSpeed > 0 ? levellingSpeed : YteLiftConfig.DEFAULT_LEVELLING_SPEED / 1000.0;
+                    final double maximumSpeed = yte$reverseReturning ? Math.min(returnSpeed, customMaxSpeed) : customMaxSpeed;
+                    final LiftMotionProfile.MotionResult motionResult = activeProfile.calculate(
+                            new LiftMotionProfile.MotionContext(getSpeed(), maximumSpeed, customAccel,
+                                    Math.abs(motionDifference), levellingDistance, levellingSpeed,
+                                    Math.signum(motionDifference), millisElapsed,
+                                    activeProfile == LiftMotionProfile.REVERSE_LEVELLING
+                                            ? yte$reverseReturning : yte$twoStageFineLevelling));
+                    setSpeed(motionResult.speed);
+                    if (activeProfile == LiftMotionProfile.TWO_STAGE && motionResult.enterFineLevelling) {
+                        yte$twoStageCoarseHoldRemaining = YTE_TWO_STAGE_COARSE_HOLD_TIME;
+                    }
+                }
+                if (activeProfile != LiftMotionProfile.TWO_STAGE) {
+                    yte$twoStageFineLevelling = false;
+                    yte$twoStageCoarseHoldRemaining = 0;
+                }
+
+                final double updatedMovementThisTick = Math.abs(getSpeed() * millisElapsed);
+                if (!approachingTurn && adoDistance > 0 && !isClientside() && !adoLevelling && getSpeed() != 0
+                        && distanceToTarget <= adoDistance + updatedMovementThisTick) {
+                    setStoppingCoolDown(YTE_LIFT_STOPPING_TIME);
+                    Init.sendLiftAdoStart(id, YTE_LIFT_STOPPING_TIME);
+                }
+
+                final boolean movingTowardsTarget = activeProfile != LiftMotionProfile.REVERSE_LEVELLING
+                        || Math.signum(getSpeed()) == Math.signum(motionDifference);
+                if (movingTowardsTarget && Math.abs(motionDifference) <= updatedMovementThisTick) {
+                    setRailProgress(motionTarget);
+                    setSpeed(0);
+                    if (approachingTurn) {
+                        yte$reverseReturning = true;
+                        setNeedsUpdate(true);
+                    } else if (!isClientside()) {
+                */
                 if (motionProfile == LiftMotionProfile.TWO_STAGE && yte$twoStageCoarseHoldRemaining > 0) {
                     setSpeed(LiftMotionProfile.TWO_STAGE_COARSE_STOP_SPEED * direction);
                     yte$twoStageCoarseHoldRemaining = Math.max(
@@ -254,14 +434,25 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
                         yte$motionTargetFloor = Integer.MIN_VALUE;
                         yte$twoStageFineLevelling = false;
                         yte$twoStageCoarseHoldRemaining = 0;
+                        /* Reverse levelling temporarily disabled.
+                        yte$reverseApproachDirection = 0;
+                        yte$reverseReturning = false;
+                        */
                         if (getStoppingCoolDown() == 0) {
-                            setStoppingCoolDown(YTE_LIFT_STOPPING_TIME + (adoDistance <= 0 ? YTE_BRAKE_HOLD_TIME : 0));
+                            final long doorOpenDelay = adoDistance == 0 ? YteLiftConfigStore.getDoorOpenDelayMillis(id) : 0;
+                            setStoppingCoolDown(YTE_LIFT_STOPPING_TIME + Math.min(doorOpenDelay, Long.MAX_VALUE - YTE_LIFT_STOPPING_TIME));
                         }
                         setNeedsUpdate(true);
                     }
                 }
             }
 
+            /* Reverse levelling temporarily disabled.
+            final double minimumProgress = Math.min(0, yte$reverseApproachDirection != 0 ? yte$reverseTurnProgress : getRailProgress());
+            final double maximumProgress = Math.max(invokeGetProgress(Integer.MAX_VALUE),
+                    yte$reverseApproachDirection != 0 ? yte$reverseTurnProgress : getRailProgress());
+            setRailProgress(Utilities.clamp(getRailProgress() + getSpeed() * millisElapsed, minimumProgress, maximumProgress));
+            */
             setRailProgress(Utilities.clamp(getRailProgress() + getSpeed() * millisElapsed, 0, invokeGetProgress(Integer.MAX_VALUE)));
         }
 
@@ -429,6 +620,11 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
                     : difference < 0
                     ? LiftDirection.DOWN
                     : instruction.getDirection();
+            /* Reverse levelling temporarily disabled.
+            final LiftDirection approachDirection = yte$reverseApproachDirection == 0
+                    ? movementDirection : LiftDirection.fromDifference(yte$reverseApproachDirection);
+            plannedArrivalDirection = yte$getPlannedArrivalDirection(targetFloor, instruction, approachDirection);
+            */
             plannedArrivalDirection = yte$getPlannedArrivalDirection(targetFloor, instruction, movementDirection);
         }
 
@@ -599,6 +795,10 @@ public abstract class MixinLift implements MixinLiftSchema, MixinLiftFields, Mix
     @Unique
     private void yte$setDisplayDirectionFromNextInstruction(LiftDisplayDirectionState displayState) {
         final LiftInstruction instruction = getInstructions().get(0);
+        /* Reverse levelling temporarily disabled.
+        final double difference = yte$reverseApproachDirection != 0
+                ? yte$reverseApproachDirection : invokeGetProgress(instruction.getFloor()) - getRailProgress();
+        */
         final double difference = invokeGetProgress(instruction.getFloor()) - getRailProgress();
         displayState.direction = difference > 0 ? LiftDirection.UP
                 : difference < 0 ? LiftDirection.DOWN
